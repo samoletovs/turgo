@@ -91,7 +91,7 @@ export function validateUpload(file: {
   type: string;
   size: number;
 }): { valid: boolean; error?: string } {
-  if (!UPLOAD.ALLOWED_TYPES.includes(file.type)) {
+  if (!(UPLOAD.ALLOWED_TYPES as readonly string[]).includes(file.type)) {
     return { valid: false, error: "Only JPEG, PNG, and WebP images are allowed" };
   }
   if (file.size > UPLOAD.MAX_FILE_SIZE) {

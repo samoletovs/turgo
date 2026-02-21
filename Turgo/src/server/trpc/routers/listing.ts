@@ -98,9 +98,17 @@ export const listingRouter = createTRPCRouter({
   create: protectedProcedure
     .input(createListingSchema)
     .mutation(async ({ ctx, input }) => {
+      // Generate slug from title
+      const baseSlug = input.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      const slug = `${baseSlug}-${Date.now().toString(36)}`;
+
       const listing = await ctx.db.listing.create({
         data: {
           ...input,
+          slug,
           userId: ctx.session.user.id!,
           status: "DRAFT",
         },

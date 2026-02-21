@@ -76,7 +76,7 @@ export const searchRouter = createTRPCRouter({
   saveSearch: protectedProcedure
     .input(z.object({
       name: z.string().min(1).max(100),
-      filters: z.record(z.unknown()),
+      filters: z.record(z.string(), z.unknown()),
       notifyEmail: z.boolean().default(true),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -84,7 +84,7 @@ export const searchRouter = createTRPCRouter({
         data: {
           userId: ctx.session.user.id!,
           name: input.name,
-          filters: input.filters,
+          filters: input.filters as any,
           notifyEmail: input.notifyEmail,
         },
       });

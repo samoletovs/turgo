@@ -54,7 +54,7 @@ export const aiRouter = createTRPCRouter({
         title: z.string(),
         category: z.string(),
         condition: z.string(),
-        attributes: z.record(z.string()).optional(),
+        attributes: z.record(z.string(), z.string()).optional(),
       })
     )
     .mutation(async ({ input }) => {
