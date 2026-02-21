@@ -1,0 +1,647 @@
+// Prisma schema for Agent-First Classifieds Marketplace
+// PostgreSQL with pgvector extension for embeddings
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [vector]
+}
+
+// ──────────────────────────────────────────────
+// ENUMS
+// ──────────────────────────────────────────────
+
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+enum ListingStatus {
+  DRAFT
+  ACTIVE
+  SOLD
+  EXPIRED
+  MODERATION
+  REJECTED
+}
+
+enum ListingCondition {
+  NEW
+  USED
+  REFURBISHED
+}
+
+enum AttributeType {
+  TEXT
+  NUMBER
+  SELECT
+  BOOLEAN
+}
+
+enum BoostType {
+  FEATURED
+  HIGHLIGHTED
+  TOP
+}
+
+enum AgentStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum Urgency {
+  ONE_DAY
+  THREE_DAYS
+  ONE_WEEK
+  TWO_WEEKS
+  ONE_MONTH
+  NO_RUSH
+}
+
+enum AgentType {
+  SELLING
+  BUYING
+}
+
+enum AgentActionType {
+  PRICE_ADJUST
+  AUTO_RESPOND
+  AUTO_NEGOTIATE
+  BOOST
+  ALERT
+  OFFER_SENT
+  OFFER_RECEIVED
+  LISTING_CREATED
+  LISTING_UPDATED
+  MATCH_FOUND
+}
+
+enum MatchStatus {
+  NEW
+  VIEWED
+  CONTACTED
+  NEGOTIATING
+  PURCHASED
+  DISMISSED
+}
+
+enum LocationType {
+  COUNTRY
+  REGION
+  CITY
+  DISTRICT
+}
+
+enum PlanName {
+  FREE
+  PRO
+  BUSINESS
+}
+
+enum PlanInterval {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  TRIALING
+}
+
+// ──────────────────────────────────────────────
+// AUTH MODELS
+// ──────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  phone         String?
+  avatar        String?
+  passwordHash  String?
+  role          UserRole  @default(USER)
+  emailVerified DateTime?
+  locale        String    @default("en")
+  lastLoginAt   DateTime?
+  gdprConsentAt DateTime?
+  marketingOptIn Boolean  @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  listings         Listing[]
+  favorites        Favorite[]
+  sentMessages     Message[]       @relation("SentMessages")
+  receivedMessages Message[]       @relation("ReceivedMessages")
+  reviewsGiven     Review[]        @relation("ReviewsGiven")
+  reviewsReceived  Review[]        @relation("ReviewsReceived")
+  subscription     Subscription?
+  sellingAgents    SellingAgent[]
+  buyingAgents     BuyingAgent[]
+  savedSearches    SavedSearch[]
+  buyerConversations  Conversation[] @relation("BuyerConversations")
+  sellerConversations Conversation[] @relation("SellerConversations")
+  accounts         Account[]
+  sessions         Session[]
+  defaultLocation  Location?       @relation(fields: [defaultLocationId], references: [id])
+  defaultLocationId String?
+
+  @@index([email])
+  @@index([role])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ──────────────────────────────────────────────
+// CATEGORIES
+// ──────────────────────────────────────────────
+
+model Category {
+  id          String  @id @default(cuid())
+  name        Json    // {en, lv, ru, lt, et}
+  slug        String  @unique
+  description String?
+  icon        String?
+  parentId    String?
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+
+  listings        Listing[]
+  attributes      CategoryAttribute[]
+  marketSnapshots MarketSnapshot[]
+
+  @@index([parentId])
+  @@index([slug])
+}
+
+model CategoryAttribute {
+  id          String        @id @default(cuid())
+  categoryId  String
+  name        Json          // {en, lv, ru, lt, et}
+  type        AttributeType
+  options     Json?
+  isRequired  Boolean       @default(false)
+  sortOrder   Int           @default(0)
+
+  category          Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  listingAttributes ListingAttribute[]
+
+  @@index([categoryId])
+}
+
+// ──────────────────────────────────────────────
+// LISTINGS
+// ──────────────────────────────────────────────
+
+model Listing {
+  id                     String           @id @default(cuid())
+  title                  String
+  slug                   String           @unique
+  description            String           @db.Text
+  price                  Float
+  currency               String           @default("EUR")
+  negotiable             Boolean          @default(true)
+  condition              ListingCondition @default(USED)
+  status                 ListingStatus    @default(DRAFT)
+  managedByAgent         Boolean          @default(false)
+  viewCount              Int              @default(0)
+  contactPhone           String?
+  contactEmail           String?
+  aiGeneratedDescription Boolean          @default(false)
+  aiSuggestedPrice       Float?
+  latitude               Float?
+  longitude              Float?
+  expiresAt              DateTime?
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+
+  userId     String
+  categoryId String
+  locationId String?
+
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category      Category          @relation(fields: [categoryId], references: [id])
+  location      Location?         @relation(fields: [locationId], references: [id])
+  images        ListingImage[]
+  attributes    ListingAttribute[]
+  favorites     Favorite[]
+  messages      Message[]
+  conversations Conversation[]
+  reviews       Review[]
+  sellingAgent  SellingAgent?
+  boosts        ListingBoost[]
+  priceHistory  PriceHistory[]
+  agentMatches  AgentMatch[]
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([locationId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([price])
+}
+
+model ListingImage {
+  id           String  @id @default(cuid())
+  listingId    String
+  url          String
+  thumbnailUrl String?
+  alt          String?
+  sortOrder    Int     @default(0)
+  isPrimary    Boolean @default(false)
+  aiTags       Json?
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+}
+
+model ListingAttribute {
+  id                  String @id @default(cuid())
+  listingId           String
+  categoryAttributeId String
+  value               String
+
+  listing           Listing           @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  categoryAttribute CategoryAttribute @relation(fields: [categoryAttributeId], references: [id])
+
+  @@index([listingId])
+  @@index([categoryAttributeId])
+}
+
+// ──────────────────────────────────────────────
+// LOCATIONS
+// ──────────────────────────────────────────────
+
+model Location {
+  id          String       @id @default(cuid())
+  name        Json         // {en, lv, ru, lt, et}
+  slug        String       @unique
+  parentId    String?
+  latitude    Float?
+  longitude   Float?
+  type        LocationType
+  countryCode String?
+
+  parent   Location?  @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children Location[] @relation("LocationHierarchy")
+
+  listings        Listing[]
+  users           User[]
+  marketSnapshots MarketSnapshot[]
+
+  @@index([parentId])
+  @@index([slug])
+  @@index([countryCode])
+}
+
+// ──────────────────────────────────────────────
+// MESSAGING
+// ──────────────────────────────────────────────
+
+model Conversation {
+  id            String    @id @default(cuid())
+  listingId     String
+  buyerId       String
+  sellerId      String
+  lastMessageAt DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+
+  listing  Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyer    User      @relation("BuyerConversations", fields: [buyerId], references: [id])
+  seller   User      @relation("SellerConversations", fields: [sellerId], references: [id])
+  messages Message[]
+
+  @@unique([listingId, buyerId, sellerId])
+  @@index([buyerId])
+  @@index([sellerId])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderId       String
+  receiverId     String
+  listingId      String?
+  content        String   @db.Text
+  isRead         Boolean  @default(false)
+  isAgentMessage Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("SentMessages", fields: [senderId], references: [id])
+  receiver     User         @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  listing      Listing?     @relation(fields: [listingId], references: [id])
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+// ──────────────────────────────────────────────
+// FAVORITES & SAVED SEARCHES
+// ──────────────────────────────────────────────
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  listingId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listingId])
+  @@index([userId])
+}
+
+model SavedSearch {
+  id             String    @id @default(cuid())
+  userId         String
+  name           String
+  filters        Json
+  notifyEmail    Boolean   @default(true)
+  lastNotifiedAt DateTime?
+  createdAt      DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ──────────────────────────────────────────────
+// REVIEWS
+// ──────────────────────────────────────────────
+
+model Review {
+  id         String   @id @default(cuid())
+  reviewerId String
+  revieweeId String
+  listingId  String?
+  rating     Int
+  comment    String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  reviewer User     @relation("ReviewsGiven", fields: [reviewerId], references: [id])
+  reviewee User     @relation("ReviewsReceived", fields: [revieweeId], references: [id])
+  listing  Listing? @relation(fields: [listingId], references: [id])
+
+  @@index([reviewerId])
+  @@index([revieweeId])
+}
+
+model PriceHistory {
+  id        String   @id @default(cuid())
+  listingId String
+  price     Float
+  changedAt DateTime @default(now())
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+}
+
+// ──────────────────────────────────────────────
+// SUBSCRIPTIONS & BILLING
+// ──────────────────────────────────────────────
+
+model Plan {
+  id                  String       @id @default(cuid())
+  name                PlanName
+  price               Float
+  currency            String       @default("EUR")
+  interval            PlanInterval
+  maxListings         Int
+  maxPhotosPerListing Int          @default(10)
+  listingDurationDays Int          @default(30)
+  maxSavedSearches    Int          @default(5)
+  maxSellingAgents    Int          @default(1)
+  maxBuyingAgents     Int          @default(1)
+  hasAiPremium        Boolean      @default(false)
+  hasAnalytics        Boolean      @default(false)
+  hasAutoTranslate    Boolean      @default(false)
+  hasAutoNegotiate    Boolean      @default(false)
+  stripePriceId       String?
+  isActive            Boolean      @default(true)
+
+  subscriptions Subscription[]
+
+  @@unique([name, interval])
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  planId               String
+  status               SubscriptionStatus @default(ACTIVE)
+  stripeSubscriptionId String?
+  stripeCustomerId     String?
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan Plan @relation(fields: [planId], references: [id])
+
+  @@index([userId])
+  @@index([stripeSubscriptionId])
+}
+
+model ListingBoost {
+  id              String    @id @default(cuid())
+  listingId       String
+  type            BoostType
+  startAt         DateTime  @default(now())
+  endAt           DateTime
+  stripePaymentId String?
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([startAt, endAt])
+}
+
+// ──────────────────────────────────────────────
+// AGENTS — SELLING
+// ──────────────────────────────────────────────
+
+model SellingAgent {
+  id                 String      @id @default(cuid())
+  userId             String
+  listingId          String      @unique
+  status             AgentStatus @default(ACTIVE)
+  urgency            Urgency     @default(ONE_WEEK)
+  startingPrice      Float
+  minimumPrice       Float
+  currentPrice       Float
+  maxDiscountPercent Float?
+  autoRespond        Boolean     @default(true)
+  autoNegotiate      Boolean     @default(false)
+  autoBoost          Boolean     @default(false)
+  autoAcceptAbove    Float?
+  strategy           Json?
+  deadline           DateTime?
+  priceAdjustSchedule Json?
+  totalViews         Int         @default(0)
+  totalInquiries     Int         @default(0)
+  totalOffers        Int         @default(0)
+  bestOfferPrice     Float?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  completedAt        DateTime?
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing Listing       @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  actions AgentAction[] @relation("SellingAgentActions")
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ──────────────────────────────────────────────
+// AGENTS — BUYING
+// ──────────────────────────────────────────────
+
+model BuyingAgent {
+  id                String      @id @default(cuid())
+  userId            String
+  status            AgentStatus @default(ACTIVE)
+  searchCriteria    Json
+  maxBudget         Float
+  targetPrice       Float?
+  autoNegotiate     Boolean     @default(false)
+  maxAutoOfferPrice Float?
+  notifyPush        Boolean     @default(true)
+  notifyEmail       Boolean     @default(true)
+  matchCount        Int         @default(0)
+  bestMatchScore    Int?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matches AgentMatch[]
+  actions AgentAction[] @relation("BuyingAgentActions")
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ──────────────────────────────────────────────
+// AGENT ACTIONS & MATCHES
+// ──────────────────────────────────────────────
+
+model AgentAction {
+  id               String          @id @default(cuid())
+  sellingAgentId   String?
+  buyingAgentId    String?
+  agentType        AgentType
+  actionType       AgentActionType
+  description      String
+  metadata         Json?
+  requiresApproval Boolean         @default(false)
+  approvedAt       DateTime?
+  rejectedAt       DateTime?
+  createdAt        DateTime        @default(now())
+
+  sellingAgent SellingAgent? @relation("SellingAgentActions", fields: [sellingAgentId], references: [id], onDelete: Cascade)
+  buyingAgent  BuyingAgent?  @relation("BuyingAgentActions", fields: [buyingAgentId], references: [id], onDelete: Cascade)
+
+  @@index([sellingAgentId])
+  @@index([buyingAgentId])
+  @@index([createdAt])
+}
+
+model AgentMatch {
+  id                String      @id @default(cuid())
+  buyingAgentId     String
+  listingId         String
+  dealScore         Int
+  analysis          Json?
+  status            MatchStatus @default(NEW)
+  autoOfferSent     Boolean     @default(false)
+  offerPrice        Float?
+  counterOfferPrice Float?
+  createdAt         DateTime    @default(now())
+
+  buyingAgent BuyingAgent @relation(fields: [buyingAgentId], references: [id], onDelete: Cascade)
+  listing     Listing     @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([buyingAgentId])
+  @@index([listingId])
+  @@index([dealScore])
+}
+
+// ──────────────────────────────────────────────
+// MARKET DATA
+// ──────────────────────────────────────────────
+
+model MarketSnapshot {
+  id            String   @id @default(cuid())
+  categoryId    String
+  locationId    String?
+  date          DateTime
+  medianPrice   Float?
+  avgPrice      Float?
+  minPrice      Float?
+  maxPrice      Float?
+  listingCount  Int      @default(0)
+  avgDaysToSell Float?
+  demandScore   Float?
+
+  category Category  @relation(fields: [categoryId], references: [id])
+  location Location? @relation(fields: [locationId], references: [id])
+
+  @@unique([categoryId, locationId, date])
+  @@index([categoryId])
+  @@index([date])
+}

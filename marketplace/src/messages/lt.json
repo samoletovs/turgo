@@ -1,0 +1,255 @@
+{
+  "common": {
+    "appName": "Marketplace",
+    "loading": "Kraunama...",
+    "error": "Kažkas nutiko ne taip",
+    "save": "Išsaugoti",
+    "cancel": "Atšaukti",
+    "delete": "Ištrinti",
+    "edit": "Redaguoti",
+    "back": "Atgal",
+    "next": "Toliau",
+    "submit": "Pateikti",
+    "search": "Ieškoti",
+    "filter": "Filtruoti",
+    "sort": "Rūšiuoti",
+    "reset": "Atstatyti",
+    "close": "Uždaryti",
+    "confirm": "Patvirtinti",
+    "yes": "Taip",
+    "no": "Ne",
+    "or": "arba",
+    "and": "ir",
+    "free": "Nemokama",
+    "new": "Naujas",
+    "viewAll": "Žiūrėti viską",
+    "learnMore": "Sužinoti daugiau",
+    "seeMore": "Rodyti daugiau",
+    "showLess": "Rodyti mažiau",
+    "noResults": "Rezultatų nerasta",
+    "currency": "€",
+    "perMonth": "/mėn."
+  },
+  "nav": {
+    "home": "Pagrindinis",
+    "categories": "Kategorijos",
+    "sell": "Parduoti",
+    "messages": "Žinutės",
+    "favorites": "Mėgstami",
+    "myListings": "Mano skelbimai",
+    "agents": "Mano agentai",
+    "profile": "Profilis",
+    "settings": "Nustatymai",
+    "signIn": "Prisijungti",
+    "signUp": "Registruotis",
+    "signOut": "Atsijungti",
+    "pricing": "Kainos"
+  },
+  "home": {
+    "hero": {
+      "title": "Pirkite ir parduokite protingiau su AI agentais",
+      "subtitle": "Pirmoji prekyvietė, kur protingi agentai dirba 24/7 dėl geriausio sandorio",
+      "searchPlaceholder": "Ko ieškote?",
+      "cta": "Pradėkite pardavinėti su AI"
+    },
+    "featured": "Rekomenduojami skelbimai",
+    "recentlyAdded": "Neseniai pridėti",
+    "popularCategories": "Populiarios kategorijos",
+    "howItWorks": {
+      "title": "Kaip tai veikia",
+      "step1": {
+        "title": "Įkelkite skelbimą",
+        "description": "Aprašykite ką parduodate — mūsų AI padės su kaina ir aprašymu"
+      },
+      "step2": {
+        "title": "Aktyvuokite agentą",
+        "description": "Jūsų AI pardavimo agentas optimizuoja kainą, atsako pirkėjams ir derasi 24/7"
+      },
+      "step3": {
+        "title": "Užbaikite sandorį",
+        "description": "Gaukite pranešimą, kai agentas ras idealų pirkėją už geriausią kainą"
+      }
+    }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Sveiki sugrįžę",
+      "email": "El. paštas",
+      "password": "Slaptažodis",
+      "submit": "Prisijungti",
+      "forgotPassword": "Pamiršote slaptažodį?",
+      "noAccount": "Neturite paskyros?",
+      "register": "Sukurti paskyrą",
+      "orContinueWith": "Arba tęsti su"
+    },
+    "register": {
+      "title": "Sukurti paskyrą",
+      "name": "Vardas ir pavardė",
+      "email": "El. paštas",
+      "password": "Slaptažodis",
+      "confirmPassword": "Patvirtinti slaptažodį",
+      "marketing": "Siųskite man naujienas apie naujas funkcijas",
+      "gdpr": "Sutinku su Privatumo politika ir Naudojimo sąlygomis",
+      "submit": "Sukurti paskyrą",
+      "hasAccount": "Jau turite paskyrą?",
+      "signIn": "Prisijungti"
+    },
+    "errors": {
+      "invalidCredentials": "Neteisingas el. paštas arba slaptažodis",
+      "emailInUse": "Paskyra su šiuo el. paštu jau egzistuoja",
+      "generic": "Autentifikacija nepavyko. Bandykite dar kartą."
+    }
+  },
+  "listing": {
+    "price": "Kaina",
+    "condition": "Būklė",
+    "location": "Vieta",
+    "category": "Kategorija",
+    "description": "Aprašymas",
+    "postedBy": "Įkėlė",
+    "postedOn": "Įkelta",
+    "views": "peržiūros",
+    "contact": "Susisiekti su pardavėju",
+    "favorite": "Į mėgstamus",
+    "unfavorite": "Pašalinti iš mėgstamų",
+    "share": "Dalintis",
+    "report": "Pranešti",
+    "conditions": {
+      "NEW": "Naujas",
+      "USED": "Naudotas",
+      "REFURBISHED": "Atnaujintas"
+    },
+    "statuses": {
+      "DRAFT": "Juodraštis",
+      "ACTIVE": "Aktyvus",
+      "SOLD": "Parduotas",
+      "EXPIRED": "Pasibaigęs",
+      "MODERATION": "Tikrinama",
+      "REJECTED": "Atmestas"
+    }
+  },
+  "sell": {
+    "title": "Parduokite su AI agentu",
+    "subtitle": "Leiskite mūsų AI sukurti tobulą skelbimą ir parduoti greičiau",
+    "wizard": {
+      "step1": {
+        "title": "Ką parduodate?",
+        "placeholder": "Aprašykite prekę keliais žodžiais..."
+      },
+      "step2": {
+        "title": "Papasakokite daugiau",
+        "titleLabel": "Pavadinimas",
+        "descriptionLabel": "Aprašymas",
+        "categoryLabel": "Kategorija",
+        "conditionLabel": "Būklė",
+        "locationLabel": "Vieta"
+      },
+      "step3": {
+        "title": "Nustatykite kainą",
+        "priceLabel": "Jūsų kaina",
+        "aiSuggestion": "AI rekomenduojama kaina",
+        "marketAverage": "Rinkos vidurkis"
+      },
+      "step4": {
+        "title": "Pridėkite nuotraukas",
+        "dropzone": "Vilkite nuotraukas čia arba paspauskite įkelti",
+        "maxPhotos": "Iki {max} nuotraukų"
+      },
+      "step5": {
+        "title": "Aktyvuoti pardavimo agentą",
+        "autoRespond": "Automatiškai atsakyti į užklausas",
+        "autoPriceAdjust": "Dinaminis kainos optimizavimas",
+        "urgency": "Kaip greitai norite parduoti?",
+        "minPrice": "Minimali priimtina kaina"
+      },
+      "publish": "Publikuoti skelbimą",
+      "saveDraft": "Išsaugoti juodraštį"
+    }
+  },
+  "agent": {
+    "selling": {
+      "title": "Pardavimo agentas",
+      "description": "Jūsų AI agentas optimizuoja kainas ir apdoroja pirkėjų užklausas",
+      "status": "Agento būsena",
+      "priceAdjustments": "Kainos korekcijos",
+      "autoResponses": "Automatiniai atsakymai",
+      "dealScore": "Sandorio įvertinimas"
+    },
+    "buying": {
+      "title": "Pirkimo agentas",
+      "description": "Nustatykite kriterijus ir leiskite AI rasti geriausius pasiūlymus",
+      "maxPrice": "Maksimali kaina",
+      "minDealScore": "Minimalus sandorio įvertinimas",
+      "matches": "Rasta atitikmenų",
+      "watching": "Stebima"
+    },
+    "statuses": {
+      "ACTIVE": "Aktyvus",
+      "PAUSED": "Pristabdytas",
+      "COMPLETED": "Užbaigtas",
+      "CANCELLED": "Atšauktas"
+    },
+    "urgency": {
+      "ONE_DAY": "Parduoti šiandien",
+      "THREE_DAYS": "Per 3 dienas",
+      "ONE_WEEK": "Šią savaitę",
+      "TWO_WEEKS": "Per 2 savaites",
+      "ONE_MONTH": "Šį mėnesį",
+      "NO_RUSH": "Neskubu"
+    }
+  },
+  "concierge": {
+    "title": "AI konsjeržas",
+    "greeting": "Sveiki! Esu jūsų AI prekyvietės asistentas. Kaip galiu padėti?",
+    "placeholder": "Klauskite bet ko...",
+    "suggestions": [
+      "Noriu ką nors parduoti",
+      "Rask gerą pasiūlymą telefonui",
+      "Kaip veikia AI agentas?",
+      "Kokia vidutinė kaina už..."
+    ]
+  },
+  "pricing": {
+    "title": "Pasirinkite planą",
+    "subtitle": "Pradėkite nemokamai ir plėskite augdami",
+    "free": {
+      "name": "Nemokamas",
+      "description": "Retkarčiais parduodantiems"
+    },
+    "pro": {
+      "name": "Pro",
+      "description": "Aktyviems pirkėjams ir pardavėjams"
+    },
+    "business": {
+      "name": "Verslas",
+      "description": "Prekiautojams ir profesionalams"
+    },
+    "features": {
+      "listings": "{count} skelbimų",
+      "unlimitedListings": "Neribotai skelbimų",
+      "photos": "Iki {count} nuotraukų",
+      "agents": "{count} AI agentas",
+      "unlimitedAgents": "Neribotai AI agentų",
+      "basicAgent": "Bazinis AI agentas",
+      "premiumAgent": "Premium AI agentas",
+      "analytics": "Analitikos skydelis",
+      "boosts": "Skelbimų iškėlimas",
+      "priority": "Prioritetinė pagalba",
+      "api": "API prieiga"
+    },
+    "cta": {
+      "current": "Dabartinis planas",
+      "upgrade": "Atnaujinti",
+      "getStarted": "Pradėti"
+    }
+  },
+  "footer": {
+    "about": "Apie mus",
+    "privacy": "Privatumo politika",
+    "terms": "Naudojimo sąlygos",
+    "contact": "Kontaktai",
+    "help": "Pagalbos centras",
+    "copyright": "© {year} Marketplace. Visos teisės saugomos.",
+    "tagline": "AI agentų prekyvietė Baltijai"
+  }
+}

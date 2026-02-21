@@ -1,0 +1,3 @@
+# Root gitignore — marketplace has its own .gitignore
+.DS_Store
+*.pem
