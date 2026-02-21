@@ -141,7 +141,7 @@ export async function monitorForMatches(buyingAgentId: string): Promise<number> 
           buyingAgentId: agent.id,
           listingId: listing.id,
           dealScore: score.total,
-          analysis: score as unknown as Record<string, unknown>,
+          analysis: JSON.parse(JSON.stringify(score)),
           status: "NEW",
         },
       });
