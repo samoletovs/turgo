@@ -37,7 +37,17 @@ export {
   createPortalSession,
   constructWebhookEvent,
 } from "./stripe";
-export { initSearchIndex, indexListing, removeListing, searchListings } from "./search";
+export {
+  initSearchIndex,
+  indexListing,
+  removeListing,
+  searchListings,
+  bulkIndexListings,
+  searchSuggestions,
+  savedSearchMatchesListing,
+  isSearchHealthy,
+  toSearchDocument,
+} from "./search";
 
 // Storage & email
 export { processAndStoreImage, validateUpload } from "./storage";
@@ -46,4 +56,5 @@ export {
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendAgentMatchNotification,
+  sendSavedSearchNotification,
 } from "./email";

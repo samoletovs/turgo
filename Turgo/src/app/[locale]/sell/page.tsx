@@ -1,7 +1,8 @@
 import { useTranslations } from "next-intl";
 import { SellingAgentWizard } from "@/components/selling-agent-wizard";
 import { db } from "@/server/db";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, FileEdit, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default async function SellPage({
   params,
@@ -105,6 +106,21 @@ function SellPageClient({
           categories={categories}
           locations={locations}
         />
+
+        {/* Manual listing fallback link */}
+        <div className="mt-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            Prefer to do it yourself?{" "}
+            <Link
+              href={`/${locale}/listing/new`}
+              className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+            >
+              <FileEdit className="h-3.5 w-3.5" />
+              Create listing manually
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

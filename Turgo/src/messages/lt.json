@@ -55,6 +55,29 @@
     "featured": "Rekomenduojami skelbimai",
     "recentlyAdded": "Neseniai pridėti",
     "popularCategories": "Populiarios kategorijos",
+    "categories": {
+      "transport": "Transportas",
+      "real-estate": "Nekilnojamasis turtas",
+      "electronics": "Elektronika",
+      "home-garden": "Namai ir sodas",
+      "fashion": "Mada",
+      "jobs": "Darbas",
+      "services": "Paslaugos",
+      "kids-baby": "Vaikams",
+      "sports-outdoors": "Sportas ir laisvalaikis",
+      "pets": "Gyvūnai",
+      "hobbies-leisure": "Pomėgiai ir pramogos",
+      "agriculture": "Žemės ūkis"
+    },
+    "marketInsights": {
+      "title": "Rinkos įžvalgos",
+      "listings": "skelbimų",
+      "medianPrice": "Medianinè kaina",
+      "priceRange": "Kainų diapazonas",
+      "viewCategory": "Peržiūrėti kategoriją",
+      "poweredBy": "Duomenys iš ss.lv",
+      "noData": "Rinkos duomenys renkami"
+    },
     "howItWorks": {
       "title": "Kaip tai veikia",
       "step1": {
@@ -250,6 +273,7 @@
     "contact": "Kontaktai",
     "help": "Pagalbos centras",
     "copyright": "© {year} Turgo. Visos teisės saugomos.",
-    "tagline": "AI agentų prekyvietė Baltijai"
+    "tagline": "AI agentų prekyvietė Baltijai",
+    "legal": "Teisinė informacija"
   }
 }

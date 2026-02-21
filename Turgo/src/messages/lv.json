@@ -55,6 +55,29 @@
     "featured": "Izceltie sludinājumi",
     "recentlyAdded": "Nesen pievienoti",
     "popularCategories": "Populāras kategorijas",
+    "categories": {
+      "transport": "Transports",
+      "real-estate": "Nekustamais īpašums",
+      "electronics": "Elektronika",
+      "home-garden": "Māja un dārzs",
+      "fashion": "Mode",
+      "jobs": "Darbs",
+      "services": "Pakalpojumi",
+      "kids-baby": "Bērniem",
+      "sports-outdoors": "Sports un atpūta",
+      "pets": "Dzīvnieki",
+      "hobbies-leisure": "Hobiji un brīvais laiks",
+      "agriculture": "Lauksaimniecība"
+    },
+    "marketInsights": {
+      "title": "Tirgus ieskati",
+      "listings": "sludinājumi",
+      "medianPrice": "Mediānas cena",
+      "priceRange": "Cenu diapazons",
+      "viewCategory": "Skatīt kategoriju",
+      "poweredBy": "Dati no ss.lv",
+      "noData": "Tirgus dati tiek vākti"
+    },
     "howItWorks": {
       "title": "Kā tas strādā",
       "step1": {
@@ -250,6 +273,7 @@
     "contact": "Kontakti",
     "help": "Palīdzības centrs",
     "copyright": "© {year} Turgo. Visas tiesības aizsargātas.",
-    "tagline": "Aģentu vadīts sludinājumu tirgus Baltijā"
+    "tagline": "Aģentu vadīts sludinājumu tirgus Baltijā",
+    "legal": "Juridiskā informācija"
   }
 }

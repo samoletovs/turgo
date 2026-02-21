@@ -117,3 +117,52 @@ export async function sendAgentMatchNotification(
     text: `Match found: ${matchDetails.listingTitle} (Score: ${matchDetails.dealScore}/100) — ${matchDetails.url}`,
   });
 }
+
+/** Send saved search notification email */
+export async function sendSavedSearchNotification(
+  email: string,
+  details: {
+    searchName: string;
+    matchCount: number;
+    listings: { title: string; price: number; url: string }[];
+    manageUrl: string;
+  }
+) {
+  const listingRows = details.listings
+    .slice(0, 5)
+    .map(
+      (l) =>
+        `<tr>
+          <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+            <a href="${l.url}" style="color: #2563eb; text-decoration: none; font-weight: 500;">${l.title}</a>
+          </td>
+          <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 600;">
+            €${l.price.toFixed(2)}
+          </td>
+        </tr>`
+    )
+    .join("");
+
+  return sendEmail({
+    to: email,
+    subject: `🔔 ${details.matchCount} new listing${details.matchCount > 1 ? "s" : ""} match "${details.searchName}"`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>New Listings Match Your Saved Search</h2>
+        <p>Your search <strong>"${details.searchName}"</strong> has ${details.matchCount} new match${details.matchCount > 1 ? "es" : ""}:</p>
+        <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+          ${listingRows}
+        </table>
+        ${details.matchCount > 5 ? `<p style="color: #6b7280; font-size: 14px;">...and ${details.matchCount - 5} more</p>` : ""}
+        <a href="${details.manageUrl}" style="display: inline-block; padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; margin-top: 8px;">
+          View All Matches
+        </a>
+        <p style="color: #9ca3af; font-size: 12px; margin-top: 24px;">
+          You're receiving this because you have email notifications enabled for this saved search.
+          <a href="${details.manageUrl}" style="color: #6b7280;">Manage your saved searches</a>
+        </p>
+      </div>
+    `,
+    text: `${details.matchCount} new listing(s) match your saved search "${details.searchName}". View: ${details.manageUrl}`,
+  });
+}

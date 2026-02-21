@@ -28,7 +28,10 @@
     "showLess": "Show less",
     "noResults": "No results found",
     "currency": "€",
-    "perMonth": "/month"
+    "perMonth": "/month",
+    "grid": "Grid",
+    "list": "List",
+    "map": "Map"
   },
   "nav": {
     "home": "Home",
@@ -55,6 +58,29 @@
     "featured": "Featured Listings",
     "recentlyAdded": "Recently Added",
     "popularCategories": "Popular Categories",
+    "categories": {
+      "transport": "Transport",
+      "real-estate": "Real Estate",
+      "electronics": "Electronics",
+      "home-garden": "Home & Garden",
+      "fashion": "Fashion",
+      "jobs": "Jobs",
+      "services": "Services",
+      "kids-baby": "Kids & Baby",
+      "sports-outdoors": "Sports & Outdoors",
+      "pets": "Pets",
+      "hobbies-leisure": "Hobbies & Leisure",
+      "agriculture": "Agriculture"
+    },
+    "marketInsights": {
+      "title": "Market Insights",
+      "listings": "listings",
+      "medianPrice": "Median price",
+      "priceRange": "Price range",
+      "viewCategory": "Browse category",
+      "poweredBy": "Data from ss.lv",
+      "noData": "Market data is being collected"
+    },
     "howItWorks": {
       "title": "How It Works",
       "step1": {
@@ -114,6 +140,8 @@
     "unfavorite": "Remove from Favorites",
     "share": "Share",
     "report": "Report",
+    "createManually": "Create Listing Manually",
+    "createManuallyDesc": "Fill in all the details yourself",
     "conditions": {
       "NEW": "New",
       "USED": "Used",
@@ -131,6 +159,8 @@
   "sell": {
     "title": "Sell with AI Agent",
     "subtitle": "Let our AI help you create the perfect listing and sell faster",
+    "orCreateManually": "Prefer to do it yourself?",
+    "createManuallyLink": "Create listing manually",
     "wizard": {
       "step1": {
         "title": "What are you selling?",
@@ -297,6 +327,55 @@
       "NO_RUSH": "No rush"
     }
   },
+  "browse": {
+    "title": "Browse Listings",
+    "searchPlaceholder": "Search for anything...",
+    "filters": "Filters",
+    "categories": "Categories",
+    "priceRange": "Price Range",
+    "condition": "Condition",
+    "location": "Location",
+    "country": "Country",
+    "specifications": "Specifications",
+    "results": "results",
+    "result": "result",
+    "for": "for",
+    "noResults": "No results found",
+    "noResultsDesc": "Try adjusting your search or filter criteria",
+    "clearFilters": "Clear Filters",
+    "sort": {
+      "newest": "Newest first",
+      "oldest": "Oldest first",
+      "priceAsc": "Price: low to high",
+      "priceDesc": "Price: high to low",
+      "views": "Most viewed"
+    },
+    "view": {
+      "grid": "Grid",
+      "list": "List",
+      "map": "Map"
+    },
+    "savedSearch": {
+      "save": "Save Search",
+      "title": "Save This Search",
+      "description": "Get notified when new listings match your criteria.",
+      "name": "Search Name",
+      "namePlaceholder": "e.g., BMW X5 under €25K in Riga",
+      "emailNotify": "Email me when new matches are found",
+      "criteria": "Your search criteria:",
+      "allListings": "All listings",
+      "saved": "Saved!",
+      "saving": "Saving..."
+    },
+    "agentPrompt": {
+      "title": "Let an AI agent find the best deals for you",
+      "titleWithQuery": "Let an AI agent find \"{query}\" for you",
+      "description": "Set your criteria and our buying agent will monitor 24/7, alert you on great deals, and even negotiate on your behalf.",
+      "cta": "Create Buying Agent"
+    },
+    "mapNoData": "No map data available",
+    "mapNoDataDesc": "These listings don't have location coordinates. Try switching to grid or list view."
+  },
   "concierge": {
     "title": "AI Concierge",
     "greeting": "Hi! I'm your Turgo AI assistant. How can I help you today?",
@@ -349,6 +428,7 @@
     "contact": "Contact",
     "help": "Help Center",
     "copyright": "© {year} Turgo. All rights reserved.",
-    "tagline": "Agent-first classifieds for the Baltics"
+    "tagline": "Agent-first classifieds for the Baltics",
+    "legal": "Legal"
   }
 }

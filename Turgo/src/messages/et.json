@@ -55,6 +55,29 @@
     "featured": "Esiletõstetud kuulutused",
     "recentlyAdded": "Hiljuti lisatud",
     "popularCategories": "Populaarsed kategooriad",
+    "categories": {
+      "transport": "Transport",
+      "real-estate": "Kinnisvara",
+      "electronics": "Elektroonika",
+      "home-garden": "Kodu ja aed",
+      "fashion": "Mood",
+      "jobs": "Töö",
+      "services": "Teenused",
+      "kids-baby": "Lastele",
+      "sports-outdoors": "Sport ja vaba aeg",
+      "pets": "Loomad",
+      "hobbies-leisure": "Hobid ja meelelahutus",
+      "agriculture": "Põllumajandus"
+    },
+    "marketInsights": {
+      "title": "Turuülevaade",
+      "listings": "kuulutust",
+      "medianPrice": "Mediaanhind",
+      "priceRange": "Hinnavahemik",
+      "viewCategory": "Sirvi kategooriat",
+      "poweredBy": "Andmed ss.lv-st",
+      "noData": "Turuandmeid kogutakse"
+    },
     "howItWorks": {
       "title": "Kuidas see töötab",
       "step1": {
@@ -250,6 +273,7 @@
     "contact": "Kontakt",
     "help": "Abikeskus",
     "copyright": "© {year} Turgo. Kõik õigused kaitstud.",
-    "tagline": "AI agendiga kuulutuste turg Baltikumile"
+    "tagline": "AI agendiga kuulutuste turg Baltikumile",
+    "legal": "Õiguslik teave"
   }
 }

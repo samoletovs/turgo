@@ -14,7 +14,7 @@ export function Footer({ locale }: FooterProps) {
   return (
     <footer className="border-t bg-muted/30">
       <div className="mx-auto max-w-7xl px-4 py-12">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {/* Brand */}
           <div>
             <Link href="/" className="flex items-center gap-2 font-bold text-lg">
@@ -50,7 +50,7 @@ export function Footer({ locale }: FooterProps) {
 
           {/* Legal */}
           <div>
-            <h3 className="mb-3 text-sm font-semibold">Legal</h3>
+            <h3 className="mb-3 text-sm font-semibold">{t("legal")}</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link href="/privacy" className="hover:text-foreground">
@@ -60,33 +60,6 @@ export function Footer({ locale }: FooterProps) {
               <li>
                 <Link href="/terms" className="hover:text-foreground">
                   {t("terms")}
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Categories quick links */}
-          <div>
-            <h3 className="mb-3 text-sm font-semibold">Categories</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link href="/category/transport" className="hover:text-foreground">
-                  Transport
-                </Link>
-              </li>
-              <li>
-                <Link href="/category/real-estate" className="hover:text-foreground">
-                  Real Estate
-                </Link>
-              </li>
-              <li>
-                <Link href="/category/electronics" className="hover:text-foreground">
-                  Electronics
-                </Link>
-              </li>
-              <li>
-                <Link href="/category/jobs" className="hover:text-foreground">
-                  Jobs
                 </Link>
               </li>
             </ul>

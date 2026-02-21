@@ -55,6 +55,29 @@
     "featured": "Рекомендуемые объявления",
     "recentlyAdded": "Недавно добавленные",
     "popularCategories": "Популярные категории",
+    "categories": {
+      "transport": "Транспорт",
+      "real-estate": "Недвижимость",
+      "electronics": "Электроника",
+      "home-garden": "Дом и сад",
+      "fashion": "Мода",
+      "jobs": "Работа",
+      "services": "Услуги",
+      "kids-baby": "Детям",
+      "sports-outdoors": "Спорт и отдых",
+      "pets": "Животные",
+      "hobbies-leisure": "Хобби и досуг",
+      "agriculture": "Сельское хозяйство"
+    },
+    "marketInsights": {
+      "title": "Обзор рынка",
+      "listings": "объявлений",
+      "medianPrice": "Медианная цена",
+      "priceRange": "Диапазон цен",
+      "viewCategory": "Смотреть категорию",
+      "poweredBy": "Данные с ss.lv",
+      "noData": "Данные о рынке собираются"
+    },
     "howItWorks": {
       "title": "Как это работает",
       "step1": {
@@ -250,6 +273,7 @@
     "contact": "Контакты",
     "help": "Центр помощи",
     "copyright": "© {year} Turgo. Все права защищены.",
-    "tagline": "Маркетплейс с AI-агентами для Балтии"
+    "tagline": "Маркетплейс с AI-агентами для Балтии",
+    "legal": "Юридическая информация"
   }
 }

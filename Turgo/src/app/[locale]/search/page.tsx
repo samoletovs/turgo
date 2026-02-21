@@ -1,16 +1,38 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Search, SlidersHorizontal, MapPin, Grid3X3, List } from "lucide-react";
+import {
+  Search,
+  SlidersHorizontal,
+  MapPin,
+  Grid3X3,
+  List,
+  Bot,
+  Sparkles,
+  Bookmark,
+  Map,
+} from "lucide-react";
 import { db } from "@/server/db";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ListingCard } from "@/components/listing-card";
+import { SearchBar } from "@/components/search-bar";
+import { SearchPageClient } from "./search-client";
 
 interface SearchPageProps {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string; category?: string; location?: string; minPrice?: string; maxPrice?: string; condition?: string; sort?: string; page?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    category?: string;
+    location?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    condition?: string;
+    countryCode?: string;
+    sort?: string;
+    page?: string;
+    view?: string; // "grid" | "list" | "map"
+  }>;
 }
 
 export default async function SearchPage({ params, searchParams }: SearchPageProps) {
@@ -49,12 +71,17 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
     where.condition = filters.condition;
   }
 
+  if (filters.countryCode) {
+    where.location = { ...(where.location as object || {}), countryCode: filters.countryCode };
+  }
+
   // Determine sort
   const orderBy: Record<string, string> = {};
   switch (filters.sort) {
     case "price_asc": orderBy.price = "asc"; break;
     case "price_desc": orderBy.price = "desc"; break;
     case "oldest": orderBy.createdAt = "asc"; break;
+    case "views": orderBy.viewCount = "desc"; break;
     default: orderBy.createdAt = "desc";
   }
 
@@ -63,9 +90,13 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
   let totalCount = 0;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let categories: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let locations: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let categoryAttributes: any[] = [];
 
   try {
-    const [listingsResult, countResult, categoriesResult] = await Promise.all([
+    const [listingsResult, countResult, categoriesResult, locationsResult] = await Promise.all([
       db.listing.findMany({
         where,
         orderBy,
@@ -81,186 +112,122 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
       }),
       db.listing.count({ where }),
       db.category.findMany({
-        where: { parentId: null },
+        where: { parentId: null, isActive: true },
         orderBy: { sortOrder: "asc" },
+        include: {
+          children: {
+            where: { isActive: true },
+            orderBy: { sortOrder: "asc" },
+            include: { _count: { select: { listings: true } } },
+          },
+          _count: { select: { listings: true } },
+        },
+      }),
+      db.location.findMany({
+        where: { parentId: null },
+        orderBy: { name: "asc" },
         include: { _count: { select: { listings: true } } },
       }),
     ]);
+
     listings = listingsResult;
     totalCount = countResult;
     categories = categoriesResult;
+    locations = locationsResult;
+
+    // Load category-specific attributes if a category is selected
+    if (filters.category) {
+      const selectedCat = await db.category.findUnique({
+        where: { slug: filters.category },
+        include: { attributes: { orderBy: { sortOrder: "asc" } } },
+      });
+      if (selectedCat?.attributes) {
+        categoryAttributes = selectedCat.attributes;
+      }
+    }
   } catch (e) {
     console.error("Failed to load search data:", e);
   }
 
   const totalPages = Math.ceil(totalCount / perPage);
 
+  // Serialize for client component
+  const serializedListings = listings.map((listing) => ({
+    id: listing.id,
+    title: listing.title,
+    slug: listing.slug,
+    price: listing.price,
+    currency: listing.currency,
+    condition: listing.condition,
+    description: listing.description?.slice(0, 150) || "",
+    location: listing.location
+      ? (typeof listing.location.name === "object"
+          ? (listing.location.name as Record<string, string>)[locale] || (listing.location.name as Record<string, string>).en || ""
+          : String(listing.location.name))
+      : "",
+    locationSlug: listing.location?.slug,
+    imageUrl: listing.images[0]?.url || "/placeholder.jpg",
+    imageCount: listing.images.length,
+    createdAt: listing.createdAt.toISOString(),
+    isFeatured: listing.boosts.some((b: { type: string }) => b.type === "FEATURED"),
+    hasAgent: listing.managedByAgent || false,
+    categoryName: typeof listing.category?.name === "object"
+      ? (listing.category.name as Record<string, string>)[locale] || (listing.category.name as Record<string, string>).en || ""
+      : String(listing.category?.name || ""),
+    favoriteCount: listing._count?.favorites || 0,
+    latitude: listing.latitude,
+    longitude: listing.longitude,
+    viewCount: listing.viewCount,
+  }));
+
+  const serializedCategories = categories.map((cat) => ({
+    id: cat.id,
+    name: typeof cat.name === "object"
+      ? (cat.name as Record<string, string>)[locale] || (cat.name as Record<string, string>).en || cat.slug
+      : String(cat.name),
+    slug: cat.slug,
+    icon: cat.icon,
+    count: cat._count.listings,
+    children: (cat.children || []).map((child: typeof cat) => ({
+      id: child.id,
+      name: typeof child.name === "object"
+        ? (child.name as Record<string, string>)[locale] || (child.name as Record<string, string>).en || child.slug
+        : String(child.name),
+      slug: child.slug,
+      count: child._count.listings,
+    })),
+  }));
+
+  const serializedLocations = locations.map((loc) => ({
+    id: loc.id,
+    name: typeof loc.name === "object"
+      ? (loc.name as Record<string, string>)[locale] || (loc.name as Record<string, string>).en || loc.slug
+      : String(loc.name),
+    slug: loc.slug,
+    count: loc._count.listings,
+  }));
+
+  const serializedAttributes = categoryAttributes.map((attr) => ({
+    id: attr.id,
+    name: typeof attr.name === "object"
+      ? (attr.name as Record<string, string>)[locale] || (attr.name as Record<string, string>).en || ""
+      : String(attr.name),
+    type: attr.type as "TEXT" | "NUMBER" | "SELECT" | "BOOLEAN",
+    options: attr.options as string[] | null,
+    isRequired: attr.isRequired,
+  }));
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Search Header */}
-      <div className="mb-8">
-        <form className="flex gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              name="q"
-              placeholder="Search listings..."
-              defaultValue={filters.q || ""}
-              className="pl-10"
-            />
-          </div>
-          <Button type="submit">Search</Button>
-        </form>
-      </div>
-
-      <div className="flex gap-8">
-        {/* Sidebar Filters */}
-        <aside className="hidden w-64 shrink-0 lg:block">
-          <div className="space-y-6">
-            {/* Categories */}
-            <div>
-              <h3 className="mb-3 font-semibold">Categories</h3>
-              <div className="space-y-1">
-                {categories.map((cat: typeof categories[number]) => (
-                  <Link
-                    key={cat.id}
-                    href={`/${locale}/search?category=${cat.slug}${filters.q ? `&q=${filters.q}` : ""}`}
-                    className={`flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted ${
-                      filters.category === cat.slug ? "bg-muted font-medium" : ""
-                    }`}
-                  >
-                    <span>{String(cat.name)}</span>
-                    <Badge variant="secondary" className="text-xs">
-                      {cat._count.listings}
-                    </Badge>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Price Range */}
-            <div>
-              <h3 className="mb-3 font-semibold">Price Range</h3>
-              <form className="flex items-center gap-2">
-                <Input
-                  name="minPrice"
-                  type="number"
-                  placeholder="Min"
-                  defaultValue={filters.minPrice}
-                  className="w-full"
-                />
-                <span className="text-muted-foreground">–</span>
-                <Input
-                  name="maxPrice"
-                  type="number"
-                  placeholder="Max"
-                  defaultValue={filters.maxPrice}
-                  className="w-full"
-                />
-                <Button type="submit" size="sm" variant="outline">
-                  Go
-                </Button>
-              </form>
-            </div>
-
-            {/* Condition */}
-            <div>
-              <h3 className="mb-3 font-semibold">Condition</h3>
-              <div className="space-y-1">
-                {["NEW", "USED", "REFURBISHED"].map((cond) => (
-                  <Link
-                    key={cond}
-                    href={`/${locale}/search?condition=${cond}${filters.q ? `&q=${filters.q}` : ""}${filters.category ? `&category=${filters.category}` : ""}`}
-                    className={`block rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted ${
-                      filters.condition === cond ? "bg-muted font-medium" : ""
-                    }`}
-                  >
-                    {cond.charAt(0) + cond.slice(1).toLowerCase()}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        {/* Results */}
-        <div className="flex-1">
-          {/* Results header */}
-          <div className="mb-6 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {totalCount} {totalCount === 1 ? "result" : "results"}
-              {filters.q && <span> for &quot;{filters.q}&quot;</span>}
-            </p>
-            <div className="flex items-center gap-2">
-              <select
-                defaultValue={filters.sort || "newest"}
-                className="rounded-md border bg-background px-3 py-1.5 text-sm"
-              >
-                <option value="newest">Newest first</option>
-                <option value="oldest">Oldest first</option>
-                <option value="price_asc">Price: low to high</option>
-                <option value="price_desc">Price: high to low</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Listings Grid */}
-          {listings.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <Search className="mb-4 h-12 w-12 text-muted-foreground" />
-              <h3 className="mb-2 text-lg font-semibold">No results found</h3>
-              <p className="text-muted-foreground">
-                Try adjusting your search or filter criteria
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {listings.map((listing: typeof listings[number]) => (
-                <ListingCard
-                  key={listing.id}
-                  listing={{
-                    id: listing.id,
-                    title: listing.title,
-                    price: listing.price,
-                    currency: listing.currency,
-                    location: String(listing.location?.name || ""),
-                    imageUrl: listing.images[0]?.url || "/placeholder.jpg",
-                    imageCount: listing.images.length,
-                    createdAt: listing.createdAt,
-                    isFeatured: listing.boosts.some((b: typeof listing.boosts[number]) => b.type === "FEATURED"),
-                    hasAgent: false,
-                    slug: listing.slug,
-                  }}
-                  locale={locale}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-8 flex items-center justify-center gap-2">
-              {page > 1 && (
-                <Link
-                  href={`/${locale}/search?page=${page - 1}${filters.q ? `&q=${filters.q}` : ""}${filters.category ? `&category=${filters.category}` : ""}`}
-                >
-                  <Button variant="outline" size="sm">Previous</Button>
-                </Link>
-              )}
-              <span className="px-4 text-sm text-muted-foreground">
-                Page {page} of {totalPages}
-              </span>
-              {page < totalPages && (
-                <Link
-                  href={`/${locale}/search?page=${page + 1}${filters.q ? `&q=${filters.q}` : ""}${filters.category ? `&category=${filters.category}` : ""}`}
-                >
-                  <Button variant="outline" size="sm">Next</Button>
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+    <SearchPageClient
+      locale={locale}
+      listings={serializedListings}
+      categories={serializedCategories}
+      locations={serializedLocations}
+      categoryAttributes={serializedAttributes}
+      filters={filters}
+      totalCount={totalCount}
+      totalPages={totalPages}
+      currentPage={page}
+    />
   );
 }

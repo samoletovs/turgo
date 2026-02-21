@@ -5,6 +5,7 @@ import { ListingCard } from "@/components/listing-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
+import { getLocalizedName } from "@/lib/utils";
 
 interface CategoryPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -73,16 +74,16 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
               href={`/${locale}/category/${category.parent.slug}`}
               className="hover:text-foreground"
             >
-              {String(category.parent.name)}
+            {getLocalizedName(category.parent.name, locale)}
             </Link>
             <ChevronRight className="h-3 w-3" />
           </>
         )}
-        <span className="text-foreground">{String(category.name)}</span>
+        <span className="text-foreground">{getLocalizedName(category.name, locale)}</span>
       </nav>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">{String(category.name)}</h1>
+        <h1 className="text-3xl font-bold">{getLocalizedName(category.name, locale)}</h1>
         <p className="mt-1 text-muted-foreground">{totalCount} listings</p>
       </div>
 
@@ -92,7 +93,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           {category.children.map((sub: typeof category.children[number]) => (
             <Link key={sub.id} href={`/${locale}/category/${sub.slug}`}>
               <Badge variant="outline" className="cursor-pointer px-3 py-1.5 text-sm hover:bg-muted">
-                {String(sub.name)}
+                {getLocalizedName(sub.name, locale)}
                 <span className="ml-1.5 text-muted-foreground">({sub._count.listings})</span>
               </Badge>
             </Link>

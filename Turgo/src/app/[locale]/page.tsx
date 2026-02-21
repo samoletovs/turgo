@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { MarketInsights } from "@/components/market-insights";
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
   transport: Car,
@@ -39,18 +40,18 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
 };
 
 const CATEGORIES = [
-  { name: "Transport", slug: "transport" },
-  { name: "Real Estate", slug: "real-estate" },
-  { name: "Electronics", slug: "electronics" },
-  { name: "Home & Garden", slug: "home-garden" },
-  { name: "Fashion", slug: "fashion" },
-  { name: "Jobs", slug: "jobs" },
-  { name: "Services", slug: "services" },
-  { name: "Kids & Baby", slug: "kids-baby" },
-  { name: "Sports & Outdoors", slug: "sports-outdoors" },
-  { name: "Pets", slug: "pets" },
-  { name: "Hobbies & Leisure", slug: "hobbies-leisure" },
-  { name: "Agriculture", slug: "agriculture" },
+  { slug: "transport" },
+  { slug: "real-estate" },
+  { slug: "electronics" },
+  { slug: "home-garden" },
+  { slug: "fashion" },
+  { slug: "jobs" },
+  { slug: "services" },
+  { slug: "kids-baby" },
+  { slug: "sports-outdoors" },
+  { slug: "pets" },
+  { slug: "hobbies-leisure" },
+  { slug: "agriculture" },
 ];
 
 export default async function HomePage({
@@ -121,13 +122,27 @@ export default async function HomePage({
                   className="flex flex-col items-center gap-2 rounded-xl border p-4 transition-all hover:border-primary hover:bg-primary/5 hover:shadow-sm"
                 >
                   <Icon className="h-6 w-6 text-primary" />
-                  <span className="text-sm font-medium text-center">{cat.name}</span>
+                  <span className="text-sm font-medium text-center">{t(`categories.${cat.slug}`)}</span>
                 </Link>
               );
             })}
           </div>
         </div>
       </section>
+
+      {/* Market Insights from ss.lv */}
+      <MarketInsights
+        locale={locale}
+        translations={{
+          title: t("marketInsights.title"),
+          listings: t("marketInsights.listings"),
+          medianPrice: t("marketInsights.medianPrice"),
+          priceRange: t("marketInsights.priceRange"),
+          viewCategory: t("marketInsights.viewCategory"),
+          poweredBy: t("marketInsights.poweredBy"),
+          noData: t("marketInsights.noData"),
+        }}
+      />
 
       {/* How it works */}
       <section className="bg-muted/30 py-16">

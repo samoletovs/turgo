@@ -61,3 +61,17 @@ export function getInitials(name: string): string {
 export function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/** Extract localized name from a JSON field that stores {en, lv, lt, et, ru} */
+export function getLocalizedName(
+  name: unknown,
+  locale: string,
+  fallbackLocale = "en"
+): string {
+  if (typeof name === "string") return name;
+  if (name && typeof name === "object") {
+    const map = name as Record<string, string>;
+    return map[locale] || map[fallbackLocale] || Object.values(map)[0] || "";
+  }
+  return String(name ?? "");
+}
