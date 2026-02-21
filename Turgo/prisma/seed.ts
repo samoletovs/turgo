@@ -1081,7 +1081,7 @@ async function main() {
         locationId: l.locationId,
         categoryId: l.categoryId,
         contactPhone: l.contactPhone ?? null,
-        negotiable: (l as any).negotiable ?? true,
+        negotiable: (l as unknown as Record<string, boolean>).negotiable ?? true,
         status: "ACTIVE",
       },
       create: {
@@ -1095,7 +1095,7 @@ async function main() {
         locationId: l.locationId,
         categoryId: l.categoryId,
         contactPhone: l.contactPhone ?? null,
-        negotiable: (l as any).negotiable ?? true,
+        negotiable: (l as unknown as Record<string, boolean>).negotiable ?? true,
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
       },
     });
@@ -1119,8 +1119,8 @@ async function main() {
     }
 
     // Upsert car attributes if present
-    if ((l as any).attrs && l.categoryId === carsCatRec.id) {
-      const attrs = (l as any).attrs as Record<string, string>;
+    if ((l as unknown as Record<string, unknown>).attrs && l.categoryId === carsCatRec.id) {
+      const attrs = (l as unknown as Record<string, Record<string, string>>).attrs;
       const catAttrs = await prisma.categoryAttribute.findMany({
         where: { categoryId: carsCatRec.id },
       });

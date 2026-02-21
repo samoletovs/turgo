@@ -1,5 +1,5 @@
 import { FileQuestion, Home } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function GlobalNotFound() {
   return (
@@ -13,13 +13,13 @@ export default function GlobalNotFound() {
         <p className="mb-8 max-w-md text-gray-500">
           The page you&apos;re looking for doesn&apos;t exist or has been moved.
         </p>
-        <a
+        <Link
           href="/en"
           className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-white font-medium hover:bg-blue-700 transition-colors"
         >
           <Home className="h-4 w-4" />
           Go Home
-        </a>
+        </Link>
       </body>
     </html>
   );
