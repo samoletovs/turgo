@@ -3,8 +3,7 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"]
-  engineType      = "library"
+  previewFeatures = ["postgresqlExtensions", "driverAdapters"]
 }
 
 datasource db {
