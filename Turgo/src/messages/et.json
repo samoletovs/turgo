@@ -274,6 +274,47 @@
     "help": "Abikeskus",
     "copyright": "© {year} Turgo. Kõik õigused kaitstud.",
     "tagline": "AI agendiga kuulutuste turg Baltikumile",
-    "legal": "Õiguslik teave"
-  }
+    "legal": "Õiguslik teave",
+    "cookies": "Küpsiste poliitika"
+  },
+  "errors": {
+    "notFound": { "title": "Lehte ei leitud", "description": "Otsitavat lehte pole olemas või see on teisaldatud.", "cta": "Avalehele" },
+    "server": { "title": "Midagi läks valesti", "description": "Meil on tehnilisi probleeme. Palun proovige hiljem.", "cta": "Proovi uuesti" },
+    "boundary": { "title": "Ootamatu viga", "description": "Midagi ootamatut juhtus. Palun laadige leht uuesti.", "cta": "Laadi uuesti" }
+  },
+  "cookie": {
+    "title": "Kasutame küpsiseid",
+    "description": "Kasutame küpsiseid teie kogemuse parandamiseks. Jätkates nõustute meie küpsiste poliitikaga.",
+    "accept": "Nõustu kõigiga",
+    "reject": "Keeldu mittevajalikest",
+    "settings": "Küpsiste seaded",
+    "necessary": "Vajalikud",
+    "necessaryDesc": "Vajalikud saidi põhitoiminguteks",
+    "analytics": "Analüütika",
+    "analyticsDesc": "Aitavad meil mõista, kuidas te saiti kasutate",
+    "marketing": "Turundus",
+    "marketingDesc": "Kasutatakse isikupärastatud reklaamideks",
+    "save": "Salvesta eelistused"
+  },
+  "legal": {
+    "cookies": { "title": "Küpsiste poliitika", "lastUpdated": "Viimati uuendatud: veebruar 2026", "intro": "See poliitika selgitab, kuidas Turgo kasutab küpsiseid.", "whatAreCookies": "Mis on küpsised", "whatAreCookiesDesc": "Küpsised on väikesed tekstifailid, mis salvestatakse teie seadmesse.", "typesTitle": "Kasutatavate küpsiste tüübid", "necessary": "Vajalikud küpsised", "necessaryDesc": "Need küpsised on saidi toimimiseks hädavajalikud.", "analytics": "Analüütilised küpsised", "analyticsDesc": "Need küpsised aitavad meil mõista külastajate käitumist.", "marketing": "Turundusküpsised", "marketingDesc": "Need küpsised näitavad asjakohaseid reklaame.", "manage": "Küpsiste haldamine", "manageDesc": "Saate küpsiseid hallata brauseri seadetes.", "contact": "Võtke meiega ühendust", "contactDesc": "Küsimused? Kirjutage: privacy@turgo.io" },
+    "terms": { "title": "Kasutustingimused", "lastUpdated": "Viimati uuendatud: veebruar 2026" },
+    "privacy": { "title": "Privaatsuspoliitika", "lastUpdated": "Viimati uuendatud: veebruar 2026" }
+  },
+  "settings": {
+    "title": "Seaded",
+    "subtitle": "Hallake oma konto eelistusi",
+    "profile": { "title": "Profiil", "name": "Nimi", "email": "E-post", "phone": "Telefon", "bio": "Enesetutvustus", "save": "Salvesta profiil", "saved": "Profiil salvestatud" },
+    "locale": { "title": "Keel ja piirkond", "language": "Keel", "country": "Riik", "currency": "Valuuta", "timezone": "Ajavöönd" },
+    "notifications": { "title": "Teavitused", "email": "E-posti teavitused", "emailDesc": "Saate teavitusi e-postiga", "push": "Push-teavitused", "pushDesc": "Saate push-teavitusi brauseris", "agentUpdates": "Agendi uuendused", "agentUpdatesDesc": "Teavitused AI agentide tegevustest", "newMessages": "Uued sõnumid", "newMessagesDesc": "Teavitused uutest sõnumitest", "priceAlerts": "Hinnateavitused", "priceAlertsDesc": "Teavitused hinnamuutustest", "marketing": "Turundus", "marketingDesc": "Tooteuudised ja eripakkumised" },
+    "appearance": { "title": "Välimus", "theme": "Teema", "light": "Hele", "dark": "Tume", "system": "Süsteemi" },
+    "data": { "title": "Andmed ja privaatsus", "export": "Ekspordi andmed", "exportDesc": "Laadige alla oma andmete koopia JSON-vormingus", "exportBtn": "Ekspordi", "exporting": "Eksportimine...", "exported": "Eksport alustatud. Saate e-kirja lingiga.", "delete": "Kustuta konto", "deleteDesc": "Kustutage konto ja kõik andmed pöördumatult.", "deleteBtn": "Kustuta konto", "deleteConfirm": "Kas olete kindel? Kõik andmed kustutatakse pöördumatult.", "deleteConfirmBtn": "Jah, kustuta" }
+  },
+  "verifyEmail": { "title": "Kinnitage e-post", "sent": "Saatsime kinnituslingi aadressile", "check": "Kontrollige postkasti ja klõpsake lingil.", "resend": "Saada uuesti", "resent": "Kiri saadetud!", "expired": "See link on aegunud.", "success": "E-post kinnitatud!", "successDesc": "Teie e-post on kinnitatud. Nüüd on kõik funktsioonid saadaval.", "continue": "Jätka" },
+  "forgotPassword": { "title": "Lähtesta parool", "description": "Sisestage e-posti aadress ja saadame teile lingi.", "email": "E-post", "submit": "Saada link", "sent": "Link saadetud!", "sentDesc": "Kui konto on olemas, saate lingi.", "backToSignIn": "Tagasi sisselogimisele", "newPassword": "Uus parool", "confirmPassword": "Kinnita parool", "resetSubmit": "Lähtesta parool", "resetSuccess": "Parool lähtestatud!", "resetSuccessDesc": "Parool uuendatud. Logige uue parooliga sisse.", "invalidToken": "Link on kehtetu või aegunud.", "requestNew": "Taotle uut linki" },
+  "onboarding": { "welcome": { "title": "Tere tulemast Turgosse!", "subtitle": "Seadistage konto mõne sammuga" }, "step1": { "title": "Valige riik", "subtitle": "Märkige oma asukoht" }, "step2": { "title": "Teie huvid", "subtitle": "Valige huvipakkuvad kategooriad" }, "step3": { "title": "Kuidas kasutate Turgot?", "subtitle": "See aitab kogemust kohandada", "buying": "Tahan osta", "selling": "Tahan müüa", "both": "Nii osta kui müüa" }, "step4": { "title": "Kõik valmis!", "subtitle": "Teie konto on valmis. Alustage avastamist!", "exploreCta": "Sirvi kuulutusi", "sellCta": "Loo esimene kuulutus" }, "skip": "Jäta vahele", "continue": "Jätka", "finish": "Alusta" },
+  "region": { "title": "Valige piirkond", "latvia": "Läti", "lithuania": "Leedu", "estonia": "Eesti", "allBaltics": "Kogu Baltikum" },
+  "darkMode": { "light": "Hele", "dark": "Tume", "system": "Süsteemi" },
+  "a11y": { "skipToContent": "Liigu põhisisu juurde", "openMenu": "Ava menüü", "closeMenu": "Sulge menüü", "toggleTheme": "Vaheta teemat", "changeLanguage": "Muuda keelt", "loading": "Sisu laadimine", "searchResults": "Otsingutulemused" },
+  "empty": { "favorites": { "title": "Lemmikuid veel pole", "description": "Alustage sirvimist ja salvestage meeldivad kuulutused", "cta": "Sirvi kuulutusi" }, "messages": { "title": "Sõnumeid veel pole", "description": "Kui võtate müüjaga ühendust, ilmuvad sõnumid siia", "cta": "Sirvi kuulutusi" }, "listings": { "title": "Kuulutusi veel pole", "description": "Looge esimene kuulutus AI abiga", "cta": "Loo kuulutus" }, "agents": { "title": "Agente veel pole", "description": "Seadistage AI agendid automatiseerimiseks", "cta": "Loo agent" }, "search": { "title": "Midagi ei leitud", "description": "Proovige filtreid muuta", "cta": "Tühjenda filtrid" }, "notifications": { "title": "Teavitusi pole", "description": "Kõik on läbi vaadatud! Uued teavitused ilmuvad siia.", "cta": "Sirvi kuulutusi" } }
 }

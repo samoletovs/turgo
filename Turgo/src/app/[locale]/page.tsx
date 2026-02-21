@@ -23,6 +23,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { MarketInsights } from "@/components/market-insights";
+import { db } from "@/server/db";
+import { ListingCard } from "@/components/listing-card";
+import { getLocalizedName } from "@/lib/utils";
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
   transport: Car,
@@ -62,6 +65,24 @@ export default async function HomePage({
   const { locale } = await params;
   const t = await getTranslations("home");
   const tCommon = await getTranslations("common");
+
+  // Fetch latest active listings for the homepage
+  let latestListings: Awaited<ReturnType<typeof db.listing.findMany>> = [];
+  try {
+    latestListings = await db.listing.findMany({
+      where: { status: "ACTIVE" },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+      include: {
+        images: { take: 1, orderBy: { sortOrder: "asc" } },
+        category: true,
+        location: true,
+        boosts: { where: { endAt: { gt: new Date() } } },
+      },
+    });
+  } catch {
+    // DB may not be available yet — page still renders
+  }
 
   return (
     <>
@@ -129,6 +150,42 @@ export default async function HomePage({
           </div>
         </div>
       </section>
+
+      {/* Latest Listings */}
+      {latestListings.length > 0 && (
+        <section className="py-12">
+          <div className="mx-auto max-w-7xl px-4">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold">{t("recentlyAdded")}</h2>
+              <Link href="/search" className="text-sm text-primary hover:underline flex items-center gap-1">
+                {tCommon("viewAll")}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {latestListings.map((listing) => (
+                <ListingCard
+                  key={listing.id}
+                  listing={{
+                    id: listing.id,
+                    title: listing.title,
+                    slug: listing.slug,
+                    price: listing.price,
+                    currency: listing.currency,
+                    location: listing.location ? getLocalizedName(listing.location.name, locale) : undefined,
+                    imageUrl: listing.images[0]?.url || undefined,
+                    imageCount: listing.images.length,
+                    createdAt: listing.createdAt,
+                    isFeatured: listing.boosts?.some((b: { type: string }) => b.type === "FEATURED"),
+                    hasAgent: listing.managedByAgent,
+                  }}
+                  locale={locale}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Market Insights from ss.lv */}
       <MarketInsights

@@ -12,8 +12,9 @@ export default async function SellPage({
   const { locale } = await params;
 
   // Fetch categories + locations for the wizard
-  let categories: { id: string; name: string; slug: string; children?: { id: string; name: string; slug: string }[] }[] = [];
-  let locations: { id: string; name: string; slug: string; children?: { id: string; name: string; slug: string }[] }[] = [];
+  type JsonName = string | Record<string, string>;
+  let categories: { id: string; name: JsonName; slug: string; children?: { id: string; name: JsonName; slug: string }[] }[] = [];
+  let locations: { id: string; name: JsonName; slug: string; children?: { id: string; name: JsonName; slug: string }[] }[] = [];
   let dbError = false;
 
   try {
@@ -88,8 +89,8 @@ function SellPageClient({
   locations,
 }: {
   locale: string;
-  categories: { id: string; name: string; slug: string; children?: { id: string; name: string; slug: string }[] }[];
-  locations: { id: string; name: string; slug: string; children?: { id: string; name: string; slug: string }[] }[];
+  categories: { id: string; name: string | Record<string, string>; slug: string; children?: { id: string; name: string | Record<string, string>; slug: string }[] }[];
+  locations: { id: string; name: string | Record<string, string>; slug: string; children?: { id: string; name: string | Record<string, string>; slug: string }[] }[];
 }) {
   const t = useTranslations("sell");
 

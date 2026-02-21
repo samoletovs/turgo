@@ -13,11 +13,53 @@ env:
 
 jobs:
   # ────────────────────────────────────────────
-  # Job 1: Lint & Type Check
+  # Job 1: Lint, Type Check & Test
   # ────────────────────────────────────────────
   quality:
-    name: Lint & Type Check
+    name: Quality Gate
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Turgo
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Turgo/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Prisma schema
+        run: npx prisma validate
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Unit tests
+        run: npx vitest run --reporter=verbose --passWithNoTests
+
+      - name: Prettier format check
+        run: npx prettier --check "src/**/*.{ts,tsx,json,css}" || true
+
+  # ────────────────────────────────────────────
+  # Job 2: Test Build (PRs only — no push)
+  # ────────────────────────────────────────────
+  build-test:
+    name: Test Build
+    runs-on: ubuntu-latest
+    needs: quality
+    if: github.event_name == 'pull_request'
     defaults:
       run:
         working-directory: Turgo
@@ -33,11 +75,15 @@ jobs:
 
       - run: npm ci
       - run: npx prisma generate
-      - run: npm run lint
-      - run: npx tsc --noEmit
+
+      - name: Next.js production build
+        run: npm run build
+        env:
+          DATABASE_URL: "postgresql://build:build@localhost:5432/build"
+          NEXT_TELEMETRY_DISABLED: "1"
 
   # ────────────────────────────────────────────
-  # Job 2: Build & Push Docker Image
+  # Job 3: Build & Push Docker Image (main only)
   # ────────────────────────────────────────────
   build:
     name: Build & Push Image
@@ -79,7 +125,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   # ────────────────────────────────────────────
-  # Job 3: Deploy to Azure Container Apps
+  # Job 4: Deploy to Azure Container Apps
   # ────────────────────────────────────────────
   deploy:
     name: Deploy to Azure
@@ -108,3 +154,13 @@ jobs:
               --resource-group ${{ env.RESOURCE_GROUP }} \
               --name ${{ env.CONTAINER_APP_NAME }} \
               --command "npx prisma migrate deploy"
+
+      - name: Seed database (categories, locations, plans)
+        continue-on-error: true
+        uses: azure/CLI@v2
+        with:
+          inlineScript: |
+            az containerapp exec \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --name ${{ env.CONTAINER_APP_NAME }} \
+              --command "npx prisma db seed"

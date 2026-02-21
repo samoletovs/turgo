@@ -438,15 +438,38 @@ export function SellingAgentWizard({
     }
 
     if (value === "publish" || value === "draft") {
+      // Validate required fields before submission
+      const missing: string[] = [];
+      if (!data.title || data.title.trim().length < 5) missing.push("title (min 5 chars)");
+      if (!data.description || data.description.trim().length < 20) {
+        // Auto-generate a minimal description if user didn't provide enough
+        if (data.title && data.description.length < 20) {
+          const autoDesc = `${data.title}. ${data.categoryName ? `Category: ${data.categoryName}. ` : ""}Condition: ${data.condition}. Price: €${data.price}.`;
+          updateData({ description: autoDesc.length >= 20 ? autoDesc : autoDesc + " Contact seller for more details." });
+        } else {
+          missing.push("description (min 20 chars)");
+        }
+      }
+      if (!data.price || data.price <= 0) missing.push("price");
+      if (!data.categoryId) missing.push("category");
+
+      if (missing.length > 0) {
+        addAgentMessage(
+          `I need a few more details before I can create this listing:\n\n${missing.map((m) => `• Missing: **${m}**`).join("\n")}\n\nLet me walk you through the missing steps.`,
+          [{ label: "📝 Fill in details", value: "edit" }]
+        );
+        return;
+      }
+
       setCurrentStep("publishing");
       setIsSubmitting(true);
       try {
         const formData = new FormData();
-        formData.append("title", data.title);
-        formData.append("description", data.description);
+        formData.append("title", data.title.trim());
+        formData.append("description", data.description.trim());
         formData.append("categoryId", data.categoryId);
         formData.append("condition", data.condition);
-        formData.append("locationId", data.locationId);
+        if (data.locationId) formData.append("locationId", data.locationId);
         formData.append("price", String(data.price));
         formData.append("status", value === "draft" ? "DRAFT" : "ACTIVE");
 
@@ -471,13 +494,16 @@ export function SellingAgentWizard({
             [{ label: "View my listing", value: `goto_/listing/${result.slug || result.id}` }]
           );
         } else {
-          addAgentMessage("There was an issue creating the listing. Let me try again...", [
-            { label: "🔄 Retry", value: "publish" },
+          const errorData = await response.json().catch(() => null);
+          const errorMsg = errorData?.error || `Server error (${response.status})`;
+          addAgentMessage(`There was an issue creating the listing: **${errorMsg}**\n\nThis might be a database connection issue. Let me try again...`, [
+            { label: "🔄 Retry", value: value },
+            { label: "📝 Edit details", value: "edit" },
           ]);
         }
       } catch {
-        addAgentMessage("Something went wrong. Please try again.", [
-          { label: "🔄 Retry", value: "publish" },
+        addAgentMessage("Something went wrong — couldn't reach the server. Please check your connection and try again.", [
+          { label: "🔄 Retry", value: value },
         ]);
       } finally {
         setIsSubmitting(false);

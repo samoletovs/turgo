@@ -274,6 +274,47 @@
     "help": "Pagalbos centras",
     "copyright": "© {year} Turgo. Visos teisės saugomos.",
     "tagline": "AI agentų prekyvietė Baltijai",
-    "legal": "Teisinė informacija"
-  }
+    "legal": "Teisinė informacija",
+    "cookies": "Slapukų politika"
+  },
+  "errors": {
+    "notFound": { "title": "Puslapis nerastas", "description": "Puslapis, kurio ieškote, neegzistuoja arba buvo perkeltas.", "cta": "Į pagrindinį" },
+    "server": { "title": "Kažkas nutiko", "description": "Patirsime techninių sunkumų. Bandykite vėliau.", "cta": "Bandyti dar kartą" },
+    "boundary": { "title": "Netikėta klaida", "description": "Nutiko kažkas netikėto. Atnaujinkite puslapį.", "cta": "Atnaujinti puslapį" }
+  },
+  "cookie": {
+    "title": "Mes naudojame slapukus",
+    "description": "Mes naudojame slapukus jūsų patirčiai pagerinti. Tęsdami sutinkate su mūsų slapukų politika.",
+    "accept": "Priimti visus",
+    "reject": "Atmesti nebūtinus",
+    "settings": "Slapukų nustatymai",
+    "necessary": "Būtini",
+    "necessaryDesc": "Reikalingi pagrindiniam svetainės veikimui",
+    "analytics": "Analitika",
+    "analyticsDesc": "Padeda mums suprasti, kaip naudojate svetainę",
+    "marketing": "Rinkodara",
+    "marketingDesc": "Naudojami personalizuotai reklamai",
+    "save": "Išsaugoti nustatymus"
+  },
+  "legal": {
+    "cookies": { "title": "Slapukų politika", "lastUpdated": "Atnaujinta: 2026 m. vasaris", "intro": "Ši politika paaiškina, kaip Turgo naudoja slapukus.", "whatAreCookies": "Kas yra slapukai", "whatAreCookiesDesc": "Slapukai yra maži tekstiniai failai, saugomi jūsų įrenginyje.", "typesTitle": "Naudojamų slapukų tipai", "necessary": "Būtini slapukai", "necessaryDesc": "Šie slapukai būtini tinkamam svetainės veikimui.", "analytics": "Analitiniai slapukai", "analyticsDesc": "Šie slapukai padeda suprasti lankytojų elgseną.", "marketing": "Rinkodaros slapukai", "marketingDesc": "Šie slapukai naudojami aktualiai reklamai.", "manage": "Slapukų valdymas", "manageDesc": "Slapukus galite valdyti naršyklės nustatymuose.", "contact": "Susisiekite su mumis", "contactDesc": "Klausimai? Rašykite: privacy@turgo.io" },
+    "terms": { "title": "Naudojimo sąlygos", "lastUpdated": "Atnaujinta: 2026 m. vasaris" },
+    "privacy": { "title": "Privatumo politika", "lastUpdated": "Atnaujinta: 2026 m. vasaris" }
+  },
+  "settings": {
+    "title": "Nustatymai",
+    "subtitle": "Tvarkykite savo paskyros nustatymus",
+    "profile": { "title": "Profilis", "name": "Vardas", "email": "El. paštas", "phone": "Telefonas", "bio": "Apie save", "save": "Išsaugoti profilį", "saved": "Profilis išsaugotas" },
+    "locale": { "title": "Kalba ir regionas", "language": "Kalba", "country": "Šalis", "currency": "Valiuta", "timezone": "Laiko juosta" },
+    "notifications": { "title": "Pranešimai", "email": "El. pašto pranešimai", "emailDesc": "Gaukite pranešimus el. paštu", "push": "Push pranešimai", "pushDesc": "Gaukite push pranešimus naršyklėje", "agentUpdates": "Agentų atnaujinimai", "agentUpdatesDesc": "Pranešimai apie AI agentų veiksmus", "newMessages": "Nauji pranešimai", "newMessagesDesc": "Pranešimai apie naujus pranešimus", "priceAlerts": "Kainų pranešimai", "priceAlertsDesc": "Pranešimai apie kainų pokyčius", "marketing": "Rinkodara", "marketingDesc": "Produktų naujienos ir pasiūlymai" },
+    "appearance": { "title": "Išvaizda", "theme": "Tema", "light": "Šviesi", "dark": "Tamsi", "system": "Sistemos" },
+    "data": { "title": "Duomenys ir privatumas", "export": "Eksportuoti duomenis", "exportDesc": "Atsisiųskite savo duomenų kopiją JSON formatu", "exportBtn": "Eksportuoti", "exporting": "Eksportuojama...", "exported": "Eksportas pradėtas. Gausite el. laišką su nuoroda.", "delete": "Ištrinti paskyrą", "deleteDesc": "Negrįžtamai ištrinkite paskyrą ir visus duomenis.", "deleteBtn": "Ištrinti paskyrą", "deleteConfirm": "Ar tikrai? Visi duomenys bus negrįžtamai pašalinti.", "deleteConfirmBtn": "Taip, ištrinti" }
+  },
+  "verifyEmail": { "title": "Patvirtinkite el. paštą", "sent": "Išsiuntėme patvirtinimo nuorodą", "check": "Patikrinkite pašto dėžutę ir spustelėkite nuorodą.", "resend": "Siųsti dar kartą", "resent": "Laiškas išsiųstas!", "expired": "Ši nuoroda nebegalioja.", "success": "El. paštas patvirtintas!", "successDesc": "Jūsų el. paštas patvirtintas. Dabar galite naudotis visomis funkcijomis.", "continue": "Tęsti" },
+  "forgotPassword": { "title": "Atkurti slaptažodį", "description": "Įveskite el. pašto adresą ir mes atsiųsime nuorodą.", "email": "El. paštas", "submit": "Siųsti nuorodą", "sent": "Nuoroda išsiųsta!", "sentDesc": "Jei paskyra egzistuoja, gausite nuorodą.", "backToSignIn": "Grįžti prie prisijungimo", "newPassword": "Naujas slaptažodis", "confirmPassword": "Patvirtinti slaptažodį", "resetSubmit": "Atkurti slaptažodį", "resetSuccess": "Slaptažodis atkurtas!", "resetSuccessDesc": "Slaptažodis atnaujintas. Prisijunkite su nauju slaptažodžiu.", "invalidToken": "Nuoroda negalioja arba pasibaigė.", "requestNew": "Prašyti naujos nuorodos" },
+  "onboarding": { "welcome": { "title": "Sveiki atvykę į Turgo!", "subtitle": "Nustatykite paskyrą per kelis žingsnius" }, "step1": { "title": "Pasirinkite šalį", "subtitle": "Nurodykite savo buvimo vietą" }, "step2": { "title": "Jūsų interesai", "subtitle": "Pasirinkite dominančias kategorijas" }, "step3": { "title": "Kaip naudosite Turgo?", "subtitle": "Tai padės pritaikyti jūsų patirtį", "buying": "Noriu pirkti", "selling": "Noriu parduoti", "both": "Ir pirkti, ir parduoti" }, "step4": { "title": "Viskas paruošta!", "subtitle": "Jūsų paskyra paruošta. Pradėkite naršyti!", "exploreCta": "Naršyti skelbimus", "sellCta": "Sukurti pirmą skelbimą" }, "skip": "Praleisti", "continue": "Tęsti", "finish": "Pradėti" },
+  "region": { "title": "Pasirinkite regioną", "latvia": "Latvija", "lithuania": "Lietuva", "estonia": "Estija", "allBaltics": "Visa Baltija" },
+  "darkMode": { "light": "Šviesi", "dark": "Tamsi", "system": "Sistemos" },
+  "a11y": { "skipToContent": "Pereiti prie turinio", "openMenu": "Atidaryti meniu", "closeMenu": "Uždaryti meniu", "toggleTheme": "Pakeisti temą", "changeLanguage": "Keisti kalbą", "loading": "Kraunamas turinys", "searchResults": "Paieškos rezultatai" },
+  "empty": { "favorites": { "title": "Dar nėra mėgstamiausių", "description": "Pradėkite naršyti ir išsaugokite patikusius skelbimus", "cta": "Naršyti skelbimus" }, "messages": { "title": "Dar nėra žinučių", "description": "Kai susisieksite su pardavėju, žinutės bus čia", "cta": "Naršyti skelbimus" }, "listings": { "title": "Dar nėra skelbimų", "description": "Sukurkite pirmą skelbimą su AI pagalba", "cta": "Sukurti skelbimą" }, "agents": { "title": "Dar nėra agentų", "description": "Nustatykite AI agentus automatizavimui", "cta": "Sukurti agentą" }, "search": { "title": "Nieko nerasta", "description": "Pabandykite pakeisti filtrus", "cta": "Valyti filtrus" }, "notifications": { "title": "Nėra pranešimų", "description": "Viskas peržiūrėta! Nauji pranešimai bus čia.", "cta": "Naršyti skelbimus" } }
 }

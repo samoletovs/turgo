@@ -311,112 +311,113 @@ async function main() {
   // ──────────────────────────────────────────────
   console.log("  → Baltic locations");
 
+  type LocName = Record<string, string>;
   const locations: {
-    name: string;
+    name: LocName;
     slug: string;
     type: "COUNTRY" | "REGION" | "CITY";
-    children?: { name: string; slug: string; type: "REGION" | "CITY"; children?: { name: string; slug: string; type: "CITY" }[] }[];
+    children?: { name: LocName; slug: string; type: "REGION" | "CITY"; children?: { name: LocName; slug: string; type: "CITY" }[] }[];
   }[] = [
     {
-      name: "Latvia",
+      name: { en: "Latvia", lv: "Latvija", lt: "Latvija", et: "Läti", ru: "Латвия" },
       slug: "latvia",
       type: "COUNTRY",
       children: [
         {
-          name: "Rīga",
+          name: { en: "Riga", lv: "Rīga", lt: "Ryga", et: "Riia", ru: "Рига" },
           slug: "riga",
           type: "CITY",
         },
         {
-          name: "Rīgas reģions",
+          name: { en: "Riga Region", lv: "Rīgas reģions", lt: "Rygos regionas", et: "Riia piirkond", ru: "Рижский регион" },
           slug: "riga-region",
           type: "REGION",
           children: [
-            { name: "Jūrmala", slug: "jurmala", type: "CITY" },
-            { name: "Ādaži", slug: "adazi", type: "CITY" },
-            { name: "Mārupe", slug: "marupe", type: "CITY" },
-            { name: "Salaspils", slug: "salaspils", type: "CITY" },
-            { name: "Sigulda", slug: "sigulda", type: "CITY" },
-            { name: "Ogre", slug: "ogre", type: "CITY" },
+            { name: { en: "Jūrmala", lv: "Jūrmala", lt: "Jūrmala", et: "Jūrmala", ru: "Юрмала" }, slug: "jurmala", type: "CITY" },
+            { name: { en: "Ādaži", lv: "Ādaži", lt: "Ādaži", et: "Ādaži", ru: "Адажи" }, slug: "adazi", type: "CITY" },
+            { name: { en: "Mārupe", lv: "Mārupe", lt: "Mārupe", et: "Mārupe", ru: "Марупе" }, slug: "marupe", type: "CITY" },
+            { name: { en: "Salaspils", lv: "Salaspils", lt: "Salaspilis", et: "Salaspils", ru: "Саласпилс" }, slug: "salaspils", type: "CITY" },
+            { name: { en: "Sigulda", lv: "Sigulda", lt: "Sigulda", et: "Sigulda", ru: "Сигулда" }, slug: "sigulda", type: "CITY" },
+            { name: { en: "Ogre", lv: "Ogre", lt: "Ogrė", et: "Ogre", ru: "Огре" }, slug: "ogre", type: "CITY" },
           ],
         },
         {
-          name: "Kurzeme",
+          name: { en: "Kurzeme", lv: "Kurzeme", lt: "Kuržemė", et: "Kurzeme", ru: "Курземе" },
           slug: "kurzeme",
           type: "REGION",
           children: [
-            { name: "Liepāja", slug: "liepaja", type: "CITY" },
-            { name: "Ventspils", slug: "ventspils", type: "CITY" },
-            { name: "Kuldīga", slug: "kuldiga", type: "CITY" },
-            { name: "Talsi", slug: "talsi", type: "CITY" },
+            { name: { en: "Liepāja", lv: "Liepāja", lt: "Liepoja", et: "Liepāja", ru: "Лиепая" }, slug: "liepaja", type: "CITY" },
+            { name: { en: "Ventspils", lv: "Ventspils", lt: "Ventspilis", et: "Ventspils", ru: "Вентспилс" }, slug: "ventspils", type: "CITY" },
+            { name: { en: "Kuldīga", lv: "Kuldīga", lt: "Kuldyga", et: "Kuldīga", ru: "Кулдига" }, slug: "kuldiga", type: "CITY" },
+            { name: { en: "Talsi", lv: "Talsi", lt: "Talsi", et: "Talsi", ru: "Талси" }, slug: "talsi", type: "CITY" },
           ],
         },
         {
-          name: "Vidzeme",
+          name: { en: "Vidzeme", lv: "Vidzeme", lt: "Vidžemė", et: "Vidzeme", ru: "Видземе" },
           slug: "vidzeme",
           type: "REGION",
           children: [
-            { name: "Valmiera", slug: "valmiera", type: "CITY" },
-            { name: "Cēsis", slug: "cesis", type: "CITY" },
-            { name: "Smiltene", slug: "smiltene", type: "CITY" },
-            { name: "Madona", slug: "madona", type: "CITY" },
+            { name: { en: "Valmiera", lv: "Valmiera", lt: "Valmiera", et: "Valmiera", ru: "Валмиера" }, slug: "valmiera", type: "CITY" },
+            { name: { en: "Cēsis", lv: "Cēsis", lt: "Cēsis", et: "Cēsis", ru: "Цесис" }, slug: "cesis", type: "CITY" },
+            { name: { en: "Smiltene", lv: "Smiltene", lt: "Smiltenė", et: "Smiltene", ru: "Смилтене" }, slug: "smiltene", type: "CITY" },
+            { name: { en: "Madona", lv: "Madona", lt: "Madona", et: "Madona", ru: "Мадона" }, slug: "madona", type: "CITY" },
           ],
         },
         {
-          name: "Latgale",
+          name: { en: "Latgale", lv: "Latgale", lt: "Latgala", et: "Latgale", ru: "Латгале" },
           slug: "latgale",
           type: "REGION",
           children: [
-            { name: "Daugavpils", slug: "daugavpils", type: "CITY" },
-            { name: "Rēzekne", slug: "rezekne", type: "CITY" },
-            { name: "Jēkabpils", slug: "jekabpils", type: "CITY" },
-            { name: "Preiļi", slug: "preili", type: "CITY" },
+            { name: { en: "Daugavpils", lv: "Daugavpils", lt: "Daugpilis", et: "Daugavpils", ru: "Даугавпилс" }, slug: "daugavpils", type: "CITY" },
+            { name: { en: "Rēzekne", lv: "Rēzekne", lt: "Rėzeknė", et: "Rēzekne", ru: "Резекне" }, slug: "rezekne", type: "CITY" },
+            { name: { en: "Jēkabpils", lv: "Jēkabpils", lt: "Jēkabpilis", et: "Jēkabpils", ru: "Екабпилс" }, slug: "jekabpils", type: "CITY" },
+            { name: { en: "Preiļi", lv: "Preiļi", lt: "Preiļi", et: "Preiļi", ru: "Прейли" }, slug: "preili", type: "CITY" },
           ],
         },
         {
-          name: "Zemgale",
+          name: { en: "Zemgale", lv: "Zemgale", lt: "Žiemgala", et: "Zemgale", ru: "Земгале" },
           slug: "zemgale",
           type: "REGION",
           children: [
-            { name: "Jelgava", slug: "jelgava", type: "CITY" },
-            { name: "Bauska", slug: "bauska", type: "CITY" },
-            { name: "Tukums", slug: "tukums", type: "CITY" },
-            { name: "Dobele", slug: "dobele", type: "CITY" },
+            { name: { en: "Jelgava", lv: "Jelgava", lt: "Jelgava", et: "Jelgava", ru: "Елгава" }, slug: "jelgava", type: "CITY" },
+            { name: { en: "Bauska", lv: "Bauska", lt: "Bauska", et: "Bauska", ru: "Бауска" }, slug: "bauska", type: "CITY" },
+            { name: { en: "Tukums", lv: "Tukums", lt: "Tukumas", et: "Tukums", ru: "Тукумс" }, slug: "tukums", type: "CITY" },
+            { name: { en: "Dobele", lv: "Dobele", lt: "Dobelė", et: "Dobele", ru: "Добеле" }, slug: "dobele", type: "CITY" },
           ],
         },
       ],
     },
     {
-      name: "Lithuania",
+      name: { en: "Lithuania", lv: "Lietuva", lt: "Lietuva", et: "Leedu", ru: "Литва" },
       slug: "lithuania",
       type: "COUNTRY",
       children: [
-        { name: "Vilnius", slug: "vilnius", type: "CITY" },
-        { name: "Kaunas", slug: "kaunas", type: "CITY" },
-        { name: "Klaipėda", slug: "klaipeda", type: "CITY" },
-        { name: "Šiauliai", slug: "siauliai", type: "CITY" },
-        { name: "Panevėžys", slug: "panevezys", type: "CITY" },
-        { name: "Alytus", slug: "alytus", type: "CITY" },
-        { name: "Marijampolė", slug: "marijampole", type: "CITY" },
-        { name: "Utena", slug: "utena", type: "CITY" },
-        { name: "Telšiai", slug: "telsiai", type: "CITY" },
-        { name: "Tauragė", slug: "taurage", type: "CITY" },
+        { name: { en: "Vilnius", lv: "Viļņa", lt: "Vilnius", et: "Vilnius", ru: "Вильнюс" }, slug: "vilnius", type: "CITY" },
+        { name: { en: "Kaunas", lv: "Kauņa", lt: "Kaunas", et: "Kaunas", ru: "Каунас" }, slug: "kaunas", type: "CITY" },
+        { name: { en: "Klaipėda", lv: "Klaipēda", lt: "Klaipėda", et: "Klaipėda", ru: "Клайпеда" }, slug: "klaipeda", type: "CITY" },
+        { name: { en: "Šiauliai", lv: "Šauļi", lt: "Šiauliai", et: "Šiauliai", ru: "Шяуляй" }, slug: "siauliai", type: "CITY" },
+        { name: { en: "Panevėžys", lv: "Panevēža", lt: "Panevėžys", et: "Panevėžys", ru: "Паневежис" }, slug: "panevezys", type: "CITY" },
+        { name: { en: "Alytus", lv: "Aļitus", lt: "Alytus", et: "Alytus", ru: "Алитус" }, slug: "alytus", type: "CITY" },
+        { name: { en: "Marijampolė", lv: "Marijampole", lt: "Marijampolė", et: "Marijampolė", ru: "Мариямполе" }, slug: "marijampole", type: "CITY" },
+        { name: { en: "Utena", lv: "Utena", lt: "Utena", et: "Utena", ru: "Утена" }, slug: "utena", type: "CITY" },
+        { name: { en: "Telšiai", lv: "Telši", lt: "Telšiai", et: "Telšiai", ru: "Тельшяй" }, slug: "telsiai", type: "CITY" },
+        { name: { en: "Tauragė", lv: "Taurage", lt: "Tauragė", et: "Tauragė", ru: "Таураге" }, slug: "taurage", type: "CITY" },
       ],
     },
     {
-      name: "Estonia",
+      name: { en: "Estonia", lv: "Igaunija", lt: "Estija", et: "Eesti", ru: "Эстония" },
       slug: "estonia",
       type: "COUNTRY",
       children: [
-        { name: "Tallinn", slug: "tallinn", type: "CITY" },
-        { name: "Tartu", slug: "tartu", type: "CITY" },
-        { name: "Narva", slug: "narva", type: "CITY" },
-        { name: "Pärnu", slug: "parnu", type: "CITY" },
-        { name: "Kohtla-Järve", slug: "kohtla-jarve", type: "CITY" },
-        { name: "Viljandi", slug: "viljandi", type: "CITY" },
-        { name: "Rakvere", slug: "rakvere", type: "CITY" },
-        { name: "Kuressaare", slug: "kuressaare", type: "CITY" },
-        { name: "Haapsalu", slug: "haapsalu", type: "CITY" },
+        { name: { en: "Tallinn", lv: "Tallina", lt: "Talinas", et: "Tallinn", ru: "Таллинн" }, slug: "tallinn", type: "CITY" },
+        { name: { en: "Tartu", lv: "Tartu", lt: "Tartu", et: "Tartu", ru: "Тарту" }, slug: "tartu", type: "CITY" },
+        { name: { en: "Narva", lv: "Narva", lt: "Narva", et: "Narva", ru: "Нарва" }, slug: "narva", type: "CITY" },
+        { name: { en: "Pärnu", lv: "Pērnava", lt: "Piarnū", et: "Pärnu", ru: "Пярну" }, slug: "parnu", type: "CITY" },
+        { name: { en: "Kohtla-Järve", lv: "Kohtla-Jerve", lt: "Kohtla-Järve", et: "Kohtla-Järve", ru: "Кохтла-Ярве" }, slug: "kohtla-jarve", type: "CITY" },
+        { name: { en: "Viljandi", lv: "Viljandi", lt: "Viljandis", et: "Viljandi", ru: "Вильянди" }, slug: "viljandi", type: "CITY" },
+        { name: { en: "Rakvere", lv: "Rakvere", lt: "Rakverė", et: "Rakvere", ru: "Раквере" }, slug: "rakvere", type: "CITY" },
+        { name: { en: "Kuressaare", lv: "Kuressāre", lt: "Kuressarė", et: "Kuressaare", ru: "Курессааре" }, slug: "kuressaare", type: "CITY" },
+        { name: { en: "Haapsalu", lv: "Hāpsalu", lt: "Haapsalu", et: "Haapsalu", ru: "Хаапсалу" }, slug: "haapsalu", type: "CITY" },
       ],
     },
   ];
@@ -537,6 +538,611 @@ async function main() {
     }
   }
 
+  // ──────────────────────────────────────────────
+  // TEST USERS
+  // ──────────────────────────────────────────────
+  console.log("  → Test users");
+
+  const testUsers = [
+    { email: "janis@test.lv", name: "Jānis Bērziņš", phone: "+37120000001", locale: "lv" },
+    { email: "anna@test.lv", name: "Anna Kalniņa", phone: "+37120000002", locale: "lv" },
+    { email: "maris@test.lv", name: "Māris Ozoliņš", phone: "+37120000003", locale: "lv" },
+    { email: "liga@test.lv", name: "Līga Liepiņa", phone: "+37120000004", locale: "lv" },
+    { email: "andris@test.lv", name: "Andris Krūmiņš", phone: "+37120000005", locale: "lv" },
+    { email: "jonas@test.lt", name: "Jonas Kazlauskas", phone: "+37060000001", locale: "lt" },
+    { email: "giedre@test.lt", name: "Giedrė Jonaitienė", phone: "+37060000002", locale: "lt" },
+    { email: "mart@test.ee", name: "Mart Tamm", phone: "+37250000001", locale: "et" },
+    { email: "katrin@test.ee", name: "Katrin Saar", phone: "+37250000002", locale: "et" },
+    { email: "dmitrij@test.lv", name: "Дмитрий Иванов", phone: "+37120000006", locale: "ru" },
+  ];
+
+  const userRecords: Record<string, { id: string }> = {};
+  for (const u of testUsers) {
+    const user = await prisma.user.upsert({
+      where: { email: u.email },
+      update: { name: u.name, phone: u.phone, locale: u.locale },
+      create: {
+        email: u.email,
+        name: u.name,
+        phone: u.phone,
+        locale: u.locale,
+        emailVerified: new Date(),
+        gdprConsentAt: new Date(),
+      },
+    });
+    userRecords[u.email] = user;
+  }
+
+  // ──────────────────────────────────────────────
+  // HELPER: look up category & location by slug
+  // ──────────────────────────────────────────────
+  async function getCat(slug: string) {
+    return prisma.category.findUniqueOrThrow({ where: { slug } });
+  }
+  async function getLoc(slug: string) {
+    return prisma.location.findUniqueOrThrow({ where: { slug } });
+  }
+
+  // ──────────────────────────────────────────────
+  // TEST LISTINGS  (ss.lv-inspired data)
+  // ──────────────────────────────────────────────
+  console.log("  → Test listings");
+
+  // --- Cars ---
+  const carsCatRec = await getCat("cars");
+  const rigaLoc = await getLoc("riga");
+  const jurmalaLoc = await getLoc("jurmala");
+  const liepaja = await getLoc("liepaja");
+  const vilniusLoc = await getLoc("vilnius");
+  const tallinnLoc = await getLoc("tallinn");
+  const jelgavaLoc = await getLoc("jelgava");
+  const daugavpilsLoc = await getLoc("daugavpils");
+  const kaunasLoc = await getLoc("kaunas");
+  const tartuLoc = await getLoc("tartu");
+  const marupeLoc = await getLoc("marupe");
+
+  const carListings = [
+    {
+      title: "BMW 520d xDrive, 2019, 87 000 km",
+      slug: "bmw-520d-xdrive-2019",
+      description: "BMW 520d xDrive Luxury Line. Automātiskā ārumsārba, ādas salons, navigācija, LED lukturi, apkurināmi sēdekļi, atpakaļskata kamera. Pilna servisa vēsture pie oficiālā dīlera. Viens īpašnieks. Tehniskā apskate līdz 2027. gadam.",
+      price: 32500,
+      condition: "USED" as const,
+      userId: userRecords["janis@test.lv"].id,
+      locationId: rigaLoc.id,
+      categoryId: carsCatRec.id,
+      contactPhone: "+37120000001",
+      attrs: { Brand: "BMW", Year: "2019", "Mileage (km)": "87000", "Engine (L)": "2.0", "Fuel Type": "Diesel", Transmission: "Automatic", "Body Type": "Sedan", "Technical Inspection": "true" },
+      images: [
+        "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800",
+        "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800",
+      ],
+    },
+    {
+      title: "Volkswagen Golf 8, 2021, 42 000 km",
+      slug: "vw-golf-8-2021",
+      description: "VW Golf 8 Style 1.5 TSI. Digitālā mērinstrumentu panelis, adaptīvais kruīza kontrole, Lane Assist, Park Assist, LED Matrix lukturi. Gaišs salons, lieliski uzturēts. Nopērkams arī līzingā.",
+      price: 24900,
+      condition: "USED" as const,
+      userId: userRecords["maris@test.lv"].id,
+      locationId: jurmalaLoc.id,
+      categoryId: carsCatRec.id,
+      contactPhone: "+37120000003",
+      attrs: { Brand: "Volkswagen", Year: "2021", "Mileage (km)": "42000", "Engine (L)": "1.5", "Fuel Type": "Petrol", Transmission: "Automatic", "Body Type": "Hatchback", "Technical Inspection": "true" },
+      images: [
+        "https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=800",
+      ],
+    },
+    {
+      title: "Audi A4 Avant 2.0 TDI, 2017, 134 000 km",
+      slug: "audi-a4-avant-2017",
+      description: "Audi A4 Avant S-line pakotne. Virtuālais kokpits, MMI navigācija, B&O skaņas sistēma, panorāmas jumts, elektriskais aizmugurējais vāks. Serviss pie Moller Auto. Ziemas riepas komplektā.",
+      price: 19800,
+      condition: "USED" as const,
+      userId: userRecords["andris@test.lv"].id,
+      locationId: jelgavaLoc.id,
+      categoryId: carsCatRec.id,
+      contactPhone: "+37120000005",
+      attrs: { Brand: "Audi", Year: "2017", "Mileage (km)": "134000", "Engine (L)": "2.0", "Fuel Type": "Diesel", Transmission: "Automatic", "Body Type": "Wagon", "Technical Inspection": "true" },
+      images: [
+        "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800",
+      ],
+    },
+    {
+      title: "Toyota RAV4 Hybrid, 2022, 28 000 km",
+      slug: "toyota-rav4-hybrid-2022",
+      description: "Toyota RAV4 2.5 Hybrid AWD. Pilna komplektācija, ādas salons, JBL skaňas sistēma, panorāma jumts, apkurināmi sēdekļi un stūre. Garantija līdz 2027. gadam. Viens īpašnieks.",
+      price: 38500,
+      condition: "USED" as const,
+      userId: userRecords["jonas@test.lt"].id,
+      locationId: vilniusLoc.id,
+      categoryId: carsCatRec.id,
+      contactPhone: "+37060000001",
+      attrs: { Brand: "Toyota", Year: "2022", "Mileage (km)": "28000", "Engine (L)": "2.5", "Fuel Type": "Hybrid", Transmission: "Automatic", "Body Type": "SUV", "Technical Inspection": "true" },
+      images: [
+        "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=800",
+      ],
+    },
+    {
+      title: "Opel Astra 1.6 CDTI, 2016, 168 000 km",
+      slug: "opel-astra-2016",
+      description: "Opel Astra K 1.6 CDTI 110 ZS. Ekonomisks dīzelis, kruīza kontrole, multifunkcionālā stūre, Bluetooth, kondicionieris. Labs stāvoklis, regulāri apkopota. Cena nedaudz runājama.",
+      price: 8900,
+      condition: "USED" as const,
+      userId: userRecords["dmitrij@test.lv"].id,
+      locationId: daugavpilsLoc.id,
+      categoryId: carsCatRec.id,
+      contactPhone: "+37120000006",
+      attrs: { Brand: "Opel", Year: "2016", "Mileage (km)": "168000", "Engine (L)": "1.6", "Fuel Type": "Diesel", Transmission: "Manual", "Body Type": "Hatchback", "Technical Inspection": "true" },
+      images: [
+        "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800",
+      ],
+    },
+    {
+      title: "Mercedes-Benz C220d AMG, 2020, 65 000 km",
+      slug: "mercedes-c220d-amg-2020",
+      description: "Mercedes-Benz C220d 4MATIC, AMG pakett, kõigi rataste vedamine. Nahksisu, MBUX multimeedia, 360° kaamera, ambient-valgustus, Burmester helikaart. Hooldatud ametlikus teeninduses.",
+      price: 35900,
+      condition: "USED" as const,
+      userId: userRecords["mart@test.ee"].id,
+      locationId: tallinnLoc.id,
+      categoryId: carsCatRec.id,
+      contactPhone: "+37250000001",
+      attrs: { Brand: "Mercedes-Benz", Year: "2020", "Mileage (km)": "65000", "Engine (L)": "2.0", "Fuel Type": "Diesel", Transmission: "Automatic", "Body Type": "Sedan", "Technical Inspection": "true" },
+      images: [
+        "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800",
+      ],
+    },
+  ];
+
+  // --- Apartments ---
+  const aptSaleCatRec = await getCat("apartments-sale");
+  const aptRentCatRec = await getCat("apartments-rent");
+
+  const aptListings = [
+    {
+      title: "3-istabu dzīvoklis Centrā, 78 m²",
+      slug: "3-ist-dzivoklis-centra-78m2",
+      description: "Pārdod pilnīgi renovētu 3-istabu dzīvokli Rīgas centrā, Quiet centrā. Kvalitatīvs remonts 2023. gadā: jauna virtuve, vannas istaba, parkets. Liels balkons ar skatu uz pilsētu. Iebūvēta virtuve ar Bosch tehniku. Apkurināmas grīdas vannas istabā.",
+      price: 185000,
+      condition: "USED" as const,
+      userId: userRecords["anna@test.lv"].id,
+      locationId: rigaLoc.id,
+      categoryId: aptSaleCatRec.id,
+      contactPhone: "+37120000002",
+      images: [
+        "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800",
+        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800",
+      ],
+    },
+    {
+      title: "2-istabu dzīvoklis jaunajā projektā, Mārupē, 56 m²",
+      slug: "2-ist-jaunais-projekts-marupe-56m2",
+      description: "Pārdod 2-istabu dzīvokli jaunajā projektā 'Mārupe Gardens'. Augsta kvalitāte: trīskāršie stikli, silts modulis, A enerģijas klase. Autostāvvieta pazemes garāžā iekļauta cenā. Pieejams no 2026. gada marta.",
+      price: 142000,
+      condition: "NEW" as const,
+      userId: userRecords["liga@test.lv"].id,
+      locationId: marupeLoc.id,
+      categoryId: aptSaleCatRec.id,
+      contactPhone: "+37120000004",
+      images: [
+        "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800",
+      ],
+    },
+    {
+      title: "1-kambario butas Vilniaus senamiestyje, 38 m²",
+      slug: "1-kamb-butas-vilnius-senamiestis-38m2",
+      description: "Parduodamas jaukus 1 kambario butas Vilniaus senamiestyje. Visiškai suremontuotas, baldai įskaičiuoti į kainą. Šildymas dujomis, žemi komunaliniai mokesčiai. Rajonas ramus, šalia visa infrastruktūra. Puiki investicija nuomai.",
+      price: 115000,
+      condition: "USED" as const,
+      userId: userRecords["jonas@test.lt"].id,
+      locationId: vilniusLoc.id,
+      categoryId: aptSaleCatRec.id,
+      contactPhone: "+37060000001",
+      images: [
+        "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800",
+      ],
+    },
+    {
+      title: "2-toaline korter Tallinna kesklinnas, 52 m²",
+      slug: "2-toaline-korter-tallinn-kesklinn-52m2",
+      description: "Müüa renoveeritud 2-toaline korter Tallinna kesklinnas. Uus köök, vannituba, parkett. Rõdu linnavaatega. Soe korter, head ühistranspordi ühendused. Parkimiskoht hoovis.",
+      price: 195000,
+      condition: "USED" as const,
+      userId: userRecords["katrin@test.ee"].id,
+      locationId: tallinnLoc.id,
+      categoryId: aptSaleCatRec.id,
+      contactPhone: "+37250000002",
+      images: [
+        "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800",
+      ],
+    },
+    {
+      title: "Izīrē 2-istabu dzīvokli Āgenskalnā, 54 m²",
+      slug: "izire-2-ist-agenskalns-54m2",
+      description: "Izīrē mēbelētu 2-istabu dzīvokli klusā Āgenskalna ielā. Remonts 2024. gadā, pilnībā mēbelēts, veļasmašīna, trauku mazgājamā mašīna. Komunālie ~120 EUR/mēn. Pieejams no marta.",
+      price: 550,
+      condition: "USED" as const,
+      userId: userRecords["maris@test.lv"].id,
+      locationId: rigaLoc.id,
+      categoryId: aptRentCatRec.id,
+      contactPhone: "+37120000003",
+      images: [
+        "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800",
+      ],
+    },
+  ];
+
+  // --- Electronics ---
+  const phonesCatRec = await getCat("phones-tablets");
+  const laptopsCatRec = await getCat("laptops");
+  const gamingCatRec = await getCat("gaming");
+
+  const electronicsListings = [
+    {
+      title: "iPhone 15 Pro Max 256GB Natural Titanium",
+      slug: "iphone-15-pro-max-256gb",
+      description: "Pārdodu iPhone 15 Pro Max 256GB Natural Titanium. Lietots 6 mēnešus, perfektā stāvoklī, bez skrāpējumiem. Komplektā: oriģinālā kaste, kabelis, aizsargstikls jau uzlikts. Akumulatora veselība 98%. Garantija līdz 2027. gadam.",
+      price: 950,
+      condition: "USED" as const,
+      userId: userRecords["anna@test.lv"].id,
+      locationId: rigaLoc.id,
+      categoryId: phonesCatRec.id,
+      contactPhone: "+37120000002",
+      images: [
+        "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800",
+      ],
+    },
+    {
+      title: "Samsung Galaxy S24 Ultra 512GB",
+      slug: "samsung-s24-ultra-512gb",
+      description: "Samsung Galaxy S24 Ultra, 512GB, Titanium Gray. Naudotas 3 mėnesius, idealios būklės. S Pen, originali dėžutė ir pakrovėjas. Galaxy AI funkcijos. Ekrano apsauga ir dėklas pridedami nemokamai.",
+      price: 1050,
+      condition: "USED" as const,
+      userId: userRecords["giedre@test.lt"].id,
+      locationId: kaunasLoc.id,
+      categoryId: phonesCatRec.id,
+      contactPhone: "+37060000002",
+      images: [
+        "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=800",
+      ],
+    },
+    {
+      title: "MacBook Pro 14\" M3 Pro 18GB/512GB",
+      slug: "macbook-pro-14-m3-pro",
+      description: "Apple MacBook Pro 14 collas ar M3 Pro čipu, 18GB RAM, 512GB SSD. Space Black krāsa. Pirkts 2024. gada oktobrī Apple veikalā. Akumulatora ciklu skaits: 45. Perfekts stāvoklis, komplektā lādētājs un kaste.",
+      price: 1750,
+      condition: "USED" as const,
+      userId: userRecords["janis@test.lv"].id,
+      locationId: rigaLoc.id,
+      categoryId: laptopsCatRec.id,
+      contactPhone: "+37120000001",
+      images: [
+        "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800",
+      ],
+    },
+    {
+      title: "Lenovo ThinkPad X1 Carbon Gen 11, i7, 32GB",
+      slug: "thinkpad-x1-carbon-gen11",
+      description: "Lenovo ThinkPad X1 Carbon Gen 11. Intel Core i7-1365U, 32GB RAM, 1TB SSD, 14\" 2.8K OLED ekrāns. Izcils biznesa klases portatīvais dators. Ideāls attālinātam darbam. Komplektā docking station.",
+      price: 1200,
+      condition: "USED" as const,
+      userId: userRecords["mart@test.ee"].id,
+      locationId: tartuLoc.id,
+      categoryId: laptopsCatRec.id,
+      contactPhone: "+37250000001",
+      images: [
+        "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800",
+      ],
+    },
+    {
+      title: "PlayStation 5 + 2 kontrolieri + 5 spēles",
+      slug: "ps5-bundle-controllers-games",
+      description: "Pārdodu PlayStation 5 Disc Edition komplektu. Iekļauts: 2x DualSense kontrolieri (balts + melns), 5 spēles (Spider-Man 2, God of War Ragnarök, Horizon Forbidden West, Gran Turismo 7, FC 25). Viss labā stāvoklī. Čeks pieejams.",
+      price: 420,
+      condition: "USED" as const,
+      userId: userRecords["andris@test.lv"].id,
+      locationId: rigaLoc.id,
+      categoryId: gamingCatRec.id,
+      contactPhone: "+37120000005",
+      images: [
+        "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800",
+      ],
+    },
+  ];
+
+  // --- Home & Garden ---
+  const furnitureCatRec = await getCat("furniture");
+  const appliancesCatRec = await getCat("appliances");
+  const toolsCatRec = await getCat("tools");
+
+  const homeListings = [
+    {
+      title: "IKEA stūra dīvāns SÖDERHAMN, pelēks",
+      slug: "ikea-soderhamn-stūra-divans",
+      description: "Pārdodu IKEA SÖDERHAMN stūra dīvānu, 3+1. Pelēka Samsta krāsa. Iegādāts 2023. gadā, ļoti labs stāvoklis. Noņemami un mazgājami pārvalki. Ir arī papildu atzveltņu komplekts. Jāizved pašam. Centra+ rajons.",
+      price: 650,
+      condition: "USED" as const,
+      userId: userRecords["liga@test.lv"].id,
+      locationId: rigaLoc.id,
+      categoryId: furnitureCatRec.id,
+      contactPhone: "+37120000004",
+      images: [
+        "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800",
+      ],
+    },
+    {
+      title: "Bosch veļasmašīna Serie 6, 9kg, A+++",
+      slug: "bosch-velasmasina-serie6-9kg",
+      description: "Bosch WAU28P40 veļasmašīna, 9kg ietilpība, 1400 apgr/min. A+++ energoklase, ļoti klusa darbība. Anti-vibration dizains. Lietota 2 gadus, darbojas nevainojami. Pārdodu sakarā ar pārcelšanos.",
+      price: 350,
+      condition: "USED" as const,
+      userId: userRecords["anna@test.lv"].id,
+      locationId: rigaLoc.id,
+      categoryId: appliancesCatRec.id,
+      contactPhone: "+37120000002",
+      images: [
+        "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=800",
+      ],
+    },
+    {
+      title: "Makita akumulatora urbis-skrūvgriezis DDF484",
+      slug: "makita-akumulatora-urbis-ddf484",
+      description: "Makita DDF484RTJ 18V LXT akumulatora urbis-skrūvgriezis. Komplektā 2x 5.0Ah akumulatori, lādētājs, MAKPAC koferis. Bezotas motors, 54Nm griezes moments. Mazlietots, kā jauns.",
+      price: 185,
+      condition: "USED" as const,
+      userId: userRecords["andris@test.lv"].id,
+      locationId: jelgavaLoc.id,
+      categoryId: toolsCatRec.id,
+      contactPhone: "+37120000005",
+      images: [
+        "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=800",
+      ],
+    },
+  ];
+
+  // --- Sports & Outdoors ---
+  const gymCatRec = await getCat("gym-equipment");
+  const bicyclesCatRec = await getCat("bicycles");
+
+  const sportsListings = [
+    {
+      title: "Trenažieru sols ar stieni un svaru komplektu",
+      slug: "trenaziera-sols-svari",
+      description: "Pārdodu mājas trenažieru komplektu: regulējams sols, olimpiskais stienis 20kg, svaru diski (2x20kg, 2x10kg, 2x5kg, 4x2.5kg). Kopā 95kg svaru. Lieliski piemērots mājas treniňiem. Var apskatīt Jūrmalā.",
+      price: 280,
+      condition: "USED" as const,
+      userId: userRecords["janis@test.lv"].id,
+      locationId: jurmalaLoc.id,
+      categoryId: gymCatRec.id,
+      contactPhone: "+37120000001",
+      images: [
+        "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800",
+      ],
+    },
+    {
+      title: "Cube Reaction Hybrid Pro 625, 2024, L",
+      slug: "cube-reaction-hybrid-pro-625-2024",
+      description: "Pārdodu e-velosipēdu Cube Reaction Hybrid Pro 625 Wh, 2024. gada modelis, L izmērs. Bosch Performance CX motors. Nobraukums ~800 km. Shimano Deore XT pārslēgi. Ideāls pilsētas un meža braucieniem.",
+      price: 2800,
+      condition: "USED" as const,
+      userId: userRecords["mart@test.ee"].id,
+      locationId: tallinnLoc.id,
+      categoryId: bicyclesCatRec.id,
+      contactPhone: "+37250000001",
+      images: [
+        "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=800",
+      ],
+    },
+  ];
+
+  // --- Fashion ---
+  const womensCatRec = await getCat("womens-clothing");
+  const shoesCatRec = await getCat("shoes");
+
+  const fashionListings = [
+    {
+      title: "Max Mara vilnas mētelis, M, kamelkrāsa",
+      slug: "max-mara-vilnas-metelis-m",
+      description: "Max Mara 101801 ikona mētelis, 100% kamieļvilna. Izmērs M (IT 42). Kamelkrāsa. Nēsāts vienu sezonu, perfekts stāvoklis. Oriģinālā cena €1,800. Iekļauts apģērbu maisiņš.",
+      price: 750,
+      condition: "USED" as const,
+      userId: userRecords["liga@test.lv"].id,
+      locationId: rigaLoc.id,
+      categoryId: womensCatRec.id,
+      contactPhone: "+37120000004",
+      images: [
+        "https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?w=800",
+      ],
+    },
+    {
+      title: "Nike Air Max 90, vīriešu 43. izmērs, jauni",
+      slug: "nike-air-max-90-43-jauni",
+      description: "Jauni Nike Air Max 90 Essential, White/Black colorway. Izmērs EUR 43 (US 9.5). Oriģināli, pasūtīti no Nike.com, izrādījās par mazu. Kaste un čeks iekļauti. Cena nav runājama.",
+      price: 95,
+      condition: "NEW" as const,
+      userId: userRecords["maris@test.lv"].id,
+      locationId: rigaLoc.id,
+      categoryId: shoesCatRec.id,
+      contactPhone: "+37120000003",
+      negotiable: false,
+      images: [
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800",
+      ],
+    },
+  ];
+
+  // --- Pets ---
+  const dogsCatRec = await getCat("dogs");
+
+  const petListings = [
+    {
+      title: "Labradoru retrīveru kucēni, ar ciltsrakstiem",
+      slug: "labradoru-retreiveru-kuceni",
+      description: "Piedāvājam brīnišķīgus Labradoru retrīveru kucēnus. Dzimšanas datums: 2026. gada 5. janvāris. Šokoladkrāsas un melnā krāsā. Čipēti, vakcinēti, ar ciltsrakstiem (LKF). Vecāki pārbaudīti uz pārmantotajām slimībām. Gatavi jaunajām mājām no 8 marta.",
+      price: 1200,
+      condition: "NEW" as const,
+      userId: userRecords["giedre@test.lt"].id,
+      locationId: kaunasLoc.id,
+      categoryId: dogsCatRec.id,
+      contactPhone: "+37060000002",
+      images: [
+        "https://images.unsplash.com/photo-1591769225440-811ad7d6eab3?w=800",
+      ],
+    },
+  ];
+
+  // --- Hobbies ---
+  const musicCatRec = await getCat("music-instruments");
+
+  const hobbyListings = [
+    {
+      title: "Yamaha C40 klasiskā ģitāra + soma",
+      slug: "yamaha-c40-klasiska-gitara",
+      description: "Yamaha C40 klasiskā ģitāra, ideāla iesācējiem un vidējā līmeňa spēlētājiem. Ļoti labs skanējums, stīgas nomainītas pirms mēneša. Komplektā mīkstā soma un tūneris. Viss ieliokts stāvoklī.",
+      price: 85,
+      condition: "USED" as const,
+      userId: userRecords["dmitrij@test.lv"].id,
+      locationId: rigaLoc.id,
+      categoryId: musicCatRec.id,
+      contactPhone: "+37120000006",
+      images: [
+        "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800",
+      ],
+    },
+  ];
+
+  // --- Real Estate (houses) ---
+  const housesSaleCatRec = await getCat("houses-sale");
+
+  const houseListings = [
+    {
+      title: "Privātmāja Jūrmalā, Dzintaros, 220 m²",
+      slug: "privatmaja-jurmala-dzintari-220m2",
+      description: "Pārdod modernu privātmāju Jūrmalā, Dzintaros, 500m no jūras. 220 m² dzīvošanas platība, 3 stāvi, 5 istabas, 2 vannas istabas, sauna, garāža 2 auto. Zemes gabals 1200 m². Pilnībā renovēta 2022. gadā. Gāzes apkure, silts māja – zemi komunālie.",
+      price: 420000,
+      condition: "USED" as const,
+      userId: userRecords["anna@test.lv"].id,
+      locationId: jurmalaLoc.id,
+      categoryId: housesSaleCatRec.id,
+      contactPhone: "+37120000002",
+      images: [
+        "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800",
+        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800",
+      ],
+    },
+  ];
+
+  // --- Agriculture ---
+  const farmEquipCatRec = await getCat("farm-equipment");
+
+  const agriListings = [
+    {
+      title: "John Deere 6130R traktors, 2018, 3200 motostundas",
+      slug: "john-deere-6130r-2018",
+      description: "John Deere 6130R, 130 ZS, 2018. gads, 3200 motostundas. AutoQuad Plus transmisija, priekšas iekrāvējs 623R, klimata kontrole, GPS sagatavots. Regulāri apkopots pie oficiālā dīlera. Var apskatīt Jelgavas novadā.",
+      price: 72000,
+      condition: "USED" as const,
+      userId: userRecords["andris@test.lv"].id,
+      locationId: jelgavaLoc.id,
+      categoryId: farmEquipCatRec.id,
+      contactPhone: "+37120000005",
+      images: [
+        "https://images.unsplash.com/photo-1530267981375-f0de937f5f13?w=800",
+      ],
+    },
+  ];
+
+  // ──────────────────────────────────────────────
+  // UPSERT ALL LISTINGS
+  // ──────────────────────────────────────────────
+  const allListings = [
+    ...carListings,
+    ...aptListings,
+    ...electronicsListings,
+    ...homeListings,
+    ...sportsListings,
+    ...fashionListings,
+    ...petListings,
+    ...hobbyListings,
+    ...houseListings,
+    ...agriListings,
+  ];
+
+  for (const l of allListings) {
+    const listing = await prisma.listing.upsert({
+      where: { slug: l.slug },
+      update: {
+        title: l.title,
+        description: l.description,
+        price: l.price,
+        condition: l.condition,
+        userId: l.userId,
+        locationId: l.locationId,
+        categoryId: l.categoryId,
+        contactPhone: l.contactPhone ?? null,
+        negotiable: (l as any).negotiable ?? true,
+        status: "ACTIVE",
+      },
+      create: {
+        title: l.title,
+        slug: l.slug,
+        description: l.description,
+        price: l.price,
+        condition: l.condition,
+        status: "ACTIVE",
+        userId: l.userId,
+        locationId: l.locationId,
+        categoryId: l.categoryId,
+        contactPhone: l.contactPhone ?? null,
+        negotiable: (l as any).negotiable ?? true,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      },
+    });
+
+    // Upsert images
+    if (l.images) {
+      // Delete existing images for this listing first
+      await prisma.listingImage.deleteMany({ where: { listingId: listing.id } });
+      for (let idx = 0; idx < l.images.length; idx++) {
+        await prisma.listingImage.create({
+          data: {
+            listingId: listing.id,
+            url: l.images[idx],
+            thumbnailUrl: l.images[idx].replace("w=800", "w=200"),
+            alt: l.title,
+            sortOrder: idx,
+            isPrimary: idx === 0,
+          },
+        });
+      }
+    }
+
+    // Upsert car attributes if present
+    if ((l as any).attrs && l.categoryId === carsCatRec.id) {
+      const attrs = (l as any).attrs as Record<string, string>;
+      const catAttrs = await prisma.categoryAttribute.findMany({
+        where: { categoryId: carsCatRec.id },
+      });
+      // Delete existing listing attributes
+      await prisma.listingAttribute.deleteMany({ where: { listingId: listing.id } });
+      for (const catAttr of catAttrs) {
+        const nameObj = catAttr.name as Record<string, string>;
+        const key = nameObj.en;
+        if (key && attrs[key]) {
+          await prisma.listingAttribute.create({
+            data: {
+              listingId: listing.id,
+              categoryAttributeId: catAttr.id,
+              value: attrs[key],
+            },
+          });
+        }
+      }
+    }
+  }
+
+  console.log(`  → Created ${allListings.length} test listings`);
   console.log("✅ Seed complete!");
 }
 

@@ -4,7 +4,7 @@ import { db } from "@/server/db";
 import { ListingCard } from "@/components/listing-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, AlertTriangle } from "lucide-react";
 import { getLocalizedName } from "@/lib/utils";
 
 interface CategoryPageProps {
@@ -18,17 +18,38 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const page = parseInt(filters.page || "1", 10);
   const perPage = 24;
 
-  const category = await db.category.findFirst({
-    where: { slug },
-    include: {
-      parent: true,
-      children: {
-        orderBy: { sortOrder: "asc" },
-        include: { _count: { select: { listings: true } } },
+  let category;
+  try {
+    category = await db.category.findFirst({
+      where: { slug },
+      include: {
+        parent: true,
+        children: {
+          orderBy: { sortOrder: "asc" },
+          include: { _count: { select: { listings: true } } },
+        },
+        _count: { select: { listings: true } },
       },
-      _count: { select: { listings: true } },
-    },
-  });
+    });
+  } catch (e) {
+    console.error("Failed to fetch category:", e);
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <AlertTriangle className="mx-auto h-12 w-12 text-yellow-500 mb-4" />
+        <h1 className="text-2xl font-bold mb-2">Service Temporarily Unavailable</h1>
+        <p className="text-muted-foreground mb-4">
+          Unable to load category data. The database may need to be set up.
+        </p>
+        <p className="text-sm text-muted-foreground mb-6">
+          Run <code className="bg-muted px-2 py-1 rounded">docker compose up -d</code> then{" "}
+          <code className="bg-muted px-2 py-1 rounded">npx prisma db seed</code> to initialize.
+        </p>
+        <Link href={`/${locale}`}>
+          <Button>Go Home</Button>
+        </Link>
+      </div>
+    );
+  }
 
   if (!category) notFound();
 
@@ -42,23 +63,29 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     default: orderBy.createdAt = "desc";
   }
 
-  const [listings, totalCount] = await Promise.all([
-    db.listing.findMany({
-      where: { categoryId: { in: categoryIds }, status: "ACTIVE" },
-      orderBy,
-      skip: (page - 1) * perPage,
-      take: perPage,
-      include: {
-        images: { take: 1, orderBy: { sortOrder: "asc" } },
-        category: true,
-        location: true,
-        boosts: { where: { endAt: { gt: new Date() } } },
-      },
-    }),
-    db.listing.count({
-      where: { categoryId: { in: categoryIds }, status: "ACTIVE" },
-    }),
-  ]);
+  let listings: Awaited<ReturnType<typeof db.listing.findMany>> = [];
+  let totalCount = 0;
+  try {
+    [listings, totalCount] = await Promise.all([
+      db.listing.findMany({
+        where: { categoryId: { in: categoryIds }, status: "ACTIVE" },
+        orderBy,
+        skip: (page - 1) * perPage,
+        take: perPage,
+        include: {
+          images: { take: 1, orderBy: { sortOrder: "asc" } },
+          category: true,
+          location: true,
+          boosts: { where: { endAt: { gt: new Date() } } },
+        },
+      }),
+      db.listing.count({
+        where: { categoryId: { in: categoryIds }, status: "ACTIVE" },
+      }),
+    ]);
+  } catch (e) {
+    console.error("Failed to fetch category listings:", e);
+  }
 
   const totalPages = Math.ceil(totalCount / perPage);
 

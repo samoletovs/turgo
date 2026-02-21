@@ -1,0 +1,3 @@
+cd Turgo
+npx prisma generate
+npx tsc --noEmit

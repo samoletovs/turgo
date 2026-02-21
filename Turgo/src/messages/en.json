@@ -429,6 +429,231 @@
     "help": "Help Center",
     "copyright": "© {year} Turgo. All rights reserved.",
     "tagline": "Agent-first classifieds for the Baltics",
-    "legal": "Legal"
+    "legal": "Legal",
+    "cookies": "Cookie Policy"
+  },
+  "errors": {
+    "notFound": {
+      "title": "Page Not Found",
+      "description": "The page you're looking for doesn't exist or has been moved.",
+      "cta": "Go Home"
+    },
+    "server": {
+      "title": "Something Went Wrong",
+      "description": "We're experiencing technical difficulties. Please try again later.",
+      "cta": "Try Again"
+    },
+    "boundary": {
+      "title": "Unexpected Error",
+      "description": "Something unexpected happened. Please refresh the page.",
+      "cta": "Refresh Page"
+    }
+  },
+  "cookie": {
+    "title": "We use cookies",
+    "description": "We use cookies to improve your experience. By continuing, you agree to our cookie policy.",
+    "accept": "Accept All",
+    "reject": "Reject Non-Essential",
+    "settings": "Cookie Settings",
+    "necessary": "Necessary",
+    "necessaryDesc": "Required for core site functionality",
+    "analytics": "Analytics",
+    "analyticsDesc": "Help us understand how you use the site",
+    "marketing": "Marketing",
+    "marketingDesc": "Used for personalized ads and content",
+    "save": "Save Preferences"
+  },
+  "legal": {
+    "cookies": {
+      "title": "Cookie Policy",
+      "lastUpdated": "Last updated: February 2026",
+      "intro": "This Cookie Policy explains how Turgo uses cookies and similar technologies.",
+      "whatAreCookies": "What Are Cookies",
+      "whatAreCookiesDesc": "Cookies are small text files stored on your device when you visit a website. They help the site remember your preferences and improve your experience.",
+      "typesTitle": "Types of Cookies We Use",
+      "necessary": "Necessary Cookies",
+      "necessaryDesc": "These cookies are essential for the website to function properly. They enable basic features like page navigation and access to secure areas.",
+      "analytics": "Analytics Cookies",
+      "analyticsDesc": "These cookies help us understand how visitors interact with our website by collecting and reporting information anonymously.",
+      "marketing": "Marketing Cookies",
+      "marketingDesc": "These cookies are used to track visitors across websites to display relevant advertisements.",
+      "manage": "Managing Cookies",
+      "manageDesc": "You can control and manage cookies through your browser settings. Removing or blocking cookies may impact your user experience.",
+      "contact": "Contact Us",
+      "contactDesc": "If you have questions about our use of cookies, contact us at privacy@turgo.io"
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "lastUpdated": "Last updated: February 2026"
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "lastUpdated": "Last updated: February 2026"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account preferences",
+    "profile": {
+      "title": "Profile",
+      "name": "Display Name",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "bio": "Bio",
+      "save": "Save Profile",
+      "saved": "Profile saved successfully"
+    },
+    "locale": {
+      "title": "Language & Region",
+      "language": "Language",
+      "country": "Country",
+      "currency": "Currency",
+      "timezone": "Timezone"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "email": "Email Notifications",
+      "emailDesc": "Receive email notifications for important updates",
+      "push": "Push Notifications",
+      "pushDesc": "Receive push notifications in your browser",
+      "agentUpdates": "Agent Updates",
+      "agentUpdatesDesc": "Get notified when your AI agents take action",
+      "newMessages": "New Messages",
+      "newMessagesDesc": "Get notified when you receive new messages",
+      "priceAlerts": "Price Alerts",
+      "priceAlertsDesc": "Get notified about price changes on watched items",
+      "marketing": "Marketing",
+      "marketingDesc": "Receive product updates and special offers"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "data": {
+      "title": "Data & Privacy",
+      "export": "Export Your Data",
+      "exportDesc": "Download a copy of all your data in JSON format",
+      "exportBtn": "Export Data",
+      "exporting": "Exporting...",
+      "exported": "Data export started. You'll receive an email with the download link.",
+      "delete": "Delete Account",
+      "deleteDesc": "Permanently delete your account and all associated data. This action cannot be undone.",
+      "deleteBtn": "Delete My Account",
+      "deleteConfirm": "Are you sure you want to delete your account? This will permanently remove all your data, listings, agents, and messages.",
+      "deleteConfirmBtn": "Yes, Delete My Account"
+    }
+  },
+  "verifyEmail": {
+    "title": "Verify Your Email",
+    "sent": "We've sent a verification link to",
+    "check": "Please check your inbox and click the link to verify your email address.",
+    "resend": "Resend verification email",
+    "resent": "Verification email sent!",
+    "expired": "This verification link has expired.",
+    "success": "Email verified successfully!",
+    "successDesc": "Your email has been verified. You can now access all features.",
+    "continue": "Continue to Dashboard"
+  },
+  "forgotPassword": {
+    "title": "Reset Your Password",
+    "description": "Enter your email address and we'll send you a link to reset your password.",
+    "email": "Email Address",
+    "submit": "Send Reset Link",
+    "sent": "Reset link sent!",
+    "sentDesc": "If an account exists with that email, you'll receive a password reset link shortly.",
+    "backToSignIn": "Back to Sign In",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "resetSubmit": "Reset Password",
+    "resetSuccess": "Password reset successfully!",
+    "resetSuccessDesc": "Your password has been updated. You can now sign in with your new password.",
+    "invalidToken": "This reset link is invalid or has expired.",
+    "requestNew": "Request a new reset link"
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Welcome to Turgo!",
+      "subtitle": "Let's set up your account in just a few steps"
+    },
+    "step1": {
+      "title": "Choose Your Country",
+      "subtitle": "Select where you're located to see relevant listings"
+    },
+    "step2": {
+      "title": "Your Interests",
+      "subtitle": "Select categories you're interested in"
+    },
+    "step3": {
+      "title": "How Will You Use Turgo?",
+      "subtitle": "This helps us customize your experience",
+      "buying": "I want to buy things",
+      "selling": "I want to sell things",
+      "both": "Both buying and selling"
+    },
+    "step4": {
+      "title": "You're All Set!",
+      "subtitle": "Your account is ready. Start exploring!",
+      "exploreCta": "Browse Listings",
+      "sellCta": "Create Your First Listing"
+    },
+    "skip": "Skip for now",
+    "continue": "Continue",
+    "finish": "Get Started"
+  },
+  "region": {
+    "title": "Select Region",
+    "latvia": "Latvia",
+    "lithuania": "Lithuania",
+    "estonia": "Estonia",
+    "allBaltics": "All Baltics"
+  },
+  "darkMode": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "a11y": {
+    "skipToContent": "Skip to main content",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "toggleTheme": "Toggle theme",
+    "changeLanguage": "Change language",
+    "loading": "Loading content",
+    "searchResults": "Search results"
+  },
+  "empty": {
+    "favorites": {
+      "title": "No favorites yet",
+      "description": "Start browsing and save listings you love",
+      "cta": "Browse Listings"
+    },
+    "messages": {
+      "title": "No messages yet",
+      "description": "When you contact a seller or receive inquiries, they'll appear here",
+      "cta": "Browse Listings"
+    },
+    "listings": {
+      "title": "No listings yet",
+      "description": "Create your first listing and let AI help you sell faster",
+      "cta": "Create Listing"
+    },
+    "agents": {
+      "title": "No agents yet",
+      "description": "Set up AI agents to automate your buying and selling",
+      "cta": "Create Agent"
+    },
+    "search": {
+      "title": "No results found",
+      "description": "Try adjusting your filters or search terms",
+      "cta": "Clear Filters"
+    },
+    "notifications": {
+      "title": "No notifications",
+      "description": "You're all caught up! New notifications will appear here.",
+      "cta": "Browse Listings"
+    }
   }
 }

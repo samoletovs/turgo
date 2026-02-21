@@ -37,14 +37,14 @@ import { Link } from "@/i18n/navigation";
 
 interface CategoryOption {
   id: string;
-  name: string;
+  name: string | Record<string, string>;
   slug: string;
   children?: CategoryOption[];
 }
 
 interface LocationOption {
   id: string;
-  name: string;
+  name: string | Record<string, string>;
   slug: string;
   children?: LocationOption[];
 }
@@ -89,6 +89,7 @@ export function ManualListingForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [submitError, setSubmitError] = useState("");
 
   // Derived
   const selectedCategory = categories.find((c) => c.id === categoryId);
@@ -98,11 +99,12 @@ export function ManualListingForm({
 
   // Get display name from i18n JSON
   const getName = useCallback(
-    (name: string | Record<string, string>) => {
-      if (typeof name === "object") {
-        return name[locale] || name.en || Object.values(name)[0] || "";
+    (name: string | Record<string, string> | unknown) => {
+      if (typeof name === "object" && name !== null) {
+        const map = name as Record<string, string>;
+        return map[locale] || map.en || Object.values(map)[0] || "";
       }
-      return name;
+      return String(name ?? "");
     },
     [locale],
   );
@@ -145,6 +147,7 @@ export function ManualListingForm({
 
     setIsSubmitting(true);
     setSubmitStatus("idle");
+    setSubmitError("");
 
     try {
       const formData = new FormData();
@@ -176,9 +179,12 @@ export function ManualListingForm({
           );
         }, 1000);
       } else {
+        const errorData = await response.json().catch(() => null);
+        setSubmitError(errorData?.error || `Server error (${response.status}). Please try again.`);
         setSubmitStatus("error");
       }
     } catch {
+      setSubmitError("Network error. Please check your connection and try again.");
       setSubmitStatus("error");
     } finally {
       setIsSubmitting(false);
@@ -227,6 +233,25 @@ export function ManualListingForm({
         </div>
 
         <div className="space-y-8">
+          {/* ── Database warning ── */}
+          {categories.length === 0 && locations.length === 0 && (
+            <Card className="border-yellow-300 bg-yellow-50 dark:bg-yellow-950/20">
+              <CardContent className="flex items-start gap-3 p-4">
+                <Tag className="h-5 w-5 shrink-0 text-yellow-600 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                    Categories and locations are not available
+                  </p>
+                  <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                    The database may need to be initialized. Run{" "}
+                    <code className="bg-yellow-100 dark:bg-yellow-900 px-1 rounded">npx prisma db seed</code>{" "}
+                    to populate categories and locations.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* ── Photos ── */}
           <section>
             <div className="mb-3 flex items-center gap-2">
@@ -543,9 +568,11 @@ export function ManualListingForm({
           </div>
 
           {submitStatus === "error" && (
-            <p className="text-center text-sm text-red-500">
-              Failed to create listing. Please try again.
-            </p>
+            <div className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/20 p-4 text-center">
+              <p className="text-sm font-medium text-red-600 dark:text-red-400">
+                {submitError || "Failed to create listing. Please try again."}
+              </p>
+            </div>
           )}
         </div>
       </div>

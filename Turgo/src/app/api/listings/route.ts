@@ -31,14 +31,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Title must be at least 5 characters" }, { status: 400 });
     }
     if (!description || description.length < 20) {
-      return NextResponse.json({ error: "Description must be at least 20 characters" }, { status: 400 });
+      return NextResponse.json({ error: `Description must be at least 20 characters (got ${description?.length || 0})` }, { status: 400 });
     }
     const price = parseFloat(priceRaw);
     if (isNaN(price) || price <= 0) {
       return NextResponse.json({ error: "Price must be a positive number" }, { status: 400 });
     }
     if (!categoryId) {
-      return NextResponse.json({ error: "Category is required" }, { status: 400 });
+      return NextResponse.json({ error: "Category is required. Please select a category." }, { status: 400 });
+    }
+
+    // Verify categoryId exists in DB
+    const categoryExists = await db.category.findUnique({ where: { id: categoryId }, select: { id: true } });
+    if (!categoryExists) {
+      return NextResponse.json({ error: "Selected category not found. Database may need seeding." }, { status: 400 });
     }
 
     // ── Generate slug ──
@@ -145,8 +151,22 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("[API_LISTINGS_POST]", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    // Check for common Prisma errors
+    if (message.includes("ECONNREFUSED") || message.includes("DATABASE_URL")) {
+      return NextResponse.json(
+        { error: "Database connection failed. Please ensure the database is running." },
+        { status: 503 }
+      );
+    }
+    if (message.includes("Foreign key constraint")) {
+      return NextResponse.json(
+        { error: "Invalid category or location. The database may need to be seeded." },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
-      { error: "Failed to create listing" },
+      { error: "Failed to create listing. Please try again." },
       { status: 500 }
     );
   }

@@ -274,6 +274,231 @@
     "help": "Palīdzības centrs",
     "copyright": "© {year} Turgo. Visas tiesības aizsargātas.",
     "tagline": "Aģentu vadīts sludinājumu tirgus Baltijā",
-    "legal": "Juridiskā informācija"
+    "legal": "Juridiskā informācija",
+    "cookies": "Sīkdatņu politika"
+  },
+  "errors": {
+    "notFound": {
+      "title": "Lapa nav atrasta",
+      "description": "Lapa, kuru meklējat, nepastāv vai ir pārvietota.",
+      "cta": "Uz sākumu"
+    },
+    "server": {
+      "title": "Kaut kas nogāja greizi",
+      "description": "Mums ir tehniski traucējumi. Lūdzu, mēģiniet vēlāk.",
+      "cta": "Mēģināt vēlreiz"
+    },
+    "boundary": {
+      "title": "Neparedzēta kļūda",
+      "description": "Notika kaut kas neparedzēts. Lūdzu, atsvaidziniet lapu.",
+      "cta": "Atsvaidzināt lapu"
+    }
+  },
+  "cookie": {
+    "title": "Mēs izmantojam sīkdatnes",
+    "description": "Mēs izmantojam sīkdatnes, lai uzlabotu jūsu pieredzi. Turpinot, jūs piekrītat mūsu sīkdatņu politikai.",
+    "accept": "Pieņemt visas",
+    "reject": "Noraidīt neobligātās",
+    "settings": "Sīkdatņu iestatījumi",
+    "necessary": "Nepieciešamās",
+    "necessaryDesc": "Nepieciešamas vietnes pamatdarbībai",
+    "analytics": "Analītikas",
+    "analyticsDesc": "Palīdz mums saprast, kā jūs izmantojat vietni",
+    "marketing": "Mārketinga",
+    "marketingDesc": "Izmantots personalizētām reklāmām un saturam",
+    "save": "Saglabāt iestatījumus"
+  },
+  "legal": {
+    "cookies": {
+      "title": "Sīkdatņu politika",
+      "lastUpdated": "Pēdējoreiz atjaunināts: 2026. gada februāris",
+      "intro": "Šī sīkdatņu politika izskaidro, kā Turgo izmanto sīkdatnes un līdzīgas tehnoloģijas.",
+      "whatAreCookies": "Kas ir sīkdatnes",
+      "whatAreCookiesDesc": "Sīkdatnes ir mazi teksta faili, kas tiek saglabāti jūsu ierīcē apmeklējot vietni.",
+      "typesTitle": "Izmantoto sīkdatņu veidi",
+      "necessary": "Nepieciešamās sīkdatnes",
+      "necessaryDesc": "Šīs sīkdatnes ir būtiskas vietnes pareizai darbībai.",
+      "analytics": "Analītikas sīkdatnes",
+      "analyticsDesc": "Šīs sīkdatnes palīdz mums saprast, kā apmeklētāji mijiedarbojas ar mūsu vietni.",
+      "marketing": "Mārketinga sīkdatnes",
+      "marketingDesc": "Šīs sīkdatnes tiek izmantotas, lai parādītu atbilstošas reklāmas.",
+      "manage": "Sīkdatņu pārvaldīšana",
+      "manageDesc": "Jūs varat kontrolēt sīkdatnes savā pārlūkprogrammā.",
+      "contact": "Sazinieties ar mums",
+      "contactDesc": "Ja jums ir jautājumi par sīkdatņu izmantošanu, sazinieties ar mums: privacy@turgo.io"
+    },
+    "terms": {
+      "title": "Lietošanas noteikumi",
+      "lastUpdated": "Pēdējoreiz atjaunināts: 2026. gada februāris"
+    },
+    "privacy": {
+      "title": "Privātuma politika",
+      "lastUpdated": "Pēdējoreiz atjaunināts: 2026. gada februāris"
+    }
+  },
+  "settings": {
+    "title": "Iestatījumi",
+    "subtitle": "Pārvaldiet sava konta iestatījumus",
+    "profile": {
+      "title": "Profils",
+      "name": "Vārds",
+      "email": "E-pasta adrese",
+      "phone": "Tālruņa numurs",
+      "bio": "Par sevi",
+      "save": "Saglabāt profilu",
+      "saved": "Profils veiksmīgi saglabāts"
+    },
+    "locale": {
+      "title": "Valoda un reģions",
+      "language": "Valoda",
+      "country": "Valsts",
+      "currency": "Valūta",
+      "timezone": "Laika josla"
+    },
+    "notifications": {
+      "title": "Paziņojumi",
+      "email": "E-pasta paziņojumi",
+      "emailDesc": "Saņemiet e-pasta paziņojumus par svarīgiem atjauninājumiem",
+      "push": "Push paziņojumi",
+      "pushDesc": "Saņemiet push paziņojumus pārlūkprogrammā",
+      "agentUpdates": "Aģentu atjauninājumi",
+      "agentUpdatesDesc": "Saņemiet paziņojumu, kad jūsu AI aģenti veic darbības",
+      "newMessages": "Jauni ziņojumi",
+      "newMessagesDesc": "Saņemiet paziņojumu par jauniem ziņojumiem",
+      "priceAlerts": "Cenu brīdinājumi",
+      "priceAlertsDesc": "Saņemiet paziņojumu par cenu izmaiņām",
+      "marketing": "Mārketings",
+      "marketingDesc": "Saņemiet produktu jaunumus un īpašos piedāvājumus"
+    },
+    "appearance": {
+      "title": "Izskats",
+      "theme": "Motīvs",
+      "light": "Gaišs",
+      "dark": "Tumšs",
+      "system": "Sistēmas"
+    },
+    "data": {
+      "title": "Dati un privātums",
+      "export": "Eksportēt jūsu datus",
+      "exportDesc": "Lejupielādējiet savu datu kopiju JSON formātā",
+      "exportBtn": "Eksportēt datus",
+      "exporting": "Eksportē...",
+      "exported": "Datu eksports sākts. Jūs saņemsiet e-pastu ar lejupielādes saiti.",
+      "delete": "Dzēst kontu",
+      "deleteDesc": "Neatgriezeniski dzēst savu kontu un visus saistītos datus.",
+      "deleteBtn": "Dzēst manu kontu",
+      "deleteConfirm": "Vai tiešām vēlaties dzēst savu kontu? Tiks neatgriezeniski noņemti visi jūsu dati.",
+      "deleteConfirmBtn": "Jā, dzēst manu kontu"
+    }
+  },
+  "verifyEmail": {
+    "title": "Apstipriniet savu e-pastu",
+    "sent": "Mēs nosūtījām verifikācijas saiti uz",
+    "check": "Lūdzu, pārbaudiet savu iesūtni un noklikšķiniet uz saites.",
+    "resend": "Nosūtīt verifikācijas e-pastu atkārtoti",
+    "resent": "Verifikācijas e-pasts nosūtīts!",
+    "expired": "Šī verifikācijas saite ir beigusies.",
+    "success": "E-pasts veiksmīgi apstiprināts!",
+    "successDesc": "Jūsu e-pasts ir apstiprināts. Tagad varat izmantot visas funkcijas.",
+    "continue": "Turpināt uz paneli"
+  },
+  "forgotPassword": {
+    "title": "Atjaunot paroli",
+    "description": "Ievadiet savu e-pasta adresi, un mēs nosūtīsim saiti paroles atjaunošanai.",
+    "email": "E-pasta adrese",
+    "submit": "Nosūtīt atjaunošanas saiti",
+    "sent": "Atjaunošanas saite nosūtīta!",
+    "sentDesc": "Ja konts ar šo e-pastu pastāv, jūs drīz saņemsiet paroles atjaunošanas saiti.",
+    "backToSignIn": "Atpakaļ uz ielogošanos",
+    "newPassword": "Jaunā parole",
+    "confirmPassword": "Apstiprināt jauno paroli",
+    "resetSubmit": "Atjaunot paroli",
+    "resetSuccess": "Parole veiksmīgi atjaunota!",
+    "resetSuccessDesc": "Jūsu parole ir atjaunota. Tagad varat ieiet ar jauno paroli.",
+    "invalidToken": "Šī atjaunošanas saite ir nederīga vai beigusies.",
+    "requestNew": "Pieprasīt jaunu atjaunošanas saiti"
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Laipni lūdzam Turgo!",
+      "subtitle": "Iestatiet savu kontu dažos vienkāršos soļos"
+    },
+    "step1": {
+      "title": "Izvēlieties savu valsti",
+      "subtitle": "Atlasiet, kur atrodaties, lai redzētu atbilstošus sludinājumus"
+    },
+    "step2": {
+      "title": "Jūsu intereses",
+      "subtitle": "Atlasiet kategorijas, kas jūs interesē"
+    },
+    "step3": {
+      "title": "Kā jūs izmantosiet Turgo?",
+      "subtitle": "Tas palīdzēs mums pielāgot jūsu pieredzi",
+      "buying": "Vēlos pirkt",
+      "selling": "Vēlos pārdot",
+      "both": "Gan pirkt, gan pārdot"
+    },
+    "step4": {
+      "title": "Viss gatavs!",
+      "subtitle": "Jūsu konts ir gatavs. Sāciet izpētīt!",
+      "exploreCta": "Pārlūkot sludinājumus",
+      "sellCta": "Izveidot pirmo sludinājumu"
+    },
+    "skip": "Izlaist pagaidām",
+    "continue": "Turpināt",
+    "finish": "Sākt"
+  },
+  "region": {
+    "title": "Izvēlieties reģionu",
+    "latvia": "Latvija",
+    "lithuania": "Lietuva",
+    "estonia": "Igaunija",
+    "allBaltics": "Visa Baltija"
+  },
+  "darkMode": {
+    "light": "Gaišs",
+    "dark": "Tumšs",
+    "system": "Sistēmas"
+  },
+  "a11y": {
+    "skipToContent": "Pāriet uz galveno saturu",
+    "openMenu": "Atvērt izvēlni",
+    "closeMenu": "Aizvērt izvēlni",
+    "toggleTheme": "Mainīt motīvu",
+    "changeLanguage": "Mainīt valodu",
+    "loading": "Ielādē saturu",
+    "searchResults": "Meklēšanas rezultāti"
+  },
+  "empty": {
+    "favorites": {
+      "title": "Vēl nav izlases",
+      "description": "Sāciet pārlūkot un saglabājiet sludinājumus, kas jums patīk",
+      "cta": "Pārlūkot sludinājumus"
+    },
+    "messages": {
+      "title": "Vēl nav ziņojumu",
+      "description": "Kad sazināsieties ar pārdevēju vai saņemsiet pieprasījumus, tie parādīsies šeit",
+      "cta": "Pārlūkot sludinājumus"
+    },
+    "listings": {
+      "title": "Vēl nav sludinājumu",
+      "description": "Izveidojiet pirmo sludinājumu un ļaujiet AI palīdzēt pārdot ātrāk",
+      "cta": "Izveidot sludinājumu"
+    },
+    "agents": {
+      "title": "Vēl nav aģentu",
+      "description": "Iestatiet AI aģentus, lai automatizētu pirkšanu un pārdošanu",
+      "cta": "Izveidot aģentu"
+    },
+    "search": {
+      "title": "Nav atrasts neviens rezultāts",
+      "description": "Mēģiniet mainīt filtrus vai meklēšanas vārdus",
+      "cta": "Notīrīt filtrus"
+    },
+    "notifications": {
+      "title": "Nav paziņojumu",
+      "description": "Viss ir aktuāli! Jauni paziņojumi parādīsies šeit.",
+      "cta": "Pārlūkot sludinājumus"
+    }
   }
 }

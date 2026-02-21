@@ -8,8 +8,9 @@ export default async function NewListingPage({
 }) {
   const { locale } = await params;
 
-  let categories: { id: string; name: string; slug: string; children?: { id: string; name: string; slug: string }[] }[] = [];
-  let locations: { id: string; name: string; slug: string; children?: { id: string; name: string; slug: string }[] }[] = [];
+  type JsonName = string | Record<string, string>;
+  let categories: { id: string; name: JsonName; slug: string; children?: { id: string; name: JsonName; slug: string }[] }[] = [];
+  let locations: { id: string; name: JsonName; slug: string; children?: { id: string; name: JsonName; slug: string }[] }[] = [];
 
   try {
     const [cats, locs] = await Promise.all([

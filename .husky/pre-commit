@@ -1,0 +1,2 @@
+cd Turgo
+npx lint-staged
