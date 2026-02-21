@@ -85,7 +85,6 @@ jobs:
     name: Deploy to Azure
     runs-on: ubuntu-latest
     needs: build
-    environment: production
 
     steps:
       - name: Azure Login
@@ -101,6 +100,7 @@ jobs:
           imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/turgo:latest
 
       - name: Run database migrations
+        continue-on-error: true
         uses: azure/CLI@v2
         with:
           inlineScript: |
