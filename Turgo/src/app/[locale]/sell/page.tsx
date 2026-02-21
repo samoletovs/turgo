@@ -14,22 +14,29 @@ export default async function SellPage({
     db.category.findMany({
       where: { parentId: null },
       orderBy: { sortOrder: "asc" },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
         children: {
           orderBy: { sortOrder: "asc" },
           select: { id: true, name: true, slug: true },
         },
       },
-      select: { id: true, name: true, slug: true, children: true },
     }),
     db.location.findMany({
       where: { parentId: null },
       orderBy: { name: "asc" },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
         children: {
           orderBy: { name: "asc" },
-          select: { id: true, name: true, slug: true },
-          include: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
             children: {
               orderBy: { name: "asc" },
               select: { id: true, name: true, slug: true },
@@ -37,7 +44,6 @@ export default async function SellPage({
           },
         },
       },
-      select: { id: true, name: true, slug: true, children: true },
     }),
   ]);
 
