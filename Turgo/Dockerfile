@@ -16,8 +16,10 @@ COPY . .
 RUN npx prisma generate
 
 # Build Next.js (standalone output)
+# Dummy DATABASE_URL needed so Prisma Client can initialize during build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 RUN npm run build
 
 # ── Stage 3: Production image ──
