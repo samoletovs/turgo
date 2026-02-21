@@ -1,7 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import {
-  Bot,
   TrendingUp,
   TrendingDown,
   ShoppingBag,
@@ -17,7 +16,6 @@ import {
   Target,
   Bell,
   Activity,
-  BarChart3,
   Calendar,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
@@ -285,7 +283,7 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
             <Card>
               <CardContent className="p-3">
                 <div className="grid grid-cols-2 gap-2">
-                  {sellingAgent!.listing.images.map((img: { id: string; url: string }, i: number) => (
+                  {sellingAgent!.listing.images.map((img: { id: string; url: string }) => (
                     <div key={img.id} className="aspect-square overflow-hidden rounded-lg bg-muted">
                       <img src={img.url} alt="" className="h-full w-full object-cover" />
                     </div>

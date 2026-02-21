@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
 import { db } from "@/server/db";
 import { ListingCard } from "@/components/listing-card";
 import { Badge } from "@/components/ui/badge";

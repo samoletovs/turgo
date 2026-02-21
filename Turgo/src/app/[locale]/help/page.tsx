@@ -1,7 +1,4 @@
-import { getTranslations } from "next-intl/server";
-
 export default async function HelpPage() {
-  const t = await getTranslations("common");
 
   return (
     <div className="py-16">

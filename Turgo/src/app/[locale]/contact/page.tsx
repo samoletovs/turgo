@@ -1,8 +1,6 @@
-import { getTranslations } from "next-intl/server";
 import { Mail, MapPin } from "lucide-react";
 
 export default async function ContactPage() {
-  const t = await getTranslations("common");
 
   return (
     <div className="py-16">

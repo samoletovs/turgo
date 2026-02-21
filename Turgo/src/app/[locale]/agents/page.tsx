@@ -1,10 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
 import {
   Bot,
   TrendingUp,
-  TrendingDown,
   Zap,
   Pause,
   Play,
