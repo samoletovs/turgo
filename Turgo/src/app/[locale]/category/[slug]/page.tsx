@@ -956,7 +956,7 @@ export default async function CategoryPage({
       },
     });
     if (dbCategory) {
-      category = dbCategory as typeof category;
+      category = dbCategory as unknown as typeof category;
     }
   } catch (e) {
     console.error("Failed to fetch category:", e);
