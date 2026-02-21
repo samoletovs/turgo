@@ -33,6 +33,7 @@ export function ListingCard({
           src={imageUrl}
           alt={listing.title}
           fill
+          unoptimized={imageUrl.startsWith("http")}
           className="object-cover transition-transform group-hover:scale-105"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         />
@@ -60,7 +61,9 @@ export function ListingCard({
               onFavoriteToggle(listing.id);
             }}
             className="absolute right-2 top-2 rounded-full bg-white/80 p-1.5 backdrop-blur-sm transition-colors hover:bg-white"
-            aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
+            aria-label={
+              isFavorited ? "Remove from favorites" : "Add to favorites"
+            }
           >
             <Heart
               className={`h-4 w-4 transition-colors ${

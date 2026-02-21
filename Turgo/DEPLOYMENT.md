@@ -40,15 +40,15 @@ GitHub Actions → Build Image → Push to ACR → Deploy to Container Apps
 
 ### Estimated Monthly Cost
 
-| Service                          | SKU           | Cost/mo   |
-|----------------------------------|---------------|-----------|
-| PostgreSQL Flexible Server       | Burstable B1ms| ~$12      |
-| Azure Cache for Redis            | Basic C0      | ~$16      |
-| Container Apps (app)             | 0.5 vCPU/1GB  | ~$5-15    |
-| Container Apps (meilisearch)     | 0.25 vCPU/0.5GB| ~$5      |
-| Container Registry               | Basic         | ~$5       |
-| Blob Storage                     | Standard LRS  | ~$1       |
-| **Total**                        |               | **~$44-54**|
+| Service                      | SKU             | Cost/mo     |
+| ---------------------------- | --------------- | ----------- |
+| PostgreSQL Flexible Server   | Burstable B1ms  | ~$12        |
+| Azure Cache for Redis        | Basic C0        | ~$16        |
+| Container Apps (app)         | 0.5 vCPU/1GB    | ~$5-15      |
+| Container Apps (meilisearch) | 0.25 vCPU/0.5GB | ~$5         |
+| Container Registry           | Basic           | ~$5         |
+| Blob Storage                 | Standard LRS    | ~$1         |
+| **Total**                    |                 | **~$44-54** |
 
 ---
 
@@ -106,6 +106,7 @@ chmod +x infra/azure-setup.sh
 > **Windows users:** Run this in WSL, Git Bash, or Azure Cloud Shell (portal.azure.com → Cloud Shell icon).
 
 The script will:
+
 1. Create a Resource Group
 2. Set up Azure Container Registry
 3. Create PostgreSQL with pgvector
@@ -138,18 +139,18 @@ Go to your GitHub repo → **Settings** → **Secrets and variables** → **Acti
 
 Add these secrets (values from the infrastructure script output):
 
-| Secret Name                | Value                              |
-|----------------------------|------------------------------------|
-| `AZURE_CREDENTIALS`       | The full JSON from Step 4          |
-| `ACR_LOGIN_SERVER`        | `<name>.azurecr.io`               |
-| `ACR_USERNAME`            | ACR name                           |
-| `ACR_PASSWORD`            | ACR admin password                 |
-| `DATABASE_URL`            | PostgreSQL connection string       |
-| `REDIS_URL`               | Redis connection string            |
-| `MEILISEARCH_HOST`        | Meilisearch internal URL           |
-| `MEILISEARCH_API_KEY`     | Meilisearch master key             |
-| `NEXTAUTH_SECRET`         | Generated secret                   |
-| `AZURE_STORAGE_CONNECTION`| Storage connection string          |
+| Secret Name                | Value                        |
+| -------------------------- | ---------------------------- |
+| `AZURE_CREDENTIALS`        | The full JSON from Step 4    |
+| `ACR_LOGIN_SERVER`         | `<name>.azurecr.io`          |
+| `ACR_USERNAME`             | ACR name                     |
+| `ACR_PASSWORD`             | ACR admin password           |
+| `DATABASE_URL`             | PostgreSQL connection string |
+| `REDIS_URL`                | Redis connection string      |
+| `MEILISEARCH_HOST`         | Meilisearch internal URL     |
+| `MEILISEARCH_API_KEY`      | Meilisearch master key       |
+| `NEXTAUTH_SECRET`          | Generated secret             |
+| `AZURE_STORAGE_CONNECTION` | Storage connection string    |
 
 ### Step 6: First Deployment
 
@@ -228,6 +229,7 @@ gh repo add-collaborator FRIEND_USERNAME --permission write
 ```
 
 Your friend can then:
+
 ```bash
 git clone https://github.com/YOUR_USERNAME/turgo.git
 cd turgo
@@ -305,6 +307,7 @@ npm run deploy
 ```
 
 **On Linux / macOS / WSL:**
+
 ```bash
 chmod +x deploy.sh
 ./deploy.sh                    # full build + deploy
@@ -313,12 +316,72 @@ chmod +x deploy.sh
 ```
 
 **What this skips vs GitHub Actions:**
+
 - No ESLint, TypeScript check, or tests (you're iterating fast)
 - No git push required
 - No GitHub Actions queue wait
 - Total time: ~2-3 min vs ~5-8 min
 
 > When the product is more stable, re-enable the GitHub Actions pipeline for proper CI/CD.
+
+---
+
+## Fast Testing Options
+
+### Option 1: Dev Tunnel (Instant — no build/deploy)
+
+Run the Next.js dev server locally with hot-reload and expose it via a public URL using Azure Dev Tunnels. Changes are reflected instantly on save.
+
+```bash
+# First time: install Dev Tunnels CLI
+winget install Microsoft.devtunnel
+devtunnel user login
+
+# Start dev server + tunnel (gives you a public URL)
+npm run dev:tunnel
+# or
+.\dev-tunnel.ps1
+```
+
+**When to use:** UI changes, feature testing, showing progress to others. No Docker needed, instant hot-reload.
+
+### Option 2: Quick Deploy (2-4 min — cloud build)
+
+Build the Docker image directly in Azure Container Registry (no local Docker needed) and deploy. Skips the local build + push cycle.
+
+```bash
+# Quick deploy (cloud build + deploy)
+npm run deploy:quick
+
+# Quick deploy with DB migration
+npm run deploy:quick:migrate
+
+# or directly
+.\deploy-quick.ps1
+.\deploy-quick.ps1 -Migrate
+.\deploy-quick.ps1 -BuildOnly   # just build, don't deploy
+```
+
+**When to use:** Need to test in the real Azure environment (with real DB, Redis, etc.) but want it faster than GitHub Actions.
+
+### Option 3: Standard Deploy (local Docker build)
+
+The original approach — build Docker image locally, push to ACR, update Container App.
+
+```bash
+npm run deploy              # full build + deploy
+npm run deploy:skip-build   # re-deploy existing image
+npm run deploy:migrate      # deploy + run DB migrations
+```
+
+### Comparison
+
+| Method          | Time      | Docker needed? | Hot reload? | Real infra?   |
+| --------------- | --------- | -------------- | ----------- | ------------- |
+| Dev Tunnel      | Instant   | No             | Yes         | No (local DB) |
+| Quick Deploy    | 2-4 min   | No             | No          | Yes           |
+| Standard Deploy | 8-15 min  | Yes            | No          | Yes           |
+| GitHub Actions  | 10-20 min | No (CI)        | No          | Yes           |
 
 ---
 
@@ -341,11 +404,11 @@ npm run dev
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| Container won't start | Check logs: `az containerapp logs show -g rg-turgo -n turgo --type console` |
-| DB connection refused | Ensure firewall allows Azure services: check PostgreSQL networking in Azure Portal |
-| Redis connection error | Azure Redis uses TLS on port 6380 — ensure `REDIS_URL` starts with `rediss://` |
-| Prisma migration fails | Run `npx prisma migrate deploy` locally against Azure DB URL |
-| Image push fails | Run `az acr login --name YOUR_ACR_NAME` first |
+| Issue                  | Solution                                                                                            |
+| ---------------------- | --------------------------------------------------------------------------------------------------- |
+| Container won't start  | Check logs: `az containerapp logs show -g rg-turgo -n turgo --type console`                         |
+| DB connection refused  | Ensure firewall allows Azure services: check PostgreSQL networking in Azure Portal                  |
+| Redis connection error | Azure Redis uses TLS on port 6380 — ensure `REDIS_URL` starts with `rediss://`                      |
+| Prisma migration fails | Run `npx prisma migrate deploy` locally against Azure DB URL                                        |
+| Image push fails       | Run `az acr login --name YOUR_ACR_NAME` first                                                       |
 | pgvector not available | Enable extension in Azure Portal → PostgreSQL → Server Parameters → `azure.extensions` → add VECTOR |

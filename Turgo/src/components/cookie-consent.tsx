@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useCallback, useMemo, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
@@ -15,11 +15,20 @@ type CookieConsent = {
 
 const COOKIE_CONSENT_KEY = "turgo_cookie_consent";
 
-function setCookieConsent(consent: CookieConsent) {
-  localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consent));
-  // Dispatch storage event so useSyncExternalStore picks up same-tab changes
-  window.dispatchEvent(new StorageEvent("storage", { key: COOKIE_CONSENT_KEY }));
+/** Read whether consent has been stored. Returns a stable primitive (boolean). */
+function hasStoredConsent(): boolean {
+  try {
+    return localStorage.getItem(COOKIE_CONSENT_KEY) !== null;
+  } catch {
+    return false;
+  }
 }
+
+/**
+ * A no-op subscribe — we never need to react to cross-tab storage events
+ * for the banner; once the user clicks a button we hide it via local state.
+ */
+const noop = (_cb: () => void) => () => {};
 
 export function CookieConsentBanner() {
   const t = useTranslations("cookie");
@@ -31,42 +40,37 @@ export function CookieConsentBanner() {
     marketing: false,
   });
 
-  // useSyncExternalStore requires getSnapshot to return a referentially
-  // stable value when nothing has changed.  Return the raw JSON string
-  // (primitives are compared by value, so no infinite-loop) and parse once.
-  const subscribe = useCallback((cb: () => void) => {
-    window.addEventListener("storage", cb);
-    return () => window.removeEventListener("storage", cb);
-  }, []);
-  const getSnapshot = useCallback(
-    () => (typeof window === "undefined" ? null : localStorage.getItem(COOKIE_CONSENT_KEY)),
-    [],
-  );
-  const getServerSnapshot = useCallback((): string | null => null, []);
-  const rawConsent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const storedConsent: CookieConsent | null = useMemo(
-    () => (rawConsent ? JSON.parse(rawConsent) : null),
-    [rawConsent],
+  // Read localStorage only on the client; server always returns false.
+  // useSyncExternalStore with a no-op subscribe means this only reads once
+  // on mount (getSnapshot) and never re-fires, avoiding the "setState in
+  // effect" lint violation while still being SSR-safe.
+  const alreadyConsented = useSyncExternalStore(
+    noop,
+    useCallback(() => hasStoredConsent(), []),
+    useCallback(() => false, []),
   );
 
-  // Visible if no stored consent and not dismissed
-  const visible = !storedConsent && !dismissed;
+  const visible = !alreadyConsented && !dismissed;
+
+  const saveCookieConsent = (value: CookieConsent) => {
+    try {
+      localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(value));
+    } catch {
+      // localStorage unavailable — silently ignore
+    }
+    setDismissed(true);
+  };
 
   const handleAcceptAll = () => {
-    const fullConsent = { necessary: true, analytics: true, marketing: true };
-    setCookieConsent(fullConsent);
-    setDismissed(true);
+    saveCookieConsent({ necessary: true, analytics: true, marketing: true });
   };
 
   const handleRejectNonEssential = () => {
-    const minConsent = { necessary: true, analytics: false, marketing: false };
-    setCookieConsent(minConsent);
-    setDismissed(true);
+    saveCookieConsent({ necessary: true, analytics: false, marketing: false });
   };
 
   const handleSaveSettings = () => {
-    setCookieConsent(consent);
-    setDismissed(true);
+    saveCookieConsent(consent);
   };
 
   if (!visible) return null;
@@ -118,12 +122,7 @@ export function CookieConsentBanner() {
                     </span>
                   </span>
                 </span>
-                <input
-                  type="checkbox"
-                  checked
-                  disabled
-                  className="h-4 w-4"
-                />
+                <input type="checkbox" checked disabled className="h-4 w-4" />
               </label>
               <label className="flex items-center justify-between gap-3">
                 <span className="flex items-center gap-2 text-sm">
@@ -180,7 +179,11 @@ export function CookieConsentBanner() {
               {t("reject")}
             </Button>
             {showSettings ? (
-              <Button variant="secondary" size="sm" onClick={handleSaveSettings}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleSaveSettings}
+              >
                 {t("save")}
               </Button>
             ) : (

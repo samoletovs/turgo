@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "https", hostname: "avatars.githubusercontent.com" },
       { protocol: "https", hostname: "*.blob.core.windows.net" },
+      { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
   experimental: {
