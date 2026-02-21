@@ -1,4 +1,4 @@
-# 🏪 Modern Classifieds Marketplace — Project Blueprint
+# 🏪 Turgo — Agent-First Classifieds — Project Blueprint
 
 ## 0. Core Philosophy: AGENT-FIRST Architecture
 

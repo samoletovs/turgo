@@ -1,4 +1,4 @@
-# Comprehensive GitHub Copilot Prompt — Modern Classifieds Marketplace
+# Comprehensive GitHub Copilot Prompt — Turgo (Agent-First Classifieds)
 
 Use this prompt in VS Code GitHub Copilot Chat (Agent mode) to scaffold and build the project.
 
@@ -7,7 +7,7 @@ Use this prompt in VS Code GitHub Copilot Chat (Agent mode) to scaffold and buil
 ## 🚀 MASTER PROMPT (Copy and use in Copilot Chat)
 
 ```
-I need to build a revolutionary AGENT-FIRST classifieds marketplace. This is NOT a traditional classifieds site with AI bolted on — agents ARE the core platform. Users don't fill forms; they tell agents what they want, and agents handle everything autonomously. **English is the primary language for all code, comments, documentation, and variable names.**
+I need to build a revolutionary AGENT-FIRST classifieds platform called Turgo. This is NOT a traditional classifieds site with AI bolted on — agents ARE the core platform. Users don't fill forms; they tell agents what they want, and agents handle everything autonomously. **English is the primary language for all code, comments, documentation, and variable names.**
 
 ## Core Philosophy: AGENT-FIRST
 - **Design Principle — ALWAYS enforce:** The platform must be **lightweight, fast, modern, and simple**. Every change, every feature, every component must be validated against these four pillars. If a change adds unnecessary weight, slows the page, looks dated, or complicates the UX — it must be refactored before shipping. This is a non-negotiable checkpoint on every PR.
@@ -849,7 +849,7 @@ Add internationalization, legal compliance, and final polish:
 
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/marketplace"
+DATABASE_URL="postgresql://user:password@localhost:5432/turgo"
 
 # Auth
 NEXTAUTH_SECRET="your-secret-key"

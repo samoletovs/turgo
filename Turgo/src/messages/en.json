@@ -1,0 +1,354 @@
+{
+  "common": {
+    "appName": "Turgo",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "reset": "Reset",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "or": "or",
+    "and": "and",
+    "free": "Free",
+    "new": "New",
+    "viewAll": "View all",
+    "learnMore": "Learn more",
+    "seeMore": "See more",
+    "showLess": "Show less",
+    "noResults": "No results found",
+    "currency": "€",
+    "perMonth": "/month"
+  },
+  "nav": {
+    "home": "Home",
+    "categories": "Categories",
+    "sell": "Sell",
+    "messages": "Messages",
+    "favorites": "Favorites",
+    "myListings": "My Listings",
+    "agents": "My Agents",
+    "profile": "Profile",
+    "settings": "Settings",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "pricing": "Pricing"
+  },
+  "home": {
+    "hero": {
+      "title": "Buy & Sell Smarter with AI Agents",
+      "subtitle": "The first platform where intelligent agents work 24/7 to get you the best deal",
+      "searchPlaceholder": "What are you looking for?",
+      "cta": "Start Selling with AI"
+    },
+    "featured": "Featured Listings",
+    "recentlyAdded": "Recently Added",
+    "popularCategories": "Popular Categories",
+    "howItWorks": {
+      "title": "How It Works",
+      "step1": {
+        "title": "List Your Item",
+        "description": "Describe what you're selling — our AI helps with pricing and descriptions"
+      },
+      "step2": {
+        "title": "Activate Your Agent",
+        "description": "Your AI selling agent optimizes pricing, responds to buyers, and negotiates 24/7"
+      },
+      "step3": {
+        "title": "Close the Deal",
+        "description": "Get notified when your agent finds the perfect buyer at the best price"
+      }
+    }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Welcome Back",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign In",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "register": "Create account",
+      "orContinueWith": "Or continue with"
+    },
+    "register": {
+      "title": "Create Account",
+      "name": "Full Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "marketing": "Send me updates about new features",
+      "gdpr": "I agree to the Privacy Policy and Terms of Service",
+      "submit": "Create Account",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "emailInUse": "An account with this email already exists",
+      "generic": "Authentication failed. Please try again."
+    }
+  },
+  "listing": {
+    "price": "Price",
+    "condition": "Condition",
+    "location": "Location",
+    "category": "Category",
+    "description": "Description",
+    "postedBy": "Posted by",
+    "postedOn": "Posted on",
+    "views": "views",
+    "contact": "Contact Seller",
+    "favorite": "Add to Favorites",
+    "unfavorite": "Remove from Favorites",
+    "share": "Share",
+    "report": "Report",
+    "conditions": {
+      "NEW": "New",
+      "USED": "Used",
+      "REFURBISHED": "Refurbished"
+    },
+    "statuses": {
+      "DRAFT": "Draft",
+      "ACTIVE": "Active",
+      "SOLD": "Sold",
+      "EXPIRED": "Expired",
+      "MODERATION": "In Review",
+      "REJECTED": "Rejected"
+    }
+  },
+  "sell": {
+    "title": "Sell with AI Agent",
+    "subtitle": "Let our AI help you create the perfect listing and sell faster",
+    "wizard": {
+      "step1": {
+        "title": "What are you selling?",
+        "placeholder": "Describe your item in a few words..."
+      },
+      "step2": {
+        "title": "Tell us more",
+        "titleLabel": "Title",
+        "descriptionLabel": "Description",
+        "categoryLabel": "Category",
+        "conditionLabel": "Condition",
+        "locationLabel": "Location"
+      },
+      "step3": {
+        "title": "Set your price",
+        "priceLabel": "Your price",
+        "aiSuggestion": "AI suggested price",
+        "marketAverage": "Market average"
+      },
+      "step4": {
+        "title": "Add photos",
+        "dropzone": "Drag photos here or click to upload",
+        "maxPhotos": "Up to {max} photos"
+      },
+      "step5": {
+        "title": "Activate Selling Agent",
+        "autoRespond": "Auto-respond to inquiries",
+        "autoPriceAdjust": "Dynamic price optimization",
+        "urgency": "How quickly do you want to sell?",
+        "minPrice": "Minimum acceptable price"
+      },
+      "publish": "Publish Listing",
+      "saveDraft": "Save as Draft"
+    }
+  },
+  "agent": {
+    "selling": {
+      "title": "Selling Agent",
+      "description": "Your AI agent optimizes pricing and handles buyer inquiries",
+      "status": "Agent Status",
+      "priceAdjustments": "Price Adjustments",
+      "autoResponses": "Auto Responses",
+      "dealScore": "Deal Score"
+    },
+    "buying": {
+      "title": "Buying Agent",
+      "description": "Set your criteria and let AI find the best deals",
+      "maxPrice": "Maximum Price",
+      "minDealScore": "Minimum Deal Score",
+      "matches": "Matches Found",
+      "watching": "Watching"
+    },
+    "statuses": {
+      "ACTIVE": "Active",
+      "PAUSED": "Paused",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    },
+    "urgency": {
+      "ONE_DAY": "Sell today",
+      "THREE_DAYS": "Within 3 days",
+      "ONE_WEEK": "This week",
+      "TWO_WEEKS": "Within 2 weeks",
+      "ONE_MONTH": "This month",
+      "NO_RUSH": "No rush"
+    },
+    "negotiate": {
+      "accept": "Offer accepted",
+      "counter": "Counter-offer sent",
+      "reject": "Offer declined",
+      "escalate": "Sent to seller for review"
+    },
+    "boost": {
+      "title": "Boost Listing",
+      "recommended": "Boost recommended",
+      "active": "Currently boosted",
+      "notNeeded": "No boost needed"
+    },
+    "summary": {
+      "title": "Daily Summary",
+      "views": "Views",
+      "inquiries": "Inquiries",
+      "offers": "Offers",
+      "priceChanges": "Price Changes"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Your AI agents at a glance",
+    "stats": {
+      "activeSelling": "Active Selling Agents",
+      "activeBuying": "Active Buying Agents",
+      "actionsTaken": "Agent Actions Taken",
+      "dealsFound": "Deals Found"
+    },
+    "myAgents": "My Agents",
+    "viewAll": "View all",
+    "noAgents": "No agents yet",
+    "noAgentsDesc": "Create your first AI agent to start automating",
+    "recentActivity": "Recent Activity",
+    "noActivity": "No activity yet",
+    "agents": {
+      "title": "All Agents",
+      "selling": "Selling Agents",
+      "buying": "Buying Agents",
+      "backToDashboard": "Back to Dashboard",
+      "noSelling": "No selling agents. Create a listing with an AI agent to get started.",
+      "noBuying": "No buying agents. Set one up to automatically find deals."
+    },
+    "detail": {
+      "backToAgents": "Back to Agents",
+      "agentStats": "Agent Stats",
+      "totalActions": "Total Actions",
+      "views": "Views",
+      "autoRespond": "Auto-Respond",
+      "autoNegotiate": "Auto-Negotiate",
+      "urgency": "Urgency",
+      "priceFloor": "Price Floor",
+      "matchesFound": "Matches Found",
+      "maxBudget": "Max Budget",
+      "timeline": "Agent Timeline",
+      "noActions": "No actions recorded yet",
+      "noActionsDesc": "Actions will appear here as the agent works",
+      "pause": "Pause",
+      "resume": "Resume",
+      "stop": "Stop",
+      "viewListing": "View listing",
+      "recentMatches": "Recent Matches"
+    }
+  },
+  "dealScore": {
+    "title": "Deal Score",
+    "exceptional": "Exceptional Deal",
+    "great": "Great Deal",
+    "good": "Good Deal",
+    "fair": "Fair Deal",
+    "belowAverage": "Below Average",
+    "factors": {
+      "priceVsMarket": "Price vs Market",
+      "timeOnMarket": "Time on Market",
+      "sellerUrgency": "Seller Urgency",
+      "listingQuality": "Listing Quality",
+      "sellerReputation": "Seller Reputation",
+      "location": "Location",
+      "conditionVsPrice": "Condition vs Price"
+    },
+    "recommendation": {
+      "buy": "Recommended — This is a strong deal.",
+      "watch": "Decent — Worth watching, consider negotiating.",
+      "pass": "Pass — Better options likely exist."
+    }
+  },
+  "priceCurve": {
+    "title": "Price Strategy",
+    "start": "Start",
+    "current": "Current",
+    "floor": "Floor",
+    "urgency": {
+      "ONE_DAY": "Sell today",
+      "THREE_DAYS": "3-day sale",
+      "ONE_WEEK": "1-week plan",
+      "TWO_WEEKS": "2-week plan",
+      "ONE_MONTH": "1-month plan",
+      "NO_RUSH": "No rush"
+    }
+  },
+  "concierge": {
+    "title": "AI Concierge",
+    "greeting": "Hi! I'm your Turgo AI assistant. How can I help you today?",
+    "placeholder": "Ask me anything...",
+    "suggestions": [
+      "I want to sell something",
+      "Find me a good deal on a phone",
+      "How does the AI agent work?",
+      "What's the average price for..."
+    ]
+  },
+  "pricing": {
+    "title": "Choose Your Plan",
+    "subtitle": "Start free and upgrade as you grow",
+    "free": {
+      "name": "Free",
+      "description": "Perfect for occasional sellers"
+    },
+    "pro": {
+      "name": "Pro",
+      "description": "For active buyers and sellers"
+    },
+    "business": {
+      "name": "Business",
+      "description": "For dealers and power users"
+    },
+    "features": {
+      "listings": "{count} listings",
+      "unlimitedListings": "Unlimited listings",
+      "photos": "Up to {count} photos per listing",
+      "agents": "{count} AI agent",
+      "unlimitedAgents": "Unlimited AI agents",
+      "basicAgent": "Basic AI agent",
+      "premiumAgent": "Premium AI agent",
+      "analytics": "Analytics dashboard",
+      "boosts": "Listing boosts",
+      "priority": "Priority support",
+      "api": "API access"
+    },
+    "cta": {
+      "current": "Current Plan",
+      "upgrade": "Upgrade",
+      "getStarted": "Get Started"
+    }
+  },
+  "footer": {
+    "about": "About",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact",
+    "help": "Help Center",
+    "copyright": "© {year} Turgo. All rights reserved.",
+    "tagline": "Agent-first classifieds for the Baltics"
+  }
+}
