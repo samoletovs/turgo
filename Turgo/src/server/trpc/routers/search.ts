@@ -84,6 +84,7 @@ export const searchRouter = createTRPCRouter({
         data: {
           userId: ctx.session.user.id!,
           name: input.name,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           filters: input.filters as any,
           notifyEmail: input.notifyEmail,
         },

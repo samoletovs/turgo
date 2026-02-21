@@ -18,6 +18,7 @@ export function getStripe(): Stripe {
 /** @deprecated Use getStripe() instead */
 export const stripe = new Proxy({} as Stripe, {
   get(_, prop) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (getStripe() as any)[prop];
   },
 });

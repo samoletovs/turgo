@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { signInSchema, type SignInInput } from "@/lib/validators";
+import { useRouter } from "@/i18n/navigation";
 
 export default function SignInPage({
   params,
@@ -19,6 +20,8 @@ export default function SignInPage({
   params: { locale: string };
 }) {
   const t = useTranslations("auth.signIn");
+  const tErrors = useTranslations("auth.errors");
+  const router = useRouter();
   const locale = params.locale;
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,9 +45,9 @@ export default function SignInPage({
     });
 
     if (result?.error) {
-      setError(t("../errors.invalidCredentials"));
+      setError(tErrors("invalidCredentials"));
     } else {
-      window.location.href = `/${locale}`;
+      router.push("/");
     }
 
     setIsLoading(false);
