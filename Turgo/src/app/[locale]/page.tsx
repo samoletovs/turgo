@@ -67,7 +67,13 @@ export default async function HomePage({
   const tCommon = await getTranslations("common");
 
   // Fetch latest active listings for the homepage
-  let latestListings: Awaited<ReturnType<typeof db.listing.findMany>> = [];
+  type ListingWithRelations = Awaited<ReturnType<typeof db.listing.findMany>>[number] & {
+    images: { url: string }[];
+    location: { name: string | Record<string, string> } | null;
+    boosts: { type: string; endAt: Date }[];
+    managedByAgent: boolean;
+  };
+  let latestListings: ListingWithRelations[] = [];
   try {
     latestListings = await db.listing.findMany({
       where: { status: "ACTIVE" },
@@ -79,7 +85,7 @@ export default async function HomePage({
         location: true,
         boosts: { where: { endAt: { gt: new Date() } } },
       },
-    });
+    }) as unknown as ListingWithRelations[];
   } catch {
     // DB may not be available yet — page still renders
   }

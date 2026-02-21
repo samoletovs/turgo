@@ -11,6 +11,7 @@ import {
   X,
   Bot,
   Globe,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,8 @@ import {
 import { APP_NAME, LOCALES, LOCALE_LABELS, LOCALE_FLAGS } from "@/lib/constants";
 import { useState } from "react";
 import { Link, useRouter, usePathname } from "@/i18n/navigation";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { RegionSelector } from "@/components/region-selector";
 
 interface NavbarProps {
   locale: string;
@@ -109,7 +112,7 @@ export function Navbar({ locale, user }: NavbarProps) {
               router.replace(pathname, { locale: newLocale });
             }}
           >
-            <SelectTrigger className="w-auto gap-1 border-none h-8 px-2">
+            <SelectTrigger className="w-auto gap-1 border-none h-8 px-2" aria-label="Change language">
               <Globe className="h-3.5 w-3.5" />
               <SelectValue />
             </SelectTrigger>
@@ -121,6 +124,12 @@ export function Navbar({ locale, user }: NavbarProps) {
               ))}
             </SelectContent>
           </Select>
+
+          {/* Region selector */}
+          <RegionSelector currentLocale={locale} />
+
+          {/* Theme toggle */}
+          <ThemeToggle />
         </nav>
 
         {/* Mobile menu toggle */}
@@ -189,6 +198,12 @@ export function Navbar({ locale, user }: NavbarProps) {
                   <Link href="/profile">
                     <User className="h-4 w-4 mr-2" />
                     {t("profile")}
+                  </Link>
+                </Button>
+                <Button variant="ghost" asChild className="w-full justify-start">
+                  <Link href="/dashboard/settings">
+                    <Settings className="h-4 w-4 mr-2" />
+                    {t("settings")}
                   </Link>
                 </Button>
               </>

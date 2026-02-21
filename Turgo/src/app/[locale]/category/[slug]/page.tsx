@@ -63,7 +63,12 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     default: orderBy.createdAt = "desc";
   }
 
-  let listings: Awaited<ReturnType<typeof db.listing.findMany>> = [];
+  type ListingWithRelations = Awaited<ReturnType<typeof db.listing.findMany>>[number] & {
+    images: { url: string }[];
+    location: { name: string | Record<string, string> } | null;
+    boosts: { type: string; endAt: Date }[];
+  };
+  let listings: ListingWithRelations[] = [];
   let totalCount = 0;
   try {
     [listings, totalCount] = await Promise.all([
@@ -78,7 +83,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           location: true,
           boosts: { where: { endAt: { gt: new Date() } } },
         },
-      }),
+      }) as unknown as Promise<ListingWithRelations[]>,
       db.listing.count({
         where: { categoryId: { in: categoryIds }, status: "ACTIVE" },
       }),
@@ -141,7 +146,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {listings.map((listing: typeof listings[number]) => (
+          {listings.map((listing) => (
             <ListingCard
               key={listing.id}
               listing={{
@@ -153,7 +158,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                 imageUrl: listing.images[0]?.url || "/placeholder.jpg",
                 imageCount: listing.images.length,
                 createdAt: listing.createdAt,
-                isFeatured: listing.boosts.some((b: typeof listing.boosts[number]) => b.type === "FEATURED"),
+                isFeatured: listing.boosts.some((b) => b.type === "FEATURED"),
                 hasAgent: false,
                 slug: listing.slug,
               }}

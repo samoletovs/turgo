@@ -62,6 +62,11 @@ export function Footer({ locale: _locale }: FooterProps) {
                   {t("terms")}
                 </Link>
               </li>
+              <li>
+                <Link href="/legal/cookies" className="hover:text-foreground">
+                  {t("cookies")}
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

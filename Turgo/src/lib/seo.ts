@@ -184,12 +184,7 @@ export function breadcrumbJsonLd(
   };
 }
 
-/** Render JSON-LD script tag */
-export function JsonLd({ data }: { data: Record<string, unknown> }) {
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-    />
-  );
+/** Render JSON-LD as a raw string for use in dangerouslySetInnerHTML */
+export function jsonLdString(data: Record<string, unknown>): string {
+  return JSON.stringify(data);
 }

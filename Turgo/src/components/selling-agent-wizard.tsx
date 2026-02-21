@@ -73,10 +73,12 @@ interface WizardData {
   autoBoost: boolean;
 }
 
+type JsonName = string | Record<string, string>;
+
 interface SellingAgentWizardProps {
   locale: string;
-  categories?: { id: string; name: string; slug: string; children?: { id: string; name: string; slug: string }[] }[];
-  locations?: { id: string; name: string; slug: string; children?: { id: string; name: string; slug: string }[] }[];
+  categories?: { id: string; name: JsonName; slug: string; children?: { id: string; name: JsonName; slug: string }[] }[];
+  locations?: { id: string; name: JsonName; slug: string; children?: { id: string; name: JsonName; slug: string }[] }[];
 }
 
 export function SellingAgentWizard({
