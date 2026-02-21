@@ -7,17 +7,13 @@ import {
   Eye,
   MessageSquare,
   DollarSign,
-  Pause,
-  Play,
-  Zap,
   Plus,
   ArrowLeft,
-  MoreVertical,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/server/db";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatRelativeTime } from "@/lib/utils";
 
@@ -131,6 +127,7 @@ export default async function AgentsListPage({ params }: AgentsListPageProps) {
                     {/* Thumbnail */}
                     <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
                       {agent.listing.images[0] ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img
                           src={agent.listing.images[0].url}
                           alt=""

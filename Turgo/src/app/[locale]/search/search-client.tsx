@@ -13,12 +13,10 @@ import {
   Sparkles,
   Bookmark,
   BookmarkCheck,
-  SlidersHorizontal,
   X,
   MapPin,
   Clock,
   Eye,
-  Heart,
   ChevronLeft,
   ChevronRight,
   RotateCcw,
@@ -95,7 +93,7 @@ export function SearchPageClient({
   totalPages,
   currentPage,
 }: SearchPageClientProps) {
-  const t = useTranslations("common");
+  const _t = useTranslations("common");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -370,6 +368,7 @@ function ListView({ listings, locale }: { listings: SerializedListing[]; locale:
         >
           {/* Image */}
           <div className="relative h-28 w-40 shrink-0 overflow-hidden rounded-lg">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={listing.imageUrl}
               alt={listing.title}
@@ -540,6 +539,7 @@ function LeafletMap({
                 <X className="h-3 w-3" />
               </button>
               <Link href={`/${locale}/listing/${selected.slug}`} className="flex gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={selected.imageUrl}
                   alt={selected.title}

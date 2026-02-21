@@ -10,7 +10,6 @@ import {
   MapPin,
   Wrench,
   BarChart3,
-  Trophy,
   ThumbsUp,
   ThumbsDown,
   Minus,

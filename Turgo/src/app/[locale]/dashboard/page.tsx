@@ -5,7 +5,6 @@ import {
   TrendingUp,
   TrendingDown,
   ShoppingBag,
-  Eye,
   MessageSquare,
   DollarSign,
   Zap,
@@ -13,11 +12,12 @@ import {
   ArrowUpRight,
   Target,
   Bell,
+  CreditCard,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/server/db";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatRelativeTime } from "@/lib/utils";
 
@@ -36,7 +36,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   const userId = session.user.id;
 
   // Fetch aggregated stats
-  const [sellingAgents, buyingAgents, recentActions, listings] = await Promise.all([
+  const [sellingAgents, buyingAgents, recentActions, _listings] = await Promise.all([
     db.sellingAgent.findMany({
       where: { listing: { userId } },
       include: {
@@ -72,7 +72,6 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   const activeBuying = buyingAgents.filter((a) => a.status === "ACTIVE").length;
   const totalActions = sellingAgents.reduce((sum, a) => sum + a._count.actions, 0);
   const totalMatches = buyingAgents.reduce((sum, a) => sum + a._count.matches, 0);
-  const activeListings = listings.filter((l) => l.status === "ACTIVE").length;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -91,6 +90,11 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           <Link href={`/${locale}/search`}>
             <Button size="sm" variant="outline" className="gap-1">
               <ShoppingBag className="h-3.5 w-3.5" /> Buy
+            </Button>
+          </Link>
+          <Link href={`/${locale}/dashboard/subscription`}>
+            <Button size="sm" variant="outline" className="gap-1">
+              <CreditCard className="h-3.5 w-3.5" /> Subscription
             </Button>
           </Link>
         </div>

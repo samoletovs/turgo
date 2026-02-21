@@ -285,6 +285,7 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
                 <div className="grid grid-cols-2 gap-2">
                   {sellingAgent!.listing.images.map((img: { id: string; url: string }) => (
                     <div key={img.id} className="aspect-square overflow-hidden rounded-lg bg-muted">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={img.url} alt="" className="h-full w-full object-cover" />
                     </div>
                   ))}
@@ -314,6 +315,7 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
                   >
                     <div className="h-10 w-10 shrink-0 overflow-hidden rounded bg-muted">
                       {match.listing.images?.[0] ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img src={match.listing.images[0].url} alt="" className="h-full w-full object-cover" />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-muted-foreground/30">

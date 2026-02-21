@@ -4,9 +4,6 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   TrendingDown,
-  Clock,
-  Zap,
-  Target,
   Info,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";

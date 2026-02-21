@@ -67,7 +67,7 @@ export default async function SellPage({
   return <SellPageClient locale={locale} categories={categories} locations={locations} />;
 }
 
-function SellPageError({ locale }: { locale: string }) {
+function SellPageError({ locale: _locale }: { locale: string }) {
   const t = useTranslations("sell");
   return (
     <div className="py-16 sm:py-24">

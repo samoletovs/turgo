@@ -1,54 +1,23 @@
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "@/server/trpc";
+import { createTRPCRouter, publicProcedure, protectedProcedure, tieredProcedure } from "@/server/trpc";
 import { conciergeMessageSchema } from "@/lib/validators";
 import { z } from "zod";
+import { aiComplete, aiAnalyzeImage, createMessages, getAiProviderInfo } from "@/server/services/ai";
+import type { UserTier } from "@/server/services/ai";
 
 export const aiRouter = createTRPCRouter({
-  /** Concierge chat — intent detection and routing */
+  /** Concierge chat — intent detection and routing (available to all) */
   concierge: publicProcedure
     .input(conciergeMessageSchema)
     .mutation(async ({ input }) => {
-      // AI concierge intent detection (uses ai-dev/ai-free/ai-premium based on env)
-      const { message } = input;
-      const lowerMessage = message.toLowerCase();
-
-      // Simple rule-based intent detection (replaced by LLM in production)
-      let intent: "sell" | "buy" | "support" | "browse" | "other" = "other";
-      let response = "";
-
-      if (/sell|pārdod|продать|parduot|müüa/i.test(lowerMessage)) {
-        intent = "sell";
-        response =
-          "I'd love to help you sell! Upload some photos and I'll handle everything — pricing, posting, and finding buyers. Ready to start?";
-      } else if (/buy|find|looking|pirkt|meklē|купить|ищу|pirkti|ieškau|osta|otsin/i.test(lowerMessage)) {
-        intent = "buy";
-        response =
-          "I'll find exactly what you need! Describe what you're looking for, your budget, and preferred location. I'll monitor 24/7 and alert you to the best deals.";
-      } else if (/help|support|problem|palīdzēt|помощь|pagalba|abi/i.test(lowerMessage)) {
-        intent = "support";
-        response =
-          "I'm here to help! What can I assist you with? I can help with account issues, listing questions, billing, or anything else.";
-      } else if (/browse|search|categories|show|skatīt|смотреть|žiūrėti|vaata/i.test(lowerMessage)) {
-        intent = "browse";
-        response =
-          "Let me show you what's available! What category interests you? Or describe what you're looking for in your own words.";
-      } else {
-        response =
-          "Hi! I'm your Turgo concierge. I can help you:\n• **Sell** — Upload photos and I'll handle everything\n• **Buy** — Tell me what you need, I'll find it\n• **Browse** — Explore categories and listings\n\nWhat would you like to do?";
-      }
-
-      return {
-        intent,
-        message: response,
-        suggestedActions: [
-          { label: "🏷️ Sell something", action: "sell" },
-          { label: "🔍 Find something", action: "buy" },
-          { label: "📂 Browse categories", action: "browse" },
-        ],
-      };
+      const { processConciergeMessage } = await import("@/server/services/agent-concierge");
+      return processConciergeMessage(
+        input.message,
+        input.conversationHistory as { role: "system" | "user" | "assistant"; content: string }[],
+      );
     }),
 
-  /** Generate listing description from AI */
-  generateDescription: protectedProcedure
+  /** Generate listing description from AI (tier-aware) */
+  generateDescription: tieredProcedure
     .input(
       z.object({
         title: z.string(),
@@ -57,16 +26,32 @@ export const aiRouter = createTRPCRouter({
         attributes: z.record(z.string(), z.string()).optional(),
       })
     )
-    .mutation(async ({ input }) => {
-      // Placeholder — in production calls AI service
+    .mutation(async ({ ctx, input }) => {
+      const userTier = (ctx as unknown as { userTier: UserTier }).userTier;
+
+      const messages = createMessages(
+        `You are a classifieds listing description writer for the Baltic region.
+Write a compelling listing description for the item below. Keep it concise (3-5 sentences), highlight key features, and make it appealing to buyers.
+Category: ${input.category}
+Condition: ${input.condition}
+${input.attributes ? `Attributes: ${JSON.stringify(input.attributes)}` : ""}`,
+        `Write a listing description for: "${input.title}"`
+      );
+
+      const result = await aiComplete(
+        { messages, temperature: 0.7, maxTokens: 300 },
+        userTier
+      );
+
       return {
-        description: `This ${input.condition.toLowerCase()} ${input.title} is in great condition and ready for a new owner. Listed in the ${input.category} category. Contact the seller for more details and to arrange a viewing.`,
-        confidence: 0.8,
+        description: result.content,
+        confidence: result.provider === "azure" ? 0.95 : result.provider === "github" ? 0.85 : 0.6,
+        provider: result.provider,
       };
     }),
 
-  /** Suggest price based on market data */
-  suggestPrice: protectedProcedure
+  /** Suggest price based on market data (tier-aware) */
+  suggestPrice: tieredProcedure
     .input(
       z.object({
         categoryId: z.string(),
@@ -76,9 +61,14 @@ export const aiRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
+      const userTier = (ctx as unknown as { userTier: UserTier }).userTier;
+
       // Get market data for this category
       const snapshots = await ctx.db.marketSnapshot.findMany({
-        where: { categoryId: input.categoryId },
+        where: {
+          categoryId: input.categoryId,
+          ...(input.locationId ? { locationId: input.locationId } : {}),
+        },
         orderBy: { date: "desc" },
         take: 30,
       });
@@ -95,6 +85,47 @@ export const aiRouter = createTRPCRouter({
       }
 
       const latest = snapshots[0];
+
+      // For paid users, use AI for refined pricing analysis
+      if (userTier === "pro" || userTier === "business") {
+        try {
+          const messages = createMessages(
+            `You are a pricing expert for classifieds in the Baltic region.
+Given market data and item details, suggest an optimal listing price.
+
+Market data for this category:
+- Median price: €${latest.medianPrice}
+- Average price: €${latest.avgPrice}
+- Min: €${latest.minPrice}, Max: €${latest.maxPrice}
+- ${latest.listingCount} active listings
+
+Respond in JSON: {"suggestedPrice": number, "reasoning": "string", "confidence": 0-1}`,
+            `Item: "${input.title}", Condition: ${input.condition}`
+          );
+
+          const result = await aiComplete(
+            { messages, temperature: 0.3, maxTokens: 200, responseFormat: { type: "json_object" } },
+            userTier
+          );
+
+          try {
+            const parsed = JSON.parse(result.content);
+            return {
+              suggestedPrice: parsed.suggestedPrice || latest.medianPrice || 0,
+              minPrice: latest.minPrice ?? 0,
+              maxPrice: latest.maxPrice ?? 0,
+              confidence: parsed.confidence || 0.8,
+              reasoning: parsed.reasoning || `Based on ${latest.listingCount} similar listings.`,
+              comparableListings: latest.listingCount,
+            };
+          } catch {
+            // Fall through to default
+          }
+        } catch {
+          // Fall through to default
+        }
+      }
+
       return {
         suggestedPrice: latest.medianPrice ?? latest.avgPrice ?? 0,
         minPrice: latest.minPrice ?? 0,
@@ -104,4 +135,53 @@ export const aiRouter = createTRPCRouter({
         comparableListings: latest.listingCount,
       };
     }),
+
+  /** Analyze uploaded image (paid-only for full analysis) */
+  analyzeImage: tieredProcedure
+    .input(z.object({ imageUrl: z.string().url() }))
+    .mutation(async ({ ctx, input }) => {
+      const userTier = (ctx as unknown as { userTier: UserTier }).userTier;
+
+      const result = await aiAnalyzeImage(
+        input.imageUrl,
+        undefined,
+        userTier
+      );
+
+      try {
+        const parsed = JSON.parse(result.content);
+        return {
+          description: parsed.description || "",
+          tags: parsed.tags || [],
+          suggestedCategory: parsed.suggestedCategory,
+          suggestedTitle: parsed.suggestedTitle,
+          confidence: parsed.confidence || 0.5,
+          provider: result.provider,
+        };
+      } catch {
+        return {
+          description: result.content,
+          tags: [],
+          confidence: 0.3,
+          provider: result.provider,
+        };
+      }
+    }),
+
+  /** Get current AI provider info (for debugging/display) */
+  providerInfo: protectedProcedure.query(async ({ ctx }) => {
+    const subscription = await ctx.db.subscription.findUnique({
+      where: { userId: ctx.session.user.id! },
+      include: { plan: true },
+    });
+
+    const tier: UserTier =
+      subscription?.plan.name === "BUSINESS"
+        ? "business"
+        : subscription?.plan.name === "PRO"
+        ? "pro"
+        : "free";
+
+    return getAiProviderInfo(tier);
+  }),
 });

@@ -74,7 +74,7 @@ async function storeAzureBlob(
   thumbFilename: string
 ) {
   const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
-  const containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || "listings";
+  const _containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || "listings";
 
   if (!connectionString) {
     console.warn("[Storage] Azure Blob not configured, falling back to local");

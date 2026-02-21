@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   SlidersHorizontal,
   ChevronDown,
   ChevronRight,
-  X,
   RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -67,7 +66,7 @@ export function FilterSidebar({
   locations = [],
   categoryAttributes = [],
   currentFilters,
-  totalResults,
+  totalResults: _totalResults,
   onFilterChange,
   className,
 }: FilterSidebarProps) {
@@ -409,11 +408,17 @@ function PriceRangeFilter({
 }) {
   const [min, setMin] = useState(minPrice || "");
   const [max, setMax] = useState(maxPrice || "");
+  const [prevMinPrice, setPrevMinPrice] = useState(minPrice);
+  const [prevMaxPrice, setPrevMaxPrice] = useState(maxPrice);
 
-  useEffect(() => {
+  if (prevMinPrice !== minPrice) {
+    setPrevMinPrice(minPrice);
     setMin(minPrice || "");
+  }
+  if (prevMaxPrice !== maxPrice) {
+    setPrevMaxPrice(maxPrice);
     setMax(maxPrice || "");
-  }, [minPrice, maxPrice]);
+  }
 
   return (
     <div className="flex items-center gap-2">

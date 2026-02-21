@@ -8,6 +8,7 @@ import { messageRouter } from "./routers/message";
 import { searchRouter } from "./routers/search";
 import { subscriptionRouter } from "./routers/subscription";
 import { aiRouter } from "./routers/ai";
+import { notificationRouter } from "./routers/notification";
 
 export const appRouter = createTRPCRouter({
   listing: listingRouter,
@@ -19,6 +20,7 @@ export const appRouter = createTRPCRouter({
   search: searchRouter,
   subscription: subscriptionRouter,
   ai: aiRouter,
+  notification: notificationRouter,
 });
 
 export type AppRouter = typeof appRouter;

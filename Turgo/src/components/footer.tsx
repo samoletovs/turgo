@@ -7,7 +7,7 @@ interface FooterProps {
   locale: string;
 }
 
-export function Footer({ locale }: FooterProps) {
+export function Footer({ locale: _locale }: FooterProps) {
   const t = useTranslations("footer");
   const year = new Date().getFullYear();
 

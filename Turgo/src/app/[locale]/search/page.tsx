@@ -1,22 +1,4 @@
-import { Suspense } from "react";
-import Link from "next/link";
-import { useTranslations } from "next-intl";
-import {
-  Search,
-  SlidersHorizontal,
-  MapPin,
-  Grid3X3,
-  List,
-  Bot,
-  Sparkles,
-  Bookmark,
-  Map,
-} from "lucide-react";
 import { db } from "@/server/db";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ListingCard } from "@/components/listing-card";
-import { SearchBar } from "@/components/search-bar";
 import { SearchPageClient } from "./search-client";
 
 interface SearchPageProps {

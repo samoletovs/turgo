@@ -9,14 +9,10 @@ import {
   Share2,
   MessageCircle,
   Shield,
-  ChevronLeft,
-  ChevronRight,
   User,
   Phone,
-  Mail,
   Bot,
   TrendingDown,
-  TrendingUp,
 } from "lucide-react";
 import { db } from "@/server/db";
 import { Button } from "@/components/ui/button";
@@ -30,7 +26,7 @@ interface ListingPageProps {
 
 export default async function ListingPage({ params }: ListingPageProps) {
   const { locale, slug } = await params;
-  const t = await getTranslations("listing");
+  const _t = await getTranslations("listing");
 
   const listing = await db.listing.findFirst({
     where: { slug, status: { in: ["ACTIVE", "SOLD"] } },

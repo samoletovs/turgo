@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { TRPCProvider } from "@/lib/trpc/client";
+import { SocketProvider } from "@/lib/socket-client";
 import { Toaster } from "sonner";
 
 interface ProvidersProps {
@@ -19,7 +20,9 @@ export function Providers({ children }: ProvidersProps) {
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <SocketProvider>
+            {children}
+          </SocketProvider>
           <Toaster
             position="bottom-right"
             richColors

@@ -152,3 +152,17 @@ export type CreateBuyingAgentInput = z.infer<typeof createBuyingAgentSchema>;
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 export type SearchInput = z.infer<typeof searchSchema>;
 export type ConciergeMessageInput = z.infer<typeof conciergeMessageSchema>;
+
+// ──────────────────────────────────────────────
+// OFFER VALIDATORS
+// ──────────────────────────────────────────────
+
+export const sendOfferSchema = z.object({
+  conversationId: z.string().cuid(),
+  receiverId: z.string().cuid(),
+  listingId: z.string().cuid(),
+  offerPrice: z.number().positive("Offer must be positive"),
+  message: z.string().max(500).optional(),
+});
+
+export type SendOfferInput = z.infer<typeof sendOfferSchema>;

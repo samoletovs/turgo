@@ -3,7 +3,7 @@
  * Entry point for all user interactions with the AI system
  */
 
-import { aiComplete, createMessages } from "./ai";
+import { aiComplete } from "./ai";
 import type { AgentIntent, ConciergeResponse, AiChatMessage } from "@/types";
 
 const SYSTEM_PROMPT = `You are a concierge for Turgo, an AI-powered classifieds platform in the Baltic region (Latvia, Lithuania, Estonia).

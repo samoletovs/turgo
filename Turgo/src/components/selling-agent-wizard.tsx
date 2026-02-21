@@ -2,30 +2,23 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Bot,
   Camera,
   Zap,
   Clock,
-  DollarSign,
   MessageSquare,
   TrendingUp,
   Check,
-  Upload,
   X,
-  Loader2,
-  Sparkles,
   Send,
   User,
-  ChevronRight,
   Shield,
-  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 // ──────────────────────────────────────────────
 // TYPES
@@ -89,10 +82,10 @@ interface SellingAgentWizardProps {
 export function SellingAgentWizard({
   locale,
   categories = [],
-  locations = [],
+  locations: _locations = [],
 }: SellingAgentWizardProps) {
-  const t = useTranslations("sell");
-  const tAgent = useTranslations("agent");
+  const _t = useTranslations("sell");
+  const _tAgent = useTranslations("agent");
 
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [currentStep, setCurrentStep] = useState<WizardStep>("greeting");
@@ -616,6 +609,7 @@ export function SellingAgentWizard({
                 <div className="flex gap-2 overflow-x-auto py-2">
                   {data.photoPreviews.map((preview, i) => (
                     <div key={i} className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-lg">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={preview} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" />
                       <button
                         onClick={() => removePhoto(i)}

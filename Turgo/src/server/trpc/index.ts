@@ -3,6 +3,7 @@ import { type Session } from "next-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
 import { db } from "@/server/db";
+import type { UserTier } from "@/server/services/ai";
 
 /** Context passed to every tRPC procedure */
 export interface TRPCContext {
@@ -70,6 +71,71 @@ export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
   return next({
     ctx: {
       session: { ...ctx.session, user: ctx.session.user },
+    },
+  });
+});
+
+// ──────────────────────────────────────────────
+// TIER-AWARE PROCEDURES
+// ──────────────────────────────────────────────
+
+/** Resolve user's subscription tier */
+async function resolveUserTier(
+  userId: string,
+  database: typeof db
+): Promise<UserTier> {
+  const subscription = await database.subscription.findUnique({
+    where: { userId },
+    include: { plan: true },
+  });
+
+  if (!subscription || subscription.status !== "ACTIVE") return "free";
+
+  switch (subscription.plan.name) {
+    case "PRO":
+      return "pro";
+    case "BUSINESS":
+      return "business";
+    default:
+      return "free";
+  }
+}
+
+/** Protected procedure with user tier context — for AI-routed operations */
+export const tieredProcedure = t.procedure.use(async ({ ctx, next }) => {
+  if (!ctx.session?.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  const userTier = await resolveUserTier(ctx.session.user.id!, ctx.db);
+
+  return next({
+    ctx: {
+      session: { ...ctx.session, user: ctx.session.user },
+      userTier,
+    },
+  });
+});
+
+/** Paid-only procedure — requires Pro or Business subscription */
+export const paidProcedure = t.procedure.use(async ({ ctx, next }) => {
+  if (!ctx.session?.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  const userTier = await resolveUserTier(ctx.session.user.id!, ctx.db);
+
+  if (userTier === "free") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "This feature requires a Pro or Business subscription. Upgrade at /pricing.",
+    });
+  }
+
+  return next({
+    ctx: {
+      session: { ...ctx.session, user: ctx.session.user },
+      userTier,
     },
   });
 });

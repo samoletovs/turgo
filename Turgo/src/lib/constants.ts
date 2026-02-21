@@ -34,12 +34,16 @@ export type CountryCode = (typeof COUNTRIES)[number];
 /** Plan limits */
 export const PLAN_LIMITS = {
   FREE: {
-    maxListings: 10,
+    maxListings: 5,
     maxSellingAgents: 1,
     maxBuyingAgents: 1,
     maxPhotosPerListing: 5,
     maxSavedSearches: 3,
     listingDurationDays: 30,
+    hasAiPremium: false,
+    hasAnalytics: false,
+    hasAutoNegotiate: false,
+    hasAutoTranslate: false,
   },
   PRO: {
     maxListings: 50,
@@ -48,6 +52,10 @@ export const PLAN_LIMITS = {
     maxPhotosPerListing: 15,
     maxSavedSearches: 20,
     listingDurationDays: 60,
+    hasAiPremium: true,
+    hasAnalytics: true,
+    hasAutoNegotiate: true,
+    hasAutoTranslate: true,
   },
   BUSINESS: {
     maxListings: 999999,
@@ -56,7 +64,25 @@ export const PLAN_LIMITS = {
     maxPhotosPerListing: 30,
     maxSavedSearches: 999999,
     listingDurationDays: 90,
+    hasAiPremium: true,
+    hasAnalytics: true,
+    hasAutoNegotiate: true,
+    hasAutoTranslate: true,
   },
+} as const;
+
+/** Plan pricing */
+export const PLAN_PRICES = {
+  FREE: { monthly: 0, yearly: 0 },
+  PRO: { monthly: 4.99, yearly: 47.88 },
+  BUSINESS: { monthly: 19.99, yearly: 191.88 },
+} as const;
+
+/** Boost pricing (in EUR cents) */
+export const BOOST_PRICES = {
+  FEATURED: { amount: 499, durationDays: 7, label: "Featured" },
+  HIGHLIGHTED: { amount: 299, durationDays: 3, label: "Highlighted" },
+  TOP: { amount: 999, durationDays: 7, label: "Top Placement" },
 } as const;
 
 /** Rate limiting */

@@ -1,23 +1,20 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
 import {
   User,
   Mail,
   Calendar,
-  MapPin,
   Settings,
   Package,
   Heart,
   Bot,
-  Star,
   CreditCard,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/server/db";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ListingCard } from "@/components/listing-card";
 

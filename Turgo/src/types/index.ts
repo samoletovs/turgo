@@ -23,6 +23,8 @@ export type {
   AgentAction,
   AgentMatch,
   MarketSnapshot,
+  PushSubscription,
+  Notification,
 } from "@prisma/client";
 
 // ──────────────────────────────────────────────
@@ -39,6 +41,7 @@ export interface AiCompletionOptions {
   temperature?: number;
   maxTokens?: number;
   model?: string;
+  responseFormat?: { type: "json_object" | "text" };
 }
 
 export interface AiCompletionResult {
@@ -46,6 +49,13 @@ export interface AiCompletionResult {
   tokensUsed?: number;
   model: string;
   provider: "github" | "azure" | "ollama";
+}
+
+export interface AiEmbeddingResult {
+  embeddings: number[][];
+  model: string;
+  provider: "github" | "azure" | "ollama";
+  tokensUsed?: number;
 }
 
 export interface AiImageAnalysis {
@@ -182,4 +192,54 @@ export interface ConversationPreview {
     imageUrl?: string;
     price: number;
   };
+}
+
+// ──────────────────────────────────────────────
+// MESSAGING TYPES
+// ──────────────────────────────────────────────
+
+export interface MessageWithSender {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  receiverId: string;
+  content: string;
+  messageType: string;
+  isRead: boolean;
+  isAgentMessage: boolean;
+  translatedContent: Record<string, string> | null;
+  originalLanguage: string | null;
+  metadata: Record<string, unknown> | null;
+  requiresApproval: boolean;
+  approvedAt: Date | null;
+  createdAt: Date;
+  sender: {
+    id: string;
+    name: string | null;
+    avatar: string | null;
+  };
+}
+
+export interface NegotiationStep {
+  id: string;
+  messageType: string;
+  isOwn: boolean;
+  isAgentMessage: boolean;
+  metadata?: Record<string, unknown>;
+  createdAt: Date | string;
+}
+
+export interface TranslationResult {
+  translation: string;
+  locale: string;
+}
+
+export interface NotificationData {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  metadata?: Record<string, unknown>;
+  isRead: boolean;
+  createdAt: Date;
 }

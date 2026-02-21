@@ -117,6 +117,27 @@ enum SubscriptionStatus {
   TRIALING
 }
 
+enum MessageType {
+  TEXT
+  OFFER
+  COUNTER_OFFER
+  ACCEPTANCE
+  REJECTION
+  AUTO_RESPONSE
+  SYSTEM
+}
+
+enum NotificationType {
+  NEW_MESSAGE
+  AGENT_ACTION
+  PRICE_DROP
+  SAVED_SEARCH_MATCH
+  OFFER_RECEIVED
+  OFFER_ACCEPTED
+  OFFER_REJECTED
+  COUNTER_OFFER
+}
+
 // ──────────────────────────────────────────────
 // AUTH MODELS
 // ──────────────────────────────────────────────
@@ -153,6 +174,8 @@ model User {
   sessions         Session[]
   defaultLocation  Location?       @relation(fields: [defaultLocationId], references: [id])
   defaultLocationId String?
+  pushSubscriptions PushSubscription[]
+  notifications     Notification[]
 
   @@index([email])
   @@index([role])
@@ -366,15 +389,21 @@ model Conversation {
 }
 
 model Message {
-  id             String   @id @default(cuid())
-  conversationId String
-  senderId       String
-  receiverId     String
-  listingId      String?
-  content        String   @db.Text
-  isRead         Boolean  @default(false)
-  isAgentMessage Boolean  @default(false)
-  createdAt      DateTime @default(now())
+  id               String      @id @default(cuid())
+  conversationId   String
+  senderId         String
+  receiverId       String
+  listingId        String?
+  content          String      @db.Text
+  messageType      MessageType @default(TEXT)
+  isRead           Boolean     @default(false)
+  isAgentMessage   Boolean     @default(false)
+  translatedContent Json?      // {locale: translatedText}
+  originalLanguage  String?
+  metadata          Json?      // offer amounts, negotiation round, etc.
+  requiresApproval  Boolean    @default(false)
+  approvedAt        DateTime?
+  createdAt         DateTime   @default(now())
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender       User         @relation("SentMessages", fields: [senderId], references: [id])
@@ -384,6 +413,40 @@ model Message {
   @@index([conversationId])
   @@index([senderId])
   @@index([receiverId])
+  @@index([messageType])
+}
+
+// ──────────────────────────────────────────────
+// PUSH SUBSCRIPTIONS & NOTIFICATIONS
+// ──────────────────────────────────────────────
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  metadata  Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
 }
 
 // ──────────────────────────────────────────────

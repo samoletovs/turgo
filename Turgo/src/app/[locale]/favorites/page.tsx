@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
 import { Heart } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/server/db";

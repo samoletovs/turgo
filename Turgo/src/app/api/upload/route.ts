@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { processAndStoreImage, validateUpload } from "@/server/services/storage";
-import { UPLOAD } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   try {

@@ -5,14 +5,11 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  MessageCircle,
   X,
   Send,
   Bot,
   User,
   Sparkles,
-  Loader2,
-  ChevronDown,
   ShoppingBag,
   Tag,
   HelpCircle,

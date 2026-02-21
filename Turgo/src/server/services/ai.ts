@@ -1,154 +1,164 @@
 /**
- * AI Service Router
- * Delegates to the correct AI provider based on environment and user tier:
- * - "github" → GitHub Models API (dev/test, free with Copilot)
- * - "azure" → Azure OpenAI GPT-4o (production, paid tier)
- * - "ollama" → Self-hosted Ollama (fallback)
+ * AI Service Router — Unified interface for all AI providers
+ *
+ * Routing logic:
+ *   AI_PROVIDER="github"  → GitHub Models API (dev/test, free with Copilot)
+ *   AI_PROVIDER="azure"   → Azure OpenAI GPT-4o (production, paid users)
+ *   AI_PROVIDER="ollama"  → Self-hosted Ollama (fallback, free users in prod)
+ *
+ * Tier-aware routing (production):
+ *   paid user   → ai-premium (Azure OpenAI)
+ *   free user   → ai-free    (Ollama / rule-based)
+ *
+ * All providers implement the same interface so agents are provider-agnostic.
  */
 
-import type { AiChatMessage, AiCompletionResult, AiCompletionOptions } from "@/types";
+import type { AiChatMessage, AiCompletionResult, AiCompletionOptions, AiEmbeddingResult } from "@/types";
+
+// Provider implementations
+import { githubModelsComplete, githubModelsEmbed, githubModelsAnalyzeImage } from "./ai-dev";
+import { azureOpenAiComplete, azureOpenAiEmbed, azureAnalyzeImage } from "./ai-premium";
+import { ollamaComplete, ollamaEmbed, freeAnalyzeImage } from "./ai-free";
 
 export type AiProvider = "github" | "azure" | "ollama";
 
-function getProvider(): AiProvider {
+/** User tier determines premium vs free AI */
+export type UserTier = "free" | "pro" | "business";
+
+/** Resolve the active provider from env var */
+function getEnvProvider(): AiProvider {
   return (process.env.AI_PROVIDER as AiProvider) || "github";
 }
 
+/**
+ * Resolve the effective provider for a request.
+ * In production (AI_PROVIDER=azure), routes by user tier:
+ *   - paid → azure (premium)
+ *   - free → ollama (free)
+ * In dev (AI_PROVIDER=github), always uses GitHub Models.
+ */
+function resolveProvider(userTier?: UserTier): AiProvider {
+  const envProvider = getEnvProvider();
+
+  // Dev mode: always use GitHub Models regardless of tier
+  if (envProvider === "github") return "github";
+
+  // Ollama mode: always use Ollama
+  if (envProvider === "ollama") return "ollama";
+
+  // Azure (production): route by tier
+  if (envProvider === "azure") {
+    if (userTier === "pro" || userTier === "business") return "azure";
+    return "ollama"; // Free users get Ollama in production
+  }
+
+  return "github";
+}
+
+// ──────────────────────────────────────────────
+// CHAT COMPLETIONS
+// ──────────────────────────────────────────────
+
 /** Unified AI completion — routes to the correct provider */
-export async function aiComplete(options: AiCompletionOptions): Promise<AiCompletionResult> {
-  const provider = getProvider();
-
-  switch (provider) {
-    case "github":
-      return githubModelsComplete(options);
-    case "azure":
-      return azureOpenAiComplete(options);
-    case "ollama":
-      return ollamaComplete(options);
-    default:
-      return githubModelsComplete(options);
-  }
-}
-
-/** GitHub Models API (dev/test) */
-async function githubModelsComplete(options: AiCompletionOptions): Promise<AiCompletionResult> {
-  const endpoint = process.env.GITHUB_MODELS_ENDPOINT || "https://models.inference.ai.azure.com";
-  const model = options.model || process.env.GITHUB_MODELS_MODEL || "gpt-4o";
-  const token = process.env.GITHUB_TOKEN;
-
-  if (!token) {
-    console.warn("GITHUB_TOKEN not set, returning mock response");
-    return mockComplete(options);
-  }
-
-  const response = await fetch(`${endpoint}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      model,
-      messages: options.messages,
-      temperature: options.temperature ?? 0.7,
-      max_tokens: options.maxTokens ?? 1000,
-    }),
-  });
-
-  if (!response.ok) {
-    console.error("GitHub Models API error:", response.status, await response.text());
-    return mockComplete(options);
-  }
-
-  const data = await response.json();
-  return {
-    content: data.choices[0]?.message?.content || "",
-    tokensUsed: data.usage?.total_tokens,
-    model,
-    provider: "github",
-  };
-}
-
-/** Azure OpenAI (production paid tier) */
-async function azureOpenAiComplete(options: AiCompletionOptions): Promise<AiCompletionResult> {
-  const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
-  const apiKey = process.env.AZURE_OPENAI_API_KEY;
-  const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4o";
-
-  if (!endpoint || !apiKey) {
-    console.warn("Azure OpenAI not configured, falling back to GitHub Models");
-    return githubModelsComplete(options);
-  }
-
-  const response = await fetch(
-    `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=2024-02-01`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": apiKey,
-      },
-      body: JSON.stringify({
-        messages: options.messages,
-        temperature: options.temperature ?? 0.7,
-        max_tokens: options.maxTokens ?? 1000,
-      }),
-    }
-  );
-
-  if (!response.ok) {
-    console.error("Azure OpenAI error:", response.status);
-    return githubModelsComplete(options); // Fallback
-  }
-
-  const data = await response.json();
-  return {
-    content: data.choices[0]?.message?.content || "",
-    tokensUsed: data.usage?.total_tokens,
-    model: deployment,
-    provider: "azure",
-  };
-}
-
-/** Ollama self-hosted (fallback for free tier in production) */
-async function ollamaComplete(options: AiCompletionOptions): Promise<AiCompletionResult> {
-  const baseUrl = process.env.OLLAMA_BASE_URL || "http://localhost:11434";
-  const model = options.model || process.env.OLLAMA_MODEL || "llama3.1:8b";
+export async function aiComplete(
+  options: AiCompletionOptions,
+  userTier?: UserTier
+): Promise<AiCompletionResult> {
+  const provider = resolveProvider(userTier);
 
   try {
-    const response = await fetch(`${baseUrl}/api/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model,
-        messages: options.messages,
-        stream: false,
-        options: {
-          temperature: options.temperature ?? 0.7,
-          num_predict: options.maxTokens ?? 1000,
-        },
-      }),
-    });
-
-    if (!response.ok) throw new Error(`Ollama error: ${response.status}`);
-
-    const data = await response.json();
-    return {
-      content: data.message?.content || "",
-      model,
-      provider: "ollama",
-    };
-  } catch {
-    console.warn("Ollama unavailable, returning mock response");
+    switch (provider) {
+      case "github":
+        return await githubModelsComplete(options);
+      case "azure":
+        return await azureOpenAiComplete(options);
+      case "ollama":
+        return await ollamaComplete(options);
+      default:
+        return await githubModelsComplete(options);
+    }
+  } catch (error) {
+    console.error(`[AI Router] ${provider} failed, trying fallback:`, error);
+    // Cascade fallback: azure → github → ollama → mock
+    if (provider === "azure") {
+      try { return await githubModelsComplete(options); } catch { /* fall through */ }
+    }
+    if (provider !== "ollama") {
+      try { return await ollamaComplete(options); } catch { /* fall through */ }
+    }
     return mockComplete(options);
   }
 }
+
+// ──────────────────────────────────────────────
+// EMBEDDINGS
+// ──────────────────────────────────────────────
+
+/** Unified embedding generation */
+export async function aiEmbed(
+  texts: string[],
+  userTier?: UserTier
+): Promise<AiEmbeddingResult> {
+  const provider = resolveProvider(userTier);
+
+  try {
+    switch (provider) {
+      case "github":
+        return await githubModelsEmbed(texts);
+      case "azure":
+        return await azureOpenAiEmbed(texts);
+      case "ollama":
+        return await ollamaEmbed(texts);
+      default:
+        return await githubModelsEmbed(texts);
+    }
+  } catch (error) {
+    console.error(`[AI Router] Embedding ${provider} failed:`, error);
+    if (provider === "azure") {
+      try { return await githubModelsEmbed(texts); } catch { /* fall through */ }
+    }
+    return await ollamaEmbed(texts);
+  }
+}
+
+// ──────────────────────────────────────────────
+// IMAGE ANALYSIS
+// ──────────────────────────────────────────────
+
+/** Unified image analysis */
+export async function aiAnalyzeImage(
+  imageUrl: string,
+  prompt?: string,
+  userTier?: UserTier
+): Promise<AiCompletionResult> {
+  const provider = resolveProvider(userTier);
+
+  try {
+    switch (provider) {
+      case "github":
+        return await githubModelsAnalyzeImage(imageUrl, prompt);
+      case "azure":
+        return await azureAnalyzeImage(imageUrl, prompt);
+      case "ollama":
+        return await freeAnalyzeImage(imageUrl, prompt);
+      default:
+        return await githubModelsAnalyzeImage(imageUrl, prompt);
+    }
+  } catch (error) {
+    console.error(`[AI Router] Vision ${provider} failed:`, error);
+    return await freeAnalyzeImage(imageUrl, prompt);
+  }
+}
+
+// ──────────────────────────────────────────────
+// HELPERS
+// ──────────────────────────────────────────────
 
 /** Mock response for when no AI provider is available */
 function mockComplete(options: AiCompletionOptions): AiCompletionResult {
   const lastUserMsg = options.messages.findLast((m: AiChatMessage) => m.role === "user");
   return {
-    content: `[AI Mock] Response to: "${lastUserMsg?.content?.slice(0, 50) || "unknown"}"`,
+    content: `[AI Mock] Response to: "${lastUserMsg?.content?.toString().slice(0, 50) || "unknown"}"`,
     model: "mock",
     provider: "github",
   };
@@ -163,4 +173,17 @@ export function createMessages(
     { role: "system", content: systemPrompt },
     { role: "user", content: userMessage },
   ];
+}
+
+/** Get current provider info (for diagnostics / UI) */
+export function getAiProviderInfo(userTier?: UserTier) {
+  const envProvider = getEnvProvider();
+  const effectiveProvider = resolveProvider(userTier);
+  return {
+    envProvider,
+    effectiveProvider,
+    userTier: userTier || "free",
+    isPremium: effectiveProvider === "azure",
+    isDev: envProvider === "github",
+  };
 }

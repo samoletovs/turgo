@@ -4,11 +4,9 @@ import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
-  Upload,
   X,
   Camera,
   Bot,
-  Sparkles,
   ArrowRight,
   Loader2,
   Check,
@@ -64,7 +62,7 @@ export function ManualListingForm({
   categories,
   locations,
 }: ManualListingFormProps) {
-  const t = useTranslations("sell");
+  const _t = useTranslations("sell");
   const tListing = useTranslations("listing");
   const router = useRouter();
 
@@ -254,6 +252,7 @@ export function ManualListingForm({
                   key={i}
                   className="group relative aspect-square overflow-hidden rounded-lg border"
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={src}
                     alt={`Photo ${i + 1}`}

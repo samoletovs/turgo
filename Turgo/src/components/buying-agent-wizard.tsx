@@ -8,21 +8,14 @@ import {
   Send,
   User,
   Search,
-  MapPin,
-  DollarSign,
-  Bell,
   Target,
   TrendingDown,
-  Shield,
   Check,
-  Loader2,
-  Sparkles,
   Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 // ──────────────────────────────────────────────
 // TYPES
@@ -89,7 +82,7 @@ export function BuyingAgentWizard({
   categories = [],
   locations = [],
 }: BuyingAgentWizardProps) {
-  const t = useTranslations("agent");
+  const _t = useTranslations("agent");
 
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [currentStep, setCurrentStep] = useState<BuyStep>("greeting");
