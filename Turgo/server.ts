@@ -21,7 +21,7 @@ app.prepare().then(() => {
   const httpServer = createServer(handler);
 
   // Initialize Socket.IO on the same HTTP server
-  const io = initSocketServer(httpServer);
+  initSocketServer(httpServer);
 
   httpServer.listen(port, () => {
     console.log(`> Ready on http://${hostname}:${port}`);

@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Mail, CheckCircle, AlertCircle } from "lucide-react";
+import { Mail, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
@@ -14,7 +14,7 @@ export default function VerifyEmailPage() {
   const token = searchParams.get("token");
   const email = searchParams.get("email");
 
-  const [status, setStatus] = useState<"pending" | "success" | "expired">(
+  const [status] = useState<"pending" | "success" | "expired">(
     token ? "success" : "pending"
   );
   const [resending, setResending] = useState(false);

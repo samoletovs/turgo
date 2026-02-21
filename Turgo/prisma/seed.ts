@@ -592,7 +592,7 @@ async function main() {
   const carsCatRec = await getCat("cars");
   const rigaLoc = await getLoc("riga");
   const jurmalaLoc = await getLoc("jurmala");
-  const liepaja = await getLoc("liepaja");
+  const _liepaja = await getLoc("liepaja");
   const vilniusLoc = await getLoc("vilnius");
   const tallinnLoc = await getLoc("tallinn");
   const jelgavaLoc = await getLoc("jelgava");

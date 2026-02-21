@@ -2,14 +2,12 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { useSession } from "next-auth/react";
 import {
   User,
   Globe,
   Bell,
   Palette,
   Shield,
-  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

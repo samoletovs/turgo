@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LOCALE_FLAGS, type Locale } from "@/lib/constants";
+import { type Locale } from "@/lib/constants";
 import { useRouter, usePathname } from "@/i18n/navigation";
 
 const COUNTRY_CONFIG: Record<

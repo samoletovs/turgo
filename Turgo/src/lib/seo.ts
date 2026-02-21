@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { APP_NAME, APP_URL, LOCALES, type Locale } from "@/lib/constants";
+import { APP_NAME, APP_URL, LOCALES } from "@/lib/constants";
 
 /** Generate hreflang alternate links for SEO */
 export function generateHrefLangs(path: string) {

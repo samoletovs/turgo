@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useEffect } from "react";
+import { useState, useCallback, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
@@ -31,36 +31,41 @@ function setCookieConsent(consent: CookieConsent) {
 
 export function CookieConsentBanner() {
   const t = useTranslations("cookie");
-  const [visible, setVisible] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const [consent, setConsent] = useState<CookieConsent>({
     necessary: true,
     analytics: false,
     marketing: false,
   });
 
-  useEffect(() => {
-    const existing = getCookieConsent();
-    if (!existing) {
-      setVisible(true);
-    }
+  // Read consent state from localStorage without useEffect/setState
+  const subscribe = useCallback((cb: () => void) => {
+    window.addEventListener("storage", cb);
+    return () => window.removeEventListener("storage", cb);
   }, []);
+  const getSnapshot = useCallback(() => getCookieConsent(), []);
+  const getServerSnapshot = useCallback((): CookieConsent | null => null, []);
+  const storedConsent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  // Visible if no stored consent and not dismissed
+  const visible = !storedConsent && !dismissed;
 
   const handleAcceptAll = () => {
     const fullConsent = { necessary: true, analytics: true, marketing: true };
     setCookieConsent(fullConsent);
-    setVisible(false);
+    setDismissed(true);
   };
 
   const handleRejectNonEssential = () => {
     const minConsent = { necessary: true, analytics: false, marketing: false };
     setCookieConsent(minConsent);
-    setVisible(false);
+    setDismissed(true);
   };
 
   const handleSaveSettings = () => {
     setCookieConsent(consent);
-    setVisible(false);
+    setDismissed(true);
   };
 
   if (!visible) return null;
@@ -93,7 +98,7 @@ export function CookieConsentBanner() {
               variant="ghost"
               size="icon"
               className="h-6 w-6 shrink-0"
-              onClick={() => setVisible(false)}
+              onClick={() => setDismissed(true)}
             >
               <X className="h-4 w-4" />
             </Button>
