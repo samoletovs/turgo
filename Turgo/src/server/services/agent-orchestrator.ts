@@ -39,7 +39,8 @@ export function getQueue(name: string): Queue {
   if (!queues.has(name)) {
     queues.set(
       name,
-      new Queue(name, { connection: getConnection() })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      new Queue(name, { connection: getConnection() as any })
     );
   }
   return queues.get(name)!;
@@ -106,7 +107,8 @@ export function registerWorker(
   }
 
   const worker = new Worker(queueName, processor, {
-    connection: getConnection(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    connection: getConnection() as any,
     concurrency: 5,
   });
 
