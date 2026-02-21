@@ -86,7 +86,7 @@ export const createBuyingAgentSchema = z.object({
     minPrice: z.number().min(0).optional(),
     maxPrice: z.number().min(0).optional(),
     condition: z.enum(["NEW", "USED", "REFURBISHED"]).optional(),
-    attributes: z.record(z.string()).optional(),
+    attributes: z.record(z.string(), z.string()).optional(),
   }),
   maxBudget: z.number().positive(),
   targetPrice: z.number().positive().optional(),
