@@ -4,17 +4,24 @@
 
 import { MeiliSearch } from "meilisearch";
 
-const client = new MeiliSearch({
-  host: process.env.MEILISEARCH_HOST || "http://localhost:7700",
-  apiKey: process.env.MEILISEARCH_API_KEY || "masterKey",
-});
+let _client: MeiliSearch | null = null;
+
+function getClient(): MeiliSearch {
+  if (!_client) {
+    _client = new MeiliSearch({
+      host: process.env.MEILISEARCH_HOST || "http://localhost:7700",
+      apiKey: process.env.MEILISEARCH_API_KEY || "masterKey",
+    });
+  }
+  return _client;
+}
 
 const LISTINGS_INDEX = "listings";
 
 /** Initialize Meilisearch index with settings */
 export async function initSearchIndex() {
   try {
-    const index = client.index(LISTINGS_INDEX);
+    const index = getClient().index(LISTINGS_INDEX);
 
     await index.updateSettings({
       searchableAttributes: ["title", "description", "categoryName", "locationName"],
@@ -63,7 +70,7 @@ export async function indexListing(listing: {
   createdAt: Date;
 }) {
   try {
-    const index = client.index(LISTINGS_INDEX);
+    const index = getClient().index(LISTINGS_INDEX);
     await index.addDocuments([
       {
         ...listing,
@@ -78,7 +85,7 @@ export async function indexListing(listing: {
 /** Remove a listing from search index */
 export async function removeListing(listingId: string) {
   try {
-    const index = client.index(LISTINGS_INDEX);
+    const index = getClient().index(LISTINGS_INDEX);
     await index.deleteDocument(listingId);
   } catch (error) {
     console.warn("[Search] Failed to remove listing:", error);
@@ -94,7 +101,7 @@ export async function searchListings(params: {
   limit?: number;
 }) {
   try {
-    const index = client.index(LISTINGS_INDEX);
+    const index = getClient().index(LISTINGS_INDEX);
     return index.search(params.query, {
       filter: params.filters,
       sort: params.sort,

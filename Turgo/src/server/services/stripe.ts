@@ -4,8 +4,22 @@
 
 import Stripe from "stripe";
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2025-01-27.acacia" as Stripe.LatestApiVersion,
+let _stripe: Stripe | null = null;
+
+export function getStripe(): Stripe {
+  if (!_stripe) {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+      apiVersion: "2025-01-27.acacia" as Stripe.LatestApiVersion,
+    });
+  }
+  return _stripe;
+}
+
+/** @deprecated Use getStripe() instead */
+export const stripe = new Proxy({} as Stripe, {
+  get(_, prop) {
+    return (getStripe() as any)[prop];
+  },
 });
 
 /** Create a Stripe Checkout Session for subscription */
