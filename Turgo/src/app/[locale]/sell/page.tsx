@@ -47,7 +47,8 @@ export default async function SellPage({
     }),
   ]);
 
-  return <SellPageClient locale={locale} categories={categories} locations={locations} />;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return <SellPageClient locale={locale} categories={categories as any} locations={locations as any} />;
 }
 
 function SellPageClient({
