@@ -58,27 +58,40 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
     default: orderBy.createdAt = "desc";
   }
 
-  const [listings, totalCount, categories] = await Promise.all([
-    db.listing.findMany({
-      where,
-      orderBy,
-      skip: (page - 1) * perPage,
-      take: perPage,
-      include: {
-        images: { take: 1, orderBy: { sortOrder: "asc" } },
-        category: true,
-        location: true,
-        _count: { select: { favorites: true } },
-        boosts: { where: { endAt: { gt: new Date() } } },
-      },
-    }),
-    db.listing.count({ where }),
-    db.category.findMany({
-      where: { parentId: null },
-      orderBy: { sortOrder: "asc" },
-      include: { _count: { select: { listings: true } } },
-    }),
-  ]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let listings: any[] = [];
+  let totalCount = 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let categories: any[] = [];
+
+  try {
+    const [listingsResult, countResult, categoriesResult] = await Promise.all([
+      db.listing.findMany({
+        where,
+        orderBy,
+        skip: (page - 1) * perPage,
+        take: perPage,
+        include: {
+          images: { take: 1, orderBy: { sortOrder: "asc" } },
+          category: true,
+          location: true,
+          _count: { select: { favorites: true } },
+          boosts: { where: { endAt: { gt: new Date() } } },
+        },
+      }),
+      db.listing.count({ where }),
+      db.category.findMany({
+        where: { parentId: null },
+        orderBy: { sortOrder: "asc" },
+        include: { _count: { select: { listings: true } } },
+      }),
+    ]);
+    listings = listingsResult;
+    totalCount = countResult;
+    categories = categoriesResult;
+  } catch (e) {
+    console.error("Failed to load search data:", e);
+  }
 
   const totalPages = Math.ceil(totalCount / perPage);
 

@@ -7,7 +7,7 @@ export const config = {
   // Match all pathnames except API routes, static files, etc.
   matcher: [
     "/",
-    "/(lv|ru|lt|et)/:path*",
+    "/(en|lv|ru|lt|et)/:path*",
     "/((?!api|_next|_vercel|.*\\..*).*)",
   ],
 };

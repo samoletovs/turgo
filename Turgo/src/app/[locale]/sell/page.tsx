@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import { SellingAgentWizard } from "@/components/selling-agent-wizard";
 import { db } from "@/server/db";
+import { AlertTriangle } from "lucide-react";
 
 export default async function SellPage({
   params,
@@ -10,45 +11,74 @@ export default async function SellPage({
   const { locale } = await params;
 
   // Fetch categories + locations for the wizard
-  const [categories, locations] = await Promise.all([
-    db.category.findMany({
-      where: { parentId: null },
-      orderBy: { sortOrder: "asc" },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        children: {
-          orderBy: { sortOrder: "asc" },
-          select: { id: true, name: true, slug: true },
+  let categories: { id: string; name: string; slug: string; children?: { id: string; name: string; slug: string }[] }[] = [];
+  let locations: { id: string; name: string; slug: string; children?: { id: string; name: string; slug: string }[] }[] = [];
+  let dbError = false;
+
+  try {
+    const [cats, locs] = await Promise.all([
+      db.category.findMany({
+        where: { parentId: null },
+        orderBy: { sortOrder: "asc" },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          children: {
+            orderBy: { sortOrder: "asc" },
+            select: { id: true, name: true, slug: true },
+          },
         },
-      },
-    }),
-    db.location.findMany({
-      where: { parentId: null },
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        children: {
-          orderBy: { name: "asc" },
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            children: {
-              orderBy: { name: "asc" },
-              select: { id: true, name: true, slug: true },
+      }),
+      db.location.findMany({
+        where: { parentId: null },
+        orderBy: { name: "asc" },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          children: {
+            orderBy: { name: "asc" },
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              children: {
+                orderBy: { name: "asc" },
+                select: { id: true, name: true, slug: true },
+              },
             },
           },
         },
-      },
-    }),
-  ]);
+      }),
+    ]);
+    categories = cats as typeof categories;
+    locations = locs as typeof locations;
+  } catch (e) {
+    console.error("Failed to load sell page data:", e);
+    dbError = true;
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return <SellPageClient locale={locale} categories={categories as any} locations={locations as any} />;
+  if (dbError) {
+    return <SellPageError locale={locale} />;
+  }
+
+  return <SellPageClient locale={locale} categories={categories} locations={locations} />;
+}
+
+function SellPageError({ locale }: { locale: string }) {
+  const t = useTranslations("sell");
+  return (
+    <div className="py-16 sm:py-24">
+      <div className="mx-auto max-w-md px-4 text-center">
+        <AlertTriangle className="mx-auto h-12 w-12 text-yellow-500 mb-4" />
+        <h1 className="text-2xl font-bold mb-2">{t("title")}</h1>
+        <p className="text-muted-foreground">
+          Service is temporarily unavailable. Please try again later.
+        </p>
+      </div>
+    </div>
+  );
 }
 
 function SellPageClient({

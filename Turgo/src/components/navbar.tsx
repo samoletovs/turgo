@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import {
   Search,
@@ -24,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { APP_NAME, LOCALES, LOCALE_LABELS, LOCALE_FLAGS } from "@/lib/constants";
 import { useState } from "react";
+import { Link, useRouter, usePathname } from "@/i18n/navigation";
 
 interface NavbarProps {
   locale: string;
@@ -32,6 +32,8 @@ interface NavbarProps {
 
 export function Navbar({ locale, user }: NavbarProps) {
   const t = useTranslations("nav");
+  const router = useRouter();
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -39,7 +41,7 @@ export function Navbar({ locale, user }: NavbarProps) {
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4">
         {/* Logo */}
-        <Link href={`/${locale}`} className="flex items-center gap-2 font-bold text-xl shrink-0">
+        <Link href="/" className="flex items-center gap-2 font-bold text-xl shrink-0">
           <Bot className="h-6 w-6 text-primary" />
           <span className="hidden sm:inline">{APP_NAME}</span>
         </Link>
@@ -51,7 +53,7 @@ export function Navbar({ locale, user }: NavbarProps) {
             onSubmit={(e) => {
               e.preventDefault();
               if (searchQuery.trim()) {
-                window.location.href = `/${locale}/search?q=${encodeURIComponent(searchQuery)}`;
+                router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
               }
             }}
           >
@@ -70,7 +72,7 @@ export function Navbar({ locale, user }: NavbarProps) {
         {/* Desktop nav */}
         <nav className="hidden items-center gap-1 md:flex">
           <Button variant="ghost" size="sm" asChild>
-            <Link href={`/${locale}/sell`}>
+            <Link href="/sell">
               <Plus className="h-4 w-4 mr-1" />
               {t("sell")}
             </Link>
@@ -79,24 +81,24 @@ export function Navbar({ locale, user }: NavbarProps) {
           {user ? (
             <>
               <Button variant="ghost" size="icon" asChild>
-                <Link href={`/${locale}/favorites`}>
+                <Link href="/favorites">
                   <Heart className="h-4 w-4" />
                 </Link>
               </Button>
               <Button variant="ghost" size="icon" asChild>
-                <Link href={`/${locale}/messages`}>
+                <Link href="/messages">
                   <MessageSquare className="h-4 w-4" />
                 </Link>
               </Button>
               <Button variant="ghost" size="icon" asChild>
-                <Link href={`/${locale}/profile`}>
+                <Link href="/profile">
                   <User className="h-4 w-4" />
                 </Link>
               </Button>
             </>
           ) : (
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/${locale}/auth/signin`}>{t("signIn")}</Link>
+              <Link href="/auth/signin">{t("signIn")}</Link>
             </Button>
           )}
 
@@ -104,8 +106,7 @@ export function Navbar({ locale, user }: NavbarProps) {
           <Select
             value={locale}
             onValueChange={(newLocale) => {
-              const path = window.location.pathname.replace(`/${locale}`, `/${newLocale}`);
-              window.location.href = path || `/${newLocale}`;
+              router.replace(pathname, { locale: newLocale });
             }}
           >
             <SelectTrigger className="w-auto gap-1 border-none h-8 px-2">
@@ -141,7 +142,7 @@ export function Navbar({ locale, user }: NavbarProps) {
             onSubmit={(e) => {
               e.preventDefault();
               if (searchQuery.trim()) {
-                window.location.href = `/${locale}/search?q=${encodeURIComponent(searchQuery)}`;
+                router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
               }
             }}
           >
@@ -158,7 +159,7 @@ export function Navbar({ locale, user }: NavbarProps) {
 
           <div className="flex flex-col gap-2">
             <Button variant="default" asChild className="w-full justify-start">
-              <Link href={`/${locale}/sell`}>
+              <Link href="/sell">
                 <Plus className="h-4 w-4 mr-2" />
                 {t("sell")}
               </Link>
@@ -167,25 +168,25 @@ export function Navbar({ locale, user }: NavbarProps) {
             {user ? (
               <>
                 <Button variant="ghost" asChild className="w-full justify-start">
-                  <Link href={`/${locale}/favorites`}>
+                  <Link href="/favorites">
                     <Heart className="h-4 w-4 mr-2" />
                     {t("favorites")}
                   </Link>
                 </Button>
                 <Button variant="ghost" asChild className="w-full justify-start">
-                  <Link href={`/${locale}/messages`}>
+                  <Link href="/messages">
                     <MessageSquare className="h-4 w-4 mr-2" />
                     {t("messages")}
                   </Link>
                 </Button>
                 <Button variant="ghost" asChild className="w-full justify-start">
-                  <Link href={`/${locale}/agents`}>
+                  <Link href="/agents">
                     <Bot className="h-4 w-4 mr-2" />
                     {t("agents")}
                   </Link>
                 </Button>
                 <Button variant="ghost" asChild className="w-full justify-start">
-                  <Link href={`/${locale}/profile`}>
+                  <Link href="/profile">
                     <User className="h-4 w-4 mr-2" />
                     {t("profile")}
                   </Link>
@@ -194,10 +195,10 @@ export function Navbar({ locale, user }: NavbarProps) {
             ) : (
               <>
                 <Button variant="outline" asChild className="w-full justify-start">
-                  <Link href={`/${locale}/auth/signin`}>{t("signIn")}</Link>
+                  <Link href="/auth/signin">{t("signIn")}</Link>
                 </Button>
                 <Button variant="ghost" asChild className="w-full justify-start">
-                  <Link href={`/${locale}/auth/register`}>{t("signUp")}</Link>
+                  <Link href="/auth/register">{t("signUp")}</Link>
                 </Button>
               </>
             )}

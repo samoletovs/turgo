@@ -1,5 +1,5 @@
-import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import {
   Search,
   Bot,
@@ -53,14 +53,14 @@ const CATEGORIES = [
   { name: "Agriculture", slug: "agriculture" },
 ];
 
-export default function HomePage({
+export default async function HomePage({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const t = useTranslations("home");
-  const tCommon = useTranslations("common");
-  const locale = params.locale;
+  const { locale } = await params;
+  const t = await getTranslations("home");
+  const tCommon = await getTranslations("common");
 
   return (
     <>
@@ -79,6 +79,7 @@ export default function HomePage({
             className="mx-auto mt-8 flex max-w-xl gap-2"
             action={`/${locale}/search`}
             method="GET"
+            suppressHydrationWarning
           >
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -96,7 +97,7 @@ export default function HomePage({
           {/* CTA */}
           <div className="mt-6">
             <Button asChild size="lg" variant="default" className="gap-2 rounded-xl">
-              <Link href={`/${locale}/sell`}>
+              <Link href="/sell">
                 <Bot className="h-5 w-5" />
                 {t("hero.cta")}
                 <ArrowRight className="h-4 w-4" />
@@ -116,7 +117,7 @@ export default function HomePage({
               return (
                 <Link
                   key={cat.slug}
-                  href={`/${locale}/category/${cat.slug}`}
+                  href={`/category/${cat.slug}`}
                   className="flex flex-col items-center gap-2 rounded-xl border p-4 transition-all hover:border-primary hover:bg-primary/5 hover:shadow-sm"
                 >
                   <Icon className="h-6 w-6 text-primary" />
