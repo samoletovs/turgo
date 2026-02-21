@@ -1,5 +1,6 @@
 "use client";
 
+import "./globals.css";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
 export default function GlobalError({
@@ -11,7 +12,7 @@ export default function GlobalError({
 }) {
   return (
     <html>
-      <body className="flex min-h-screen flex-col items-center justify-center px-4 text-center font-sans bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100">
+      <body className="flex min-h-screen flex-col items-center justify-center px-4 text-center font-sans bg-background text-foreground">
         <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20">
           <AlertTriangle className="h-10 w-10 text-red-500" />
         </div>

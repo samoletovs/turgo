@@ -280,6 +280,48 @@ az consumption usage list \
 
 ---
 
+## Quick Local Deploy (Skip GitHub)
+
+During active development, you can deploy directly from your machine — no git push needed:
+
+```powershell
+# Full build + deploy (~2-3 min)
+.\deploy.ps1
+
+# Or via npm
+npm run deploy
+
+# Re-deploy without rebuilding (just update container)
+.\deploy.ps1 -SkipBuild
+
+# Deploy + run database migrations
+.\deploy.ps1 -Migrate
+
+# Deploy + seed database
+.\deploy.ps1 -Seed
+
+# Combine flags
+.\deploy.ps1 -Migrate -Seed
+```
+
+**On Linux / macOS / WSL:**
+```bash
+chmod +x deploy.sh
+./deploy.sh                    # full build + deploy
+./deploy.sh --skip-build       # redeploy existing image
+./deploy.sh --migrate --seed   # deploy + migrate + seed
+```
+
+**What this skips vs GitHub Actions:**
+- No ESLint, TypeScript check, or tests (you're iterating fast)
+- No git push required
+- No GitHub Actions queue wait
+- Total time: ~2-3 min vs ~5-8 min
+
+> When the product is more stable, re-enable the GitHub Actions pipeline for proper CI/CD.
+
+---
+
 ## Local Development (unchanged)
 
 ```bash

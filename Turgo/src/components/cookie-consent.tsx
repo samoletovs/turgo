@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useCallback, useSyncExternalStore } from "react";
+import { useState, useCallback, useMemo, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
@@ -15,18 +15,10 @@ type CookieConsent = {
 
 const COOKIE_CONSENT_KEY = "turgo_cookie_consent";
 
-function getCookieConsent(): CookieConsent | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const stored = localStorage.getItem(COOKIE_CONSENT_KEY);
-    return stored ? JSON.parse(stored) : null;
-  } catch {
-    return null;
-  }
-}
-
 function setCookieConsent(consent: CookieConsent) {
   localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consent));
+  // Dispatch storage event so useSyncExternalStore picks up same-tab changes
+  window.dispatchEvent(new StorageEvent("storage", { key: COOKIE_CONSENT_KEY }));
 }
 
 export function CookieConsentBanner() {
@@ -39,14 +31,23 @@ export function CookieConsentBanner() {
     marketing: false,
   });
 
-  // Read consent state from localStorage without useEffect/setState
+  // useSyncExternalStore requires getSnapshot to return a referentially
+  // stable value when nothing has changed.  Return the raw JSON string
+  // (primitives are compared by value, so no infinite-loop) and parse once.
   const subscribe = useCallback((cb: () => void) => {
     window.addEventListener("storage", cb);
     return () => window.removeEventListener("storage", cb);
   }, []);
-  const getSnapshot = useCallback(() => getCookieConsent(), []);
-  const getServerSnapshot = useCallback((): CookieConsent | null => null, []);
-  const storedConsent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const getSnapshot = useCallback(
+    () => (typeof window === "undefined" ? null : localStorage.getItem(COOKIE_CONSENT_KEY)),
+    [],
+  );
+  const getServerSnapshot = useCallback((): string | null => null, []);
+  const rawConsent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const storedConsent: CookieConsent | null = useMemo(
+    () => (rawConsent ? JSON.parse(rawConsent) : null),
+    [rawConsent],
+  );
 
   // Visible if no stored consent and not dismissed
   const visible = !storedConsent && !dismissed;
