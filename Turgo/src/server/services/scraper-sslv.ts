@@ -30,7 +30,7 @@ export function isScrapingEnabled(): boolean {
 }
 
 /** Fetch and parse a page, extracting only aggregate price data */
-async function fetchCategoryStats(
+export async function fetchCategoryStats(
   categorySlug: string,
   url: string
 ): Promise<ScraperCategoryStats | null> {
