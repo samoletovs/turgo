@@ -60,7 +60,7 @@ export default async function FavoritesPage({ params }: FavoritesPageProps) {
                 price: fav.listing.price,
                 currency: fav.listing.currency,
                 location: String(fav.listing.location?.name || ""),
-                imageUrl: fav.listing.images[0]?.url || "/placeholder.jpg",
+                imageUrl: fav.listing.images[0]?.url || "/placeholder.svg",
                 imageCount: fav.listing.images.length,
                 createdAt: fav.listing.createdAt,
                 isFeatured: fav.listing.boosts.some(

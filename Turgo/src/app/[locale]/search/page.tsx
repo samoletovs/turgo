@@ -179,7 +179,7 @@ export default async function SearchPage({
       ? getLocalizedName(listing.location.name, locale)
       : "",
     locationSlug: listing.location?.slug,
-    imageUrl: listing.images[0]?.url || "/placeholder.jpg",
+    imageUrl: listing.images[0]?.url || "/placeholder.svg",
     imageCount: listing.images.length,
     createdAt: listing.createdAt.toISOString(),
     isFeatured: listing.boosts.some(

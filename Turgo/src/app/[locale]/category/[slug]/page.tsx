@@ -1125,7 +1125,7 @@ export default async function CategoryPage({
                 location: listing.location
                   ? getLocalizedName(listing.location.name, locale)
                   : "",
-                imageUrl: listing.images[0]?.url || "/placeholder.jpg",
+                imageUrl: listing.images[0]?.url || "/placeholder.svg",
                 imageCount: listing.images.length,
                 createdAt: listing.createdAt,
                 isFeatured: listing.boosts.some((b) => b.type === "FEATURED"),

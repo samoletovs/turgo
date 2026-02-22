@@ -220,7 +220,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                     location: listing.location
                       ? getLocalizedName(listing.location.name, locale)
                       : "",
-                    imageUrl: listing.images[0]?.url || "/placeholder.jpg",
+                    imageUrl: listing.images[0]?.url || "/placeholder.svg",
                     imageCount: listing.images.length,
                     createdAt: listing.createdAt,
                     isFeatured: listing.boosts.some(
