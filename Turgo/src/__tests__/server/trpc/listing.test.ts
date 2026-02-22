@@ -3,6 +3,11 @@ import { type TRPCContext, createCallerFactory } from "@/server/trpc";
 import { appRouter } from "@/server/trpc/router";
 import { mockDb } from "@/__tests__/setup";
 
+// Mock the view-counter service (fire-and-forget, no DB call)
+vi.mock("@/server/services/view-counter", () => ({
+  incrementViewCount: vi.fn(),
+}));
+
 // ─── Helpers ────────────────────────────────────────────────
 const createCaller = createCallerFactory(appRouter);
 
@@ -114,7 +119,6 @@ describe("listing.getById", () => {
     };
 
     mockDb.listing.findUnique.mockResolvedValue(fakeListing);
-    mockDb.listing.update.mockResolvedValue({});
 
     const caller = createCaller(anonCtx());
     const result = await caller.listing.getById({
@@ -128,11 +132,7 @@ describe("listing.getById", () => {
       category: expect.objectContaining({ id: "cat-1" }),
     });
     expect(mockDb.listing.findUnique).toHaveBeenCalledOnce();
-    // viewCount should be incremented
-    expect(mockDb.listing.update).toHaveBeenCalledWith({
-      where: { id: "clxxxxxxxxxxxxxxxxxxxxxxxxx" },
-      data: { viewCount: { increment: 1 } },
-    });
+    // viewCount is now incremented via Redis-backed incrementViewCount (fire-and-forget)
   });
 
   it("returns null for non-existent listing", async () => {
@@ -144,8 +144,7 @@ describe("listing.getById", () => {
     });
 
     expect(result).toBeNull();
-    // Should NOT increment view count
-    expect(mockDb.listing.update).not.toHaveBeenCalled();
+    // Should NOT increment view count (incrementViewCount not called)
   });
 
   it("rejects invalid id format", async () => {
