@@ -37,6 +37,7 @@ import {
   type FilterValues,
 } from "@/components/filter-sidebar";
 import { cn, formatPrice, formatRelativeTime } from "@/lib/utils";
+import { BuyingAgentWizard } from "@/components/buying-agent-wizard";
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -98,6 +99,9 @@ export function SearchPageClient({
   );
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [buyingAgentOpen, setBuyingAgentOpen] = useState(
+    () => searchParams.get("setup_agent") === "1",
+  );
 
   // Build URL with updated params
   const buildUrl = useCallback(
@@ -338,9 +342,34 @@ export function SearchPageClient({
             locale={locale}
             query={filters.q}
             filters={filters}
+            onCreateAgent={() => setBuyingAgentOpen(true)}
           />
         </div>
       </div>
+
+      {/* Buying Agent Wizard Dialog */}
+      <Dialog open={buyingAgentOpen} onOpenChange={setBuyingAgentOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 sm:p-0">
+          <BuyingAgentWizard
+            locale={locale}
+            categories={categories.map((c) => ({
+              id: c.id,
+              name: c.name,
+              slug: c.slug,
+              children: c.children?.map((ch) => ({
+                id: ch.id,
+                name: ch.name,
+                slug: ch.slug,
+              })),
+            }))}
+            locations={locations.map((l) => ({
+              id: l.id,
+              name: l.name,
+              slug: l.slug,
+            }))}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -880,10 +909,12 @@ function AgentPromptBanner({
   locale,
   query,
   filters,
+  onCreateAgent,
 }: {
   locale: string;
   query?: string;
   filters: Record<string, string | undefined>;
+  onCreateAgent: () => void;
 }) {
   return (
     <Card className="mt-8 overflow-hidden border-primary/20 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
@@ -902,17 +933,9 @@ function AgentPromptBanner({
             on great deals, and even negotiate on your behalf.
           </p>
         </div>
-        <Button size="sm" className="shrink-0 gap-1.5" asChild>
-          <Link
-            href={`/dashboard/agents?action=create-buying${
-              query ? `&keywords=${encodeURIComponent(query)}` : ""
-            }${filters.category ? `&category=${filters.category}` : ""}${
-              filters.maxPrice ? `&maxPrice=${filters.maxPrice}` : ""
-            }`}
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            Create Buying Agent
-          </Link>
+        <Button size="sm" className="shrink-0 gap-1.5" onClick={onCreateAgent}>
+          <Sparkles className="h-3.5 w-3.5" />
+          Create Buying Agent
         </Button>
       </CardContent>
     </Card>

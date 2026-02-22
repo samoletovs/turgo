@@ -50,12 +50,21 @@ export async function getRedis(): Promise<IORedis | null> {
 
   try {
     const { default: Redis } = await import("ioredis");
-    redis = new Redis(REDIS_URL, {
+    const client = new Redis(REDIS_URL, {
       maxRetriesPerRequest: 1,
       connectTimeout: 3000,
+      retryStrategy: () => null, // don't auto-retry — we handle it ourselves
       lazyConnect: true,
     });
-    await redis.connect();
+
+    // Swallow connection errors so Node doesn't crash with
+    // "Unhandled error event" when Redis is unreachable.
+    client.on("error", (err) => {
+      console.warn("[redis] Connection error (suppressed):", err.message);
+    });
+
+    await client.connect();
+    redis = client;
     return redis;
   } catch (err) {
     console.warn(

@@ -31,28 +31,41 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     redirect(`/${locale}/auth/signin`);
   }
 
-  const [user, listings, favoriteCount, agentCount] = await Promise.all([
-    db.user.findUnique({
-      where: { id: session.user.id },
-      include: {
-        subscription: { include: { plan: true } },
-      },
-    }),
-    db.listing.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-      include: {
-        images: { take: 1, orderBy: { sortOrder: "asc" } },
-        location: true,
-        boosts: { where: { endAt: { gt: new Date() } } },
-      },
-    }),
-    db.favorite.count({ where: { userId: session.user.id } }),
-    db.sellingAgent.count({
-      where: { listing: { userId: session.user.id } },
-    }),
-  ]);
+  let user:
+    | (Awaited<ReturnType<typeof db.user.findUnique>> & {
+        subscription?: { plan?: { name: string } } | null;
+      })
+    | null = null;
+  let listings: Awaited<ReturnType<typeof db.listing.findMany>> = [];
+  let favoriteCount = 0;
+  let agentCount = 0;
+
+  try {
+    [user, listings, favoriteCount, agentCount] = await Promise.all([
+      db.user.findUnique({
+        where: { id: session.user.id },
+        include: {
+          subscription: { include: { plan: true } },
+        },
+      }),
+      db.listing.findMany({
+        where: { userId: session.user.id },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+        include: {
+          images: { take: 1, orderBy: { sortOrder: "asc" } },
+          location: true,
+          boosts: { where: { endAt: { gt: new Date() } } },
+        },
+      }),
+      db.favorite.count({ where: { userId: session.user.id } }),
+      db.sellingAgent.count({
+        where: { listing: { userId: session.user.id } },
+      }),
+    ]);
+  } catch (error) {
+    console.error("[PROFILE] Database query failed:", error);
+  }
 
   if (!user) redirect(`/${locale}/auth/signin`);
 

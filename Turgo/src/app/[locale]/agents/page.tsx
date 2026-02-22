@@ -99,6 +99,11 @@ export default async function AgentsPage({ params }: AgentsPageProps) {
           <p className="text-muted-foreground">{t("manageAgents")}</p>
         </div>
         <div className="flex gap-3">
+          <Link href="/search?setup_agent=1">
+            <Button variant="outline">
+              <ShoppingBag className="mr-2 h-4 w-4" /> {t("newBuyingAgent")}
+            </Button>
+          </Link>
           <Link href="/sell">
             <Button>
               <Zap className="mr-2 h-4 w-4" /> {t("newSellingAgent")}
@@ -231,6 +236,11 @@ export default async function AgentsPage({ params }: AgentsPageProps) {
                 {t("noBuyingAgents")}
               </h3>
               <p className="text-muted-foreground">{t("noBuyingAgentsDesc")}</p>
+              <Link href="/search?setup_agent=1">
+                <Button className="mt-4">
+                  <ShoppingBag className="mr-2 h-4 w-4" /> {t("newBuyingAgent")}
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         ) : (

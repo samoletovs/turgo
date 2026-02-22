@@ -123,15 +123,25 @@ export default async function SearchPage({
             children: {
               where: { isActive: true },
               orderBy: { sortOrder: "asc" },
-              include: { _count: { select: { listings: true } } },
+              include: {
+                _count: {
+                  select: { listings: { where: { status: "ACTIVE" } } },
+                },
+              },
             },
-            _count: { select: { listings: true } },
+            _count: {
+              select: { listings: { where: { status: "ACTIVE" } } },
+            },
           },
         }),
         db.location.findMany({
           where: { parentId: null },
           orderBy: { name: "asc" },
-          include: { _count: { select: { listings: true } } },
+          include: {
+            _count: {
+              select: { listings: { where: { status: "ACTIVE" } } },
+            },
+          },
         }),
       ]);
 

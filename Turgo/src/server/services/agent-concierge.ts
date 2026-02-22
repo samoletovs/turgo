@@ -45,7 +45,7 @@ const LANGUAGE_PROMPTS: Record<string, string> = {
 export async function processConciergeMessage(
   message: string,
   history?: AiChatMessage[],
-  locale?: string
+  locale?: string,
 ): Promise<ConciergeResponse> {
   const detectedLang = locale || detectLanguage(message);
   const langInstruction = LANGUAGE_PROMPTS[detectedLang] || LANGUAGE_PROMPTS.en;
@@ -72,21 +72,32 @@ export async function processConciergeMessage(
       suggestedActions: parsed.suggestedActions,
       data: { detectedLanguage: parsed.detectedLanguage || detectedLang },
     };
-  } catch {
+  } catch (error) {
+    console.error(
+      "[Concierge] AI failed, using rule-based fallback:",
+      error instanceof Error ? error.message : error,
+    );
     // Fallback to rule-based detection
     return fallbackIntentDetection(message, detectedLang);
   }
 }
 
 /** Rule-based fallback when AI is unavailable */
-function fallbackIntentDetection(message: string, lang: string): ConciergeResponse {
+function fallbackIntentDetection(
+  message: string,
+  lang: string,
+): ConciergeResponse {
   const lower = message.toLowerCase();
 
   // Multi-language keyword matching
-  const sellKeywords = /sell|pārdot|pārdod|продать|продаю|parduoti|parduodu|müüa|müün/;
-  const buyKeywords = /buy|find|looking|want|need|pirkt|meklē|gribu|купить|ищу|хочу|pirkti|ieškau|noriu|osta|otsin|tahan/;
-  const supportKeywords = /help|support|problem|issue|bug|palīdz|помощь|проблема|pagalba|problema|abi/;
-  const browseKeywords = /browse|search|show|categ|explore|skatīt|parādīt|смотреть|показать|žiūrėti|rodyti|vaata|näita/;
+  const sellKeywords =
+    /sell|pārdot|pārdod|продать|продаю|parduoti|parduodu|müüa|müün/;
+  const buyKeywords =
+    /buy|find|looking|want|need|pirkt|meklē|gribu|купить|ищу|хочу|pirkti|ieškau|noriu|osta|otsin|tahan/;
+  const supportKeywords =
+    /help|support|problem|issue|bug|palīdz|помощь|проблема|pagalba|problema|abi/;
+  const browseKeywords =
+    /browse|search|show|categ|explore|skatīt|parādīt|смотреть|показать|žiūrėti|rodyti|vaata|näita/;
 
   const responses = FALLBACK_RESPONSES[lang] || FALLBACK_RESPONSES.en;
 
@@ -164,9 +175,11 @@ const FALLBACK_RESPONSES: Record<string, Record<string, string>> = {
     supportAccount: "👤 Account issue",
     supportBilling: "💳 Billing question",
     supportListing: "📋 Listing help",
-    browse: "Let me show you what's available! Browse by category or search for something specific.",
+    browse:
+      "Let me show you what's available! Browse by category or search for something specific.",
     browseFeatured: "🔥 Featured listings",
-    greeting: "Hello! I'm your Turgo concierge. How can I help you today?\n\n• **Sell** — Upload photos and I'll handle everything\n• **Buy** — Describe what you need, I'll find it 24/7\n• **Browse** — Explore categories and listings",
+    greeting:
+      "Hello! I'm your Turgo concierge. How can I help you today?\n\n• **Sell** — Upload photos and I'll handle everything\n• **Buy** — Describe what you need, I'll find it 24/7\n• **Browse** — Explore categories and listings",
     wantToSell: "🏷️ I want to sell",
     wantToBuy: "🔍 I'm looking for something",
     wantToBrowse: "📂 Browse listings",
@@ -184,7 +197,8 @@ const FALLBACK_RESPONSES: Record<string, Record<string, string>> = {
     supportListing: "📋 Sludinājumi",
     browse: "Apskatīsim, kas ir pieejams!",
     browseFeatured: "🔥 Populārākie",
-    greeting: "Sveiki! Es esmu jūsu tirgus vietas asistents. Kā varu palīdzēt?\n\n• **Pārdot** — Augšupielādējiet foto\n• **Pirkt** — Aprakstiet, ko meklējat\n• **Pārlūkot** — Apskatīt kategorijas",
+    greeting:
+      "Sveiki! Es esmu jūsu tirgus vietas asistents. Kā varu palīdzēt?\n\n• **Pārdot** — Augšupielādējiet foto\n• **Pirkt** — Aprakstiet, ko meklējat\n• **Pārlūkot** — Apskatīt kategorijas",
     wantToSell: "🏷️ Gribu pārdot",
     wantToBuy: "🔍 Meklēju preci",
     wantToBrowse: "📂 Pārlūkot",
@@ -202,7 +216,8 @@ const FALLBACK_RESPONSES: Record<string, Record<string, string>> = {
     supportListing: "📋 Объявления",
     browse: "Давайте посмотрим, что доступно!",
     browseFeatured: "🔥 Популярные",
-    greeting: "Привет! Я ваш помощник маркетплейса. Чем могу помочь?\n\n• **Продать** — Загрузите фото\n• **Купить** — Опишите, что ищете\n• **Просмотреть** — Обзор категорий",
+    greeting:
+      "Привет! Я ваш помощник маркетплейса. Чем могу помочь?\n\n• **Продать** — Загрузите фото\n• **Купить** — Опишите, что ищете\n• **Просмотреть** — Обзор категорий",
     wantToSell: "🏷️ Хочу продать",
     wantToBuy: "🔍 Ищу товар",
     wantToBrowse: "📂 Просмотреть",
@@ -220,7 +235,8 @@ const FALLBACK_RESPONSES: Record<string, Record<string, string>> = {
     supportListing: "📋 Skelbimai",
     browse: "Pažiūrėkime, kas yra!",
     browseFeatured: "🔥 Populiariausi",
-    greeting: "Sveiki! Esu jūsų prekyvietės asistentas. Kaip galiu padėti?\n\n• **Parduoti** — Įkelkite nuotraukas\n• **Pirkti** — Aprašykite, ko ieškote\n• **Naršyti** — Peržiūrėti kategorijas",
+    greeting:
+      "Sveiki! Esu jūsų prekyvietės asistentas. Kaip galiu padėti?\n\n• **Parduoti** — Įkelkite nuotraukas\n• **Pirkti** — Aprašykite, ko ieškote\n• **Naršyti** — Peržiūrėti kategorijas",
     wantToSell: "🏷️ Noriu parduoti",
     wantToBuy: "🔍 Ieškau prekės",
     wantToBrowse: "📂 Naršyti",
@@ -238,7 +254,8 @@ const FALLBACK_RESPONSES: Record<string, Record<string, string>> = {
     supportListing: "📋 Kuulutused",
     browse: "Vaatame, mis on saadaval!",
     browseFeatured: "🔥 Populaarsed",
-    greeting: "Tere! Olen teie turu assistent. Kuidas saan aidata?\n\n• **Müüa** — Laadige fotod üles\n• **Osta** — Kirjeldage, mida otsite\n• **Sirvige** — Vaadake kategooriaid",
+    greeting:
+      "Tere! Olen teie turu assistent. Kuidas saan aidata?\n\n• **Müüa** — Laadige fotod üles\n• **Osta** — Kirjeldage, mida otsite\n• **Sirvige** — Vaadake kategooriaid",
     wantToSell: "🏷️ Tahan müüa",
     wantToBuy: "🔍 Otsin kaupa",
     wantToBrowse: "📂 Sirvi",

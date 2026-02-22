@@ -181,6 +181,7 @@ interface ReportButtonProps {
 export function ReportButton({ listingId, locale }: ReportButtonProps) {
   const { data: session } = useSession();
   const router = useRouter();
+  const tListing = useTranslations("listing");
   const t = useTranslations("listing.reportDialog");
 
   const [open, setOpen] = useState(false);
@@ -227,7 +228,7 @@ export function ReportButton({ listingId, locale }: ReportButtonProps) {
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="text-muted-foreground">
           <Flag className="mr-1 h-4 w-4" />
-          {t("../report")}
+          {tListing("report")}
         </Button>
       </DialogTrigger>
       <DialogContent>

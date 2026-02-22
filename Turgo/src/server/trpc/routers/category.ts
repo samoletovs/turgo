@@ -11,9 +11,15 @@ export const categoryRouter = createTRPCRouter({
         children: {
           where: { isActive: true },
           orderBy: { sortOrder: "asc" },
-          include: { _count: { select: { listings: true } } },
+          include: {
+            _count: {
+              select: { listings: { where: { status: "ACTIVE" } } },
+            },
+          },
         },
-        _count: { select: { listings: true } },
+        _count: {
+          select: { listings: { where: { status: "ACTIVE" } } },
+        },
       },
     });
   }),
@@ -29,10 +35,16 @@ export const categoryRouter = createTRPCRouter({
           children: {
             where: { isActive: true },
             orderBy: { sortOrder: "asc" },
-            include: { _count: { select: { listings: true } } },
+            include: {
+              _count: {
+                select: { listings: { where: { status: "ACTIVE" } } },
+              },
+            },
           },
           attributes: { orderBy: { sortOrder: "asc" } },
-          _count: { select: { listings: true } },
+          _count: {
+            select: { listings: { where: { status: "ACTIVE" } } },
+          },
         },
       });
     }),
@@ -42,7 +54,11 @@ export const categoryRouter = createTRPCRouter({
     return ctx.db.category.findMany({
       where: { isActive: true },
       orderBy: { sortOrder: "asc" },
-      include: { _count: { select: { listings: true } } },
+      include: {
+        _count: {
+          select: { listings: { where: { status: "ACTIVE" } } },
+        },
+      },
     });
   }),
 });

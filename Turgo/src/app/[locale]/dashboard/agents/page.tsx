@@ -227,6 +227,11 @@ export default async function AgentsListPage({ params }: AgentsListPageProps) {
               <p className="text-sm text-muted-foreground">
                 No buying agents. Set one up to automatically find deals.
               </p>
+              <Link href="/search?setup_agent=1">
+                <Button className="mt-4" size="sm">
+                  <Plus className="mr-2 h-4 w-4" /> Create Buying Agent
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         ) : (
