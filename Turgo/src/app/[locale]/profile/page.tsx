@@ -36,7 +36,17 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         subscription?: { plan?: { name: string } } | null;
       })
     | null = null;
-  let listings: Awaited<ReturnType<typeof db.listing.findMany>> = [];
+  let listings: Awaited<
+    ReturnType<
+      typeof db.listing.findMany<{
+        include: {
+          images: { take: 1; orderBy: { sortOrder: "asc" } };
+          location: true;
+          boosts: { where: { endAt: { gt: Date } } };
+        };
+      }>
+    >
+  > = [];
   let favoriteCount = 0;
   let agentCount = 0;
 
