@@ -213,6 +213,17 @@ export const listingRouter = createTRPCRouter({
       return { listings, total, page: input.page, totalPages: Math.ceil(total / input.limit) };
     }),
 
+  /** Lightweight view-count increment (fire-and-forget from client) */
+  incrementView: publicProcedure
+    .input(z.object({ id: z.string().cuid() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.listing.update({
+        where: { id: input.id },
+        data: { viewCount: { increment: 1 } },
+      });
+      return { success: true };
+    }),
+
   /** Get featured / boosted listings for homepage */
   featured: publicProcedure
     .input(z.object({ limit: z.number().int().min(1).max(20).default(8) }))

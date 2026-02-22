@@ -1,6 +1,8 @@
 import { useTranslations } from "next-intl";
 import { SellingAgentWizard } from "@/components/selling-agent-wizard";
 import { db } from "@/server/db";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { AlertTriangle, FileEdit, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -10,6 +12,12 @@ export default async function SellPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+
+  // Require authentication to sell
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect(`/${locale}/auth/signin?callbackUrl=/${locale}/sell`);
+  }
 
   // Fetch categories + locations for the wizard
   type JsonName = string | Record<string, string>;

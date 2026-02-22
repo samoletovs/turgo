@@ -178,6 +178,9 @@ export function ManualListingForm({
             `/${locale}/listing/${result.slug || result.id}`,
           );
         }, 1000);
+      } else if (response.status === 401) {
+        setSubmitError("UNAUTHORIZED");
+        setSubmitStatus("error");
       } else {
         const errorData = await response.json().catch(() => null);
         setSubmitError(errorData?.error || `Server error (${response.status}). Please try again.`);
@@ -569,9 +572,24 @@ export function ManualListingForm({
 
           {submitStatus === "error" && (
             <div className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/20 p-4 text-center">
-              <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                {submitError || "Failed to create listing. Please try again."}
-              </p>
+              {submitError === "UNAUTHORIZED" ? (
+                <>
+                  <p className="text-sm font-medium text-red-600 dark:text-red-400 mb-2">
+                    You need to be signed in to create a listing.
+                  </p>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => router.push(`/${locale}/auth/signin?callbackUrl=/${locale}/listing/new`)}
+                  >
+                    Sign in to continue
+                  </Button>
+                </>
+              ) : (
+                <p className="text-sm font-medium text-red-600 dark:text-red-400">
+                  {submitError || "Failed to create listing. Please try again."}
+                </p>
+              )}
             </div>
           )}
         </div>

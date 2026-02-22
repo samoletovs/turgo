@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
@@ -17,12 +17,12 @@ import { useRouter } from "@/i18n/navigation";
 export default function SignInPage({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = use(params);
   const t = useTranslations("auth.signIn");
   const tErrors = useTranslations("auth.errors");
   const router = useRouter();
-  const locale = params.locale;
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 

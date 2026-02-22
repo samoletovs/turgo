@@ -5,9 +5,7 @@ import { getTranslations } from "next-intl/server";
 import {
   MapPin,
   Clock,
-  Heart,
   Share2,
-  MessageCircle,
   Shield,
   User,
   Phone,
@@ -18,7 +16,9 @@ import { db } from "@/server/db";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatPrice, formatRelativeTime } from "@/lib/utils";
+import { formatPrice, formatRelativeTime, getLocalizedName } from "@/lib/utils";
+import { ViewTracker, FavoriteButton, SendMessageButton } from "./client-components";
+import { ImageGallery } from "@/components/image-gallery";
 
 interface ListingPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -74,7 +74,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
               href={`/${locale}/search?category=${listing.category.parent.slug}`}
               className="hover:text-foreground"
             >
-              {String(listing.category.parent.name)}
+              {getLocalizedName(listing.category.parent.name, locale)}
             </Link>
             <span>/</span>
           </>
@@ -83,59 +83,26 @@ export default async function ListingPage({ params }: ListingPageProps) {
           href={`/${locale}/search?category=${listing.category.slug}`}
           className="hover:text-foreground"
         >
-          {String(listing.category.name)}
+          {getLocalizedName(listing.category.name, locale)}
         </Link>
       </nav>
+
+      <ViewTracker listingId={listing.id} />
 
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Main Column */}
         <div className="lg:col-span-2 space-y-6">
           {/* Image Gallery */}
-          <div className="relative overflow-hidden rounded-xl bg-muted">
-            {listing.images.length > 0 ? (
-              <div className="relative aspect-[4/3]">
-                <Image
-                  src={listing.images[0].url}
-                  alt={listing.title}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-                {listing.images.length > 1 && (
-                  <div className="absolute bottom-4 right-4">
-                    <Badge variant="secondary" className="bg-black/60 text-white">
-                      1 / {listing.images.length}
-                    </Badge>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex aspect-[4/3] items-center justify-center text-muted-foreground">
-                No images
-              </div>
-            )}
-
-            {/* Thumbnail strip */}
-            {listing.images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto p-4">
-                {listing.images.map((img, idx) => (
-                  <div
-                    key={img.id}
-                    className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border-2 border-transparent hover:border-primary"
-                  >
-                    <Image
-                      src={img.thumbnailUrl || img.url}
-                      alt={`${listing.title} ${idx + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+          <div className="relative">
+            <ImageGallery
+              images={listing.images.map((img, idx) => ({
+                url: img.url,
+                alt: `${listing.title} — photo ${idx + 1}`,
+              }))}
+            />
 
             {/* Badges */}
-            <div className="absolute left-4 top-4 flex gap-2">
+            <div className="absolute left-4 top-4 z-10 flex gap-2 pointer-events-none">
               {isFeatured && (
                 <Badge className="bg-yellow-500 text-white">Featured</Badge>
               )}
@@ -155,9 +122,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
             <div className="flex items-start justify-between gap-4">
               <h1 className="text-2xl font-bold lg:text-3xl">{listing.title}</h1>
               <div className="flex gap-2">
-                <Button variant="outline" size="icon">
-                  <Heart className="h-4 w-4" />
-                </Button>
+                <FavoriteButton listingId={listing.id} initialCount={listing._count.favorites} />
                 <Button variant="outline" size="icon">
                   <Share2 className="h-4 w-4" />
                 </Button>
@@ -241,10 +206,11 @@ export default async function ListingPage({ params }: ListingPageProps) {
               </div>
 
               <div className="space-y-2">
-                <Button className="w-full" size="lg">
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Send Message
-                </Button>
+                <SendMessageButton
+                  listingId={listing.id}
+                  sellerId={listing.user.id}
+                  locale={locale}
+                />
                 {listing.contactPhone && (
                   <Button variant="outline" className="w-full">
                     <Phone className="mr-2 h-4 w-4" />

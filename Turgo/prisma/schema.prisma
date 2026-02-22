@@ -176,6 +176,10 @@ model User {
   defaultLocationId String?
   pushSubscriptions PushSubscription[]
   notifications     Notification[]
+  warnings          UserWarning[]
+  bans              UserBan[]
+  isBanned          Boolean         @default(false)
+  bannedUntil       DateTime?
 
   @@index([email])
   @@index([role])
@@ -299,10 +303,12 @@ model Listing {
   messages      Message[]
   conversations Conversation[]
   reviews       Review[]
-  sellingAgent  SellingAgent?
-  boosts        ListingBoost[]
-  priceHistory  PriceHistory[]
-  agentMatches  AgentMatch[]
+  sellingAgent    SellingAgent?
+  boosts          ListingBoost[]
+  priceHistory    PriceHistory[]
+  agentMatches    AgentMatch[]
+  moderationLogs  ModerationLog[]
+  reports         Report[]
 
   @@index([userId])
   @@index([categoryId])
@@ -682,6 +688,158 @@ model AgentMatch {
   @@index([buyingAgentId])
   @@index([listingId])
   @@index([dealScore])
+}
+
+// ──────────────────────────────────────────────
+// ADMIN — MODERATION & REPORTING
+// ──────────────────────────────────────────────
+
+enum ModerationAction {
+  APPROVE
+  REJECT
+  FLAG
+  ESCALATE
+}
+
+enum ReportReason {
+  SPAM
+  FRAUD
+  INAPPROPRIATE
+  DUPLICATE
+  WRONG_CATEGORY
+  MISLEADING_PRICE
+  PROHIBITED_ITEM
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWING
+  RESOLVED
+  DISMISSED
+}
+
+enum EscalationSource {
+  SELLING_AGENT
+  BUYING_AGENT
+  CONCIERGE
+  AUTO_MODERATION
+}
+
+enum EscalationStatus {
+  PENDING
+  IN_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+model ModerationLog {
+  id        String           @id @default(cuid())
+  listingId String
+  adminId   String
+  action    ModerationAction
+  reason    String?
+  createdAt DateTime         @default(now())
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([adminId])
+  @@index([createdAt])
+}
+
+model Report {
+  id         String       @id @default(cuid())
+  listingId  String
+  reporterId String
+  reason     ReportReason
+  details    String?      @db.Text
+  status     ReportStatus @default(OPEN)
+  reviewedBy String?
+  reviewNote String?
+  createdAt  DateTime     @default(now())
+  resolvedAt DateTime?
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model UserWarning {
+  id        String   @id @default(cuid())
+  userId    String
+  adminId   String
+  reason    String   @db.Text
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model UserBan {
+  id        String    @id @default(cuid())
+  userId    String
+  adminId   String
+  reason    String    @db.Text
+  expiresAt DateTime?
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isActive])
+}
+
+model EscalationItem {
+  id             String           @id @default(cuid())
+  source         EscalationSource
+  sourceAgentId  String?
+  listingId      String?
+  userId         String?
+  title          String
+  description    String           @db.Text
+  metadata       Json?
+  status         EscalationStatus @default(PENDING)
+  assignedTo     String?
+  resolvedBy     String?
+  resolvedNote   String?
+  createdAt      DateTime         @default(now())
+  resolvedAt     DateTime?
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([source])
+}
+
+model AgentMetrics {
+  id              String   @id @default(cuid())
+  agentType       AgentType
+  date            DateTime @db.Date
+  itemsProcessed  Int      @default(0)
+  errorsCount     Int      @default(0)
+  avgResponseMs   Int      @default(0)
+  aiTokensUsed    Int      @default(0)
+  aiCostCents     Int      @default(0)
+  activeInstances Int      @default(0)
+
+  @@unique([agentType, date])
+  @@index([date])
+}
+
+model SearchLog {
+  id        String   @id @default(cuid())
+  query     String
+  results   Int      @default(0)
+  userId    String?
+  locale    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([query])
 }
 
 // ──────────────────────────────────────────────

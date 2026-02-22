@@ -1,4 +1,6 @@
 import { db } from "@/server/db";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { ManualListingForm } from "./listing-form-client";
 
 export default async function NewListingPage({
@@ -7,6 +9,12 @@ export default async function NewListingPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+
+  // Require authentication to create a listing
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect(`/${locale}/auth/signin?callbackUrl=/${locale}/listing/new`);
+  }
 
   type JsonName = string | Record<string, string>;
   let categories: { id: string; name: JsonName; slug: string; children?: { id: string; name: JsonName; slug: string }[] }[] = [];

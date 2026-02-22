@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { trpc } from "@/lib/trpc/client";
 
 // ──────────────────────────────────────────────
 // TYPES
@@ -83,6 +84,34 @@ export function BuyingAgentWizard({
   locations = [],
 }: BuyingAgentWizardProps) {
   const _t = useTranslations("agent");
+
+  const createBuyingAgent = trpc.agent.createBuying.useMutation({
+    onSuccess: (agent) => {
+      setCurrentStep("done");
+      addAgentMessage(
+        "Your buying agent is live! Here's what happens next:\n\n" +
+        "✅ Scanning marketplace every " + data.monitorFrequency + " minutes\n" +
+        "✅ Scoring deals with 7-factor analysis\n" +
+        "✅ Instant alerts for great matches (70+ score)\n" +
+        "✅ Price drop tracking on top matches\n\n" +
+        "I'll message you the moment I find something good. 🎯",
+        [
+          { label: "View my agent", value: `goto_/agents/${agent.id}` },
+          { label: "View all agents", value: "goto_/agents" },
+          { label: "Create another", value: "reset" },
+        ],
+      );
+    },
+    onError: (error) => {
+      addAgentMessage(
+        `Something went wrong: **${error.message}**\n\nPlease try again.`,
+        [{ label: "🔄 Retry", value: "create_agent" }],
+      );
+    },
+    onSettled: () => {
+      setIsSubmitting(false);
+    },
+  });
 
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [currentStep, setCurrentStep] = useState<BuyStep>("greeting");
@@ -191,14 +220,18 @@ export function BuyingAgentWizard({
 
       case "budget": {
         const numbers = content.match(/\d+/g)?.map(Number) || [];
+        let parsedMax = 0;
         if (numbers.length >= 2) {
-          updateData({ maxPrice: Math.max(...numbers), idealPrice: Math.min(...numbers) });
+          parsedMax = Math.max(...numbers);
+          const parsedIdeal = Math.min(...numbers);
+          updateData({ maxPrice: parsedMax, idealPrice: parsedIdeal });
         } else if (numbers.length === 1) {
-          updateData({ maxPrice: numbers[0], idealPrice: Math.round(numbers[0] * 0.7) });
+          parsedMax = numbers[0];
+          updateData({ maxPrice: parsedMax, idealPrice: Math.round(parsedMax * 0.7) });
         }
         setCurrentStep("location");
         await thinkAndRespond(
-          `Budget set: up to **€${data.maxPrice || numbers[0] || 0}**\n\nAny location preference?`,
+          `Budget set: up to **€${parsedMax}**\n\nAny location preference?`,
           [
             ...locations.slice(0, 4).map((l) => ({
               label: typeof l.name === "object" ? (l.name as Record<string, string>)[locale] || (l.name as Record<string, string>).en || l.slug : l.name as string,
@@ -330,49 +363,21 @@ export function BuyingAgentWizard({
     if (value === "create_agent") {
       setCurrentStep("creating");
       setIsSubmitting(true);
-      try {
-        const response = await fetch("/api/trpc/agent.createBuying", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            json: {
-              searchQuery: data.searchQuery,
-              categoryId: data.categoryId || undefined,
-              locationId: data.locationId || undefined,
-              maxPrice: data.maxPrice,
-              idealPrice: data.idealPrice,
-              condition: data.condition,
-              monitorFrequency: data.monitorFrequency,
-              autoOffer: data.autoOffer,
-              autoNegotiate: data.autoNegotiate,
-              dealScoreThreshold: data.dealScoreThreshold,
-            },
-          }),
-        });
-
-        if (response.ok) {
-          setCurrentStep("done");
-          addAgentMessage(
-            "Your buying agent is live! Here's what happens next:\n\n✅ Scanning marketplace every " +
-            data.monitorFrequency +
-            " minutes\n✅ Scoring deals with 7-factor analysis\n✅ Instant alerts for great matches (70+ score)\n✅ Price drop tracking on top matches\n\nI'll message you the moment I find something good. 🎯",
-            [
-              { label: "View my agents", value: "goto_/agents" },
-              { label: "Create another", value: "reset" },
-            ],
-          );
-        } else {
-          addAgentMessage("Something went wrong creating the agent. Let me try again.", [
-            { label: "🔄 Retry", value: "create_agent" },
-          ]);
-        }
-      } catch {
-        addAgentMessage("Connection error. Please try again.", [
-          { label: "🔄 Retry", value: "create_agent" },
-        ]);
-      } finally {
-        setIsSubmitting(false);
-      }
+      createBuyingAgent.mutate({
+        searchCriteria: {
+          keywords: data.searchQuery || undefined,
+          categoryId: data.categoryId || undefined,
+          locationId: data.locationId || undefined,
+          maxPrice: data.maxPrice || undefined,
+          condition: data.condition !== "ANY" ? data.condition as "NEW" | "USED" | "REFURBISHED" : undefined,
+        },
+        maxBudget: data.maxPrice,
+        targetPrice: data.idealPrice || undefined,
+        autoNegotiate: data.autoNegotiate,
+        maxAutoOfferPrice: data.autoOffer ? data.idealPrice : undefined,
+        notifyPush: true,
+        notifyEmail: true,
+      });
       return;
     }
 

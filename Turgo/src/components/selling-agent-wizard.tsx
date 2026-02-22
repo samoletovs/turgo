@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { trpc } from "@/lib/trpc/client";
 
 // ──────────────────────────────────────────────
 // TYPES
@@ -81,6 +82,23 @@ interface SellingAgentWizardProps {
   locations?: { id: string; name: JsonName; slug: string; children?: { id: string; name: JsonName; slug: string }[] }[];
 }
 
+/** Skeleton shown while AI pricing is being fetched */
+function PricingSkeleton() {
+  return (
+    <div className="mt-2 space-y-2 rounded-lg border bg-background/50 p-3">
+      <div className="flex items-center gap-2">
+        <TrendingUp className="h-4 w-4 text-primary animate-pulse" />
+        <span className="text-xs text-muted-foreground">Analyzing market data...</span>
+      </div>
+      <div className="space-y-1.5">
+        <div className="h-3 w-3/4 animate-pulse rounded bg-muted-foreground/20" />
+        <div className="h-3 w-1/2 animate-pulse rounded bg-muted-foreground/20" />
+        <div className="h-3 w-2/3 animate-pulse rounded bg-muted-foreground/20" />
+      </div>
+    </div>
+  );
+}
+
 export function SellingAgentWizard({
   locale,
   categories = [],
@@ -88,6 +106,7 @@ export function SellingAgentWizard({
 }: SellingAgentWizardProps) {
   const _t = useTranslations("sell");
   const _tAgent = useTranslations("agent");
+  const utils = trpc.useUtils();
 
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [currentStep, setCurrentStep] = useState<WizardStep>("greeting");
@@ -320,14 +339,67 @@ export function SellingAgentWizard({
         const priceNum = parseFloat(content.replace(/[€,\s]/g, ""));
         if (!isNaN(priceNum) && priceNum > 0) {
           updateData({ price: priceNum });
-          // Calculate AI suggested price
-          const suggested = Math.round(priceNum * (0.9 + Math.random() * 0.3));
-          updateData({ aiSuggestedPrice: suggested });
+
+          // Show pricing analysis skeleton while AI works
+          const skeletonMsgId = `pricing-skeleton-${Date.now()}`;
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: skeletonMsgId,
+              role: "agent" as const,
+              content: `Your price: **€${priceNum}**\nAnalyzing market data...`,
+              timestamp: new Date(),
+              component: <PricingSkeleton />,
+            },
+          ]);
+          setIsThinking(true);
+
+          let suggested: number | null = null;
+          let reasoning = "";
+          let confidence = 0;
+          let comparableListings = 0;
+          let aiSuccess = false;
+
+          try {
+            const result = await utils.ai.suggestPrice.fetch({
+              categoryId: data.categoryId,
+              title: data.title || content,
+              condition: data.condition,
+              ...(data.locationId ? { locationId: data.locationId } : {}),
+            });
+
+            if (result.suggestedPrice > 0) {
+              suggested = result.suggestedPrice;
+              reasoning = result.reasoning;
+              confidence = result.confidence;
+              comparableListings = result.comparableListings;
+              aiSuccess = true;
+            }
+          } catch {
+            // AI call failed — will use fallback
+          }
+
+          // Remove skeleton message
+          setMessages((prev) => prev.filter((m) => m.id !== skeletonMsgId));
+          setIsThinking(false);
+
           setCurrentStep("urgency");
-          await thinkAndRespond(
-            `Your price: **€${priceNum}**\nMarket analysis suggests: **€${suggested}**\n\nNow, how quickly do you want to sell? This affects my pricing strategy:`,
-            URGENCY_OPTIONS.map((u) => ({ label: `${u.label}`, value: `urgency_${u.value}` }))
-          );
+
+          if (aiSuccess && suggested !== null) {
+            updateData({ aiSuggestedPrice: suggested });
+            const confidenceLabel =
+              confidence >= 0.8 ? "High" : confidence >= 0.5 ? "Medium" : "Low";
+            addAgentMessage(
+              `Your price: **€${priceNum}**\nMarket analysis suggests: **€${suggested}** (${confidenceLabel} confidence)${reasoning ? `\n\n💡 ${reasoning}` : ""}${comparableListings ? `\n📊 Based on ${comparableListings} comparable listings` : ""}\n\nNow, how quickly do you want to sell? This affects my pricing strategy:`,
+              URGENCY_OPTIONS.map((u) => ({ label: `${u.label}`, value: `urgency_${u.value}` }))
+            );
+          } else {
+            updateData({ aiSuggestedPrice: null });
+            addAgentMessage(
+              `Your price: **€${priceNum}**\n⚠️ AI pricing unavailable — I'll use your entered price.\n\nHow quickly do you want to sell? This affects my pricing strategy:`,
+              URGENCY_OPTIONS.map((u) => ({ label: `${u.label}`, value: `urgency_${u.value}` }))
+            );
+          }
         } else {
           await thinkAndRespond("I need a valid price in euros. Just type a number like 150 or 29.99");
         }
@@ -492,13 +564,20 @@ export function SellingAgentWizard({
           const result = await response.json();
           setCurrentStep("done");
           addAgentMessage(
-            `Your listing is live and I'm on the job! Here's what I'll be doing:\n\n✅ Monitoring views and engagement\n✅ Responding to buyer questions\n✅ Adjusting price based on market data\n✅ Sending you daily summaries\n\nI'll message you when there's important activity. Good luck! 🎉`,
+            value === "draft"
+              ? `Your listing has been saved as a **draft**! You can find it in your profile and publish it when you're ready.`
+              : `Your listing is live and I'm on the job! Here's what I'll be doing:\n\n✅ Monitoring views and engagement\n✅ Responding to buyer questions\n✅ Adjusting price based on market data\n✅ Sending you daily summaries\n\nI'll message you when there's important activity. Good luck! 🎉`,
             [{ label: "View my listing", value: `goto_/listing/${result.slug || result.id}` }]
+          );
+        } else if (response.status === 401) {
+          addAgentMessage(
+            `You need to be **signed in** to create a listing. Please sign in and try again.`,
+            [{ label: "🔑 Sign in", value: `goto_/auth/signin?callbackUrl=/${locale}/sell` }]
           );
         } else {
           const errorData = await response.json().catch(() => null);
           const errorMsg = errorData?.error || `Server error (${response.status})`;
-          addAgentMessage(`There was an issue creating the listing: **${errorMsg}**\n\nThis might be a database connection issue. Let me try again...`, [
+          addAgentMessage(`There was an issue creating the listing: **${errorMsg}**\n\nPlease try again or edit details.`, [
             { label: "🔄 Retry", value: value },
             { label: "📝 Edit details", value: "edit" },
           ]);
