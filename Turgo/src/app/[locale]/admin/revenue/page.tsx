@@ -2,15 +2,8 @@
 
 import { trpc } from "@/lib/trpc/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
-  Users,
-  CreditCard,
-  Zap,
-} from "lucide-react";
+
+import { DollarSign, TrendingUp, TrendingDown, Users, Zap } from "lucide-react";
 
 export default function RevenuePage() {
   const { data, isLoading } = trpc.admin.revenue.useQuery();
@@ -21,7 +14,14 @@ export default function RevenuePage() {
         <h1 className="text-3xl font-bold">Revenue Dashboard</h1>
         <div className="grid gap-4 md:grid-cols-3">
           {[...Array(6)].map((_, i) => (
-            <Card key={i}><CardContent className="p-6"><div className="animate-pulse space-y-3"><div className="h-4 bg-muted rounded w-1/2" /><div className="h-8 bg-muted rounded w-3/4" /></div></CardContent></Card>
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse space-y-3">
+                  <div className="h-4 bg-muted rounded w-1/2" />
+                  <div className="h-8 bg-muted rounded w-3/4" />
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
@@ -57,7 +57,10 @@ export default function RevenuePage() {
       value: `${data.churnRate}%`,
       icon: data.churnRate > 5 ? TrendingDown : TrendingUp,
       color: data.churnRate > 5 ? "text-red-600" : "text-green-600",
-      bg: data.churnRate > 5 ? "bg-red-50 dark:bg-red-950" : "bg-green-50 dark:bg-green-950",
+      bg:
+        data.churnRate > 5
+          ? "bg-red-50 dark:bg-red-950"
+          : "bg-green-50 dark:bg-green-950",
     },
   ];
 
@@ -77,7 +80,9 @@ export default function RevenuePage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {stat.title}
+                  </p>
                   <p className="text-2xl font-bold mt-1">{stat.value}</p>
                 </div>
                 <div className={`rounded-lg p-3 ${stat.bg}`}>
@@ -98,7 +103,10 @@ export default function RevenuePage() {
           <div className="grid gap-4 sm:grid-cols-3">
             {(["FREE", "PRO", "BUSINESS"] as const).map((plan) => {
               const count = data.planCounts[plan] || 0;
-              const total = Object.values(data.planCounts).reduce((a, b) => a + b, 0);
+              const total = Object.values(data.planCounts).reduce(
+                (a, b) => a + b,
+                0,
+              );
               const pct = total > 0 ? ((count / total) * 100).toFixed(1) : "0";
               const colors: Record<string, string> = {
                 FREE: "bg-gray-500",
@@ -110,7 +118,9 @@ export default function RevenuePage() {
                 <div key={plan} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">{plan}</span>
-                    <span className="text-sm text-muted-foreground">{count} users</span>
+                    <span className="text-sm text-muted-foreground">
+                      {count} users
+                    </span>
                   </div>
                   <div className="h-2 rounded-full bg-muted overflow-hidden">
                     <div
@@ -118,7 +128,9 @@ export default function RevenuePage() {
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">{pct}% of total</p>
+                  <p className="text-xs text-muted-foreground">
+                    {pct}% of total
+                  </p>
                 </div>
               );
             })}
@@ -129,28 +141,45 @@ export default function RevenuePage() {
       {/* MRR History Chart */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Revenue Over Time (12 months)</CardTitle>
+          <CardTitle className="text-lg">
+            Revenue Over Time (12 months)
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {/* Simple bar chart */}
             <div className="flex items-end gap-1 h-48">
               {data.mrrHistory.map((point, i) => {
-                const maxVal = Math.max(...data.mrrHistory.map((p) => p.mrr + p.boosts), 1);
+                const maxVal = Math.max(
+                  ...data.mrrHistory.map((p) => p.mrr + p.boosts),
+                  1,
+                );
                 const totalHeight = ((point.mrr + point.boosts) / maxVal) * 100;
                 const mrrHeight = (point.mrr / maxVal) * 100;
 
                 return (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                    <div className="w-full flex flex-col justify-end" style={{ height: "100%" }}>
+                  <div
+                    key={i}
+                    className="flex-1 flex flex-col items-center gap-1"
+                  >
+                    <div
+                      className="w-full flex flex-col justify-end"
+                      style={{ height: "100%" }}
+                    >
                       <div
                         className="w-full bg-amber-400 rounded-t"
-                        style={{ height: `${totalHeight - mrrHeight}%`, minHeight: point.boosts > 0 ? 2 : 0 }}
+                        style={{
+                          height: `${totalHeight - mrrHeight}%`,
+                          minHeight: point.boosts > 0 ? 2 : 0,
+                        }}
                         title={`Boosts: €${point.boosts}`}
                       />
                       <div
                         className="w-full bg-primary rounded-b"
-                        style={{ height: `${mrrHeight}%`, minHeight: point.mrr > 0 ? 2 : 0 }}
+                        style={{
+                          height: `${mrrHeight}%`,
+                          minHeight: point.mrr > 0 ? 2 : 0,
+                        }}
                         title={`MRR: €${point.mrr}`}
                       />
                     </div>

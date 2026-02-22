@@ -24,7 +24,7 @@ const tabs: Tab[] = [
   { href: "/profile", label: "Profile", icon: User },
 ];
 
-export function BottomNav({ locale }: BottomNavProps) {
+export function BottomNav({ locale: _locale }: BottomNavProps) {
   const pathname = usePathname();
 
   // Lightweight tRPC query for unread message count

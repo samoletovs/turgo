@@ -44,7 +44,10 @@ interface FavoriteButtonProps {
   initialCount: number;
 }
 
-export function FavoriteButton({ listingId, initialCount }: FavoriteButtonProps) {
+export function FavoriteButton({
+  listingId,
+  initialCount,
+}: FavoriteButtonProps) {
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -54,30 +57,32 @@ export function FavoriteButton({ listingId, initialCount }: FavoriteButtonProps)
     { enabled: !!session?.user },
   );
 
-  const [optimisticFav, setOptimisticFav] = useState(false);
-  const [optimisticCount, setOptimisticCount] = useState(initialCount);
+  // Track local toggle count for optimistic UI
+  const [toggleCount, setToggleCount] = useState(0);
+  const [_optimisticCount, setOptimisticCount] = useState(initialCount);
 
-  // Sync once server data arrives
-  useEffect(() => {
-    if (favData) setOptimisticFav(favData.favorited);
-  }, [favData]);
+  // Derive favorited state: server data + local toggle flips
+  const serverFav = favData?.favorited ?? false;
+  const optimisticFav = toggleCount % 2 === 0 ? serverFav : !serverFav;
 
   const toggleMutation = trpc.favorite.toggle.useMutation({
     onMutate: () => {
       // Optimistic update
-      setOptimisticFav((prev) => !prev);
+      setToggleCount((prev) => prev + 1);
       setOptimisticCount((prev) => (optimisticFav ? prev - 1 : prev + 1));
     },
     onError: () => {
       // Revert on failure
-      setOptimisticFav((prev) => !prev);
+      setToggleCount((prev) => prev - 1);
       setOptimisticCount((prev) => (optimisticFav ? prev + 1 : prev - 1));
     },
   });
 
   const handleClick = useCallback(() => {
     if (!session?.user) {
-      router.push(`/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+      router.push(
+        `/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`,
+      );
       return;
     }
     toggleMutation.mutate({ listingId });
@@ -89,11 +94,11 @@ export function FavoriteButton({ listingId, initialCount }: FavoriteButtonProps)
       size="icon"
       onClick={handleClick}
       aria-label={optimisticFav ? "Remove from favorites" : "Add to favorites"}
-      className={optimisticFav ? "text-red-500 border-red-200 hover:text-red-600" : ""}
+      className={
+        optimisticFav ? "text-red-500 border-red-200 hover:text-red-600" : ""
+      }
     >
-      <Heart
-        className={`h-4 w-4 ${optimisticFav ? "fill-current" : ""}`}
-      />
+      <Heart className={`h-4 w-4 ${optimisticFav ? "fill-current" : ""}`} />
     </Button>
   );
 }
@@ -107,14 +112,18 @@ interface SendMessageButtonProps {
   locale: string;
 }
 
-export function SendMessageButton({ listingId, sellerId, locale }: SendMessageButtonProps) {
+export function SendMessageButton({
+  listingId,
+  sellerId,
+  locale,
+}: SendMessageButtonProps) {
   const { data: session } = useSession();
   const router = useRouter();
 
   const handleClick = useCallback(() => {
     if (!session?.user) {
       router.push(
-        `/${locale}/auth/signin?callbackUrl=${encodeURIComponent(`/${locale}/messages?listing=${listingId}`)}`
+        `/${locale}/auth/signin?callbackUrl=${encodeURIComponent(`/${locale}/messages?listing=${listingId}`)}`,
       );
       return;
     }

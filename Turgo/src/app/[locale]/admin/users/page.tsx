@@ -11,10 +11,8 @@ import {
   Search,
   Ban,
   AlertTriangle,
-  Shield,
   ChevronLeft,
   ChevronRight,
-  Eye,
   Unlock,
 } from "lucide-react";
 
@@ -22,7 +20,9 @@ export default function UsersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const [roleFilter, setRoleFilter] = useState<"USER" | "MODERATOR" | "ADMIN" | undefined>();
+  const [roleFilter, setRoleFilter] = useState<
+    "USER" | "MODERATOR" | "ADMIN" | undefined
+  >();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [warnReason, setWarnReason] = useState("");
   const [banReason, setBanReason] = useState("");
@@ -36,17 +36,31 @@ export default function UsersPage() {
   });
 
   const warnMutation = trpc.admin.warnUser.useMutation({
-    onSuccess: () => { toast.success("Warning issued"); setWarnReason(""); setSelectedUserId(null); refetch(); },
+    onSuccess: () => {
+      toast.success("Warning issued");
+      setWarnReason("");
+      setSelectedUserId(null);
+      refetch();
+    },
     onError: (err) => toast.error(err.message),
   });
 
   const banMutation = trpc.admin.banUser.useMutation({
-    onSuccess: () => { toast.success("User banned"); setBanReason(""); setBanDays(""); setSelectedUserId(null); refetch(); },
+    onSuccess: () => {
+      toast.success("User banned");
+      setBanReason("");
+      setBanDays("");
+      setSelectedUserId(null);
+      refetch();
+    },
     onError: (err) => toast.error(err.message),
   });
 
   const unbanMutation = trpc.admin.unbanUser.useMutation({
-    onSuccess: () => { toast.success("User unbanned"); refetch(); },
+    onSuccess: () => {
+      toast.success("User unbanned");
+      refetch();
+    },
     onError: (err) => toast.error(err.message),
   });
 
@@ -61,7 +75,11 @@ export default function UsersPage() {
       <div className="flex flex-wrap gap-3">
         <form
           className="flex gap-2"
-          onSubmit={(e) => { e.preventDefault(); setSearch(searchInput); setPage(1); }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSearch(searchInput);
+            setPage(1);
+          }}
         >
           <Input
             placeholder="Search by name or email..."
@@ -79,20 +97,33 @@ export default function UsersPage() {
               key={r || "all"}
               variant={roleFilter === r ? "default" : "outline"}
               size="sm"
-              onClick={() => { setRoleFilter(r as typeof roleFilter); setPage(1); }}
+              onClick={() => {
+                setRoleFilter(r as typeof roleFilter);
+                setPage(1);
+              }}
             >
               {r || "All"}
             </Button>
           ))}
         </div>
         {data && (
-          <Badge variant="secondary" className="ml-auto">{data.total} users</Badge>
+          <Badge variant="secondary" className="ml-auto">
+            {data.total} users
+          </Badge>
         )}
       </div>
 
       {/* User List */}
       {isLoading ? (
-        <Card><CardContent className="p-6"><div className="animate-pulse space-y-3">{[...Array(5)].map((_, i) => (<div key={i} className="h-12 bg-muted rounded" />))}</div></CardContent></Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="animate-pulse space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-12 bg-muted rounded" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       ) : (
         <Card>
           <CardContent className="p-0">
@@ -102,10 +133,14 @@ export default function UsersPage() {
                   <tr className="border-b bg-muted/50">
                     <th className="px-4 py-3 text-left font-medium">User</th>
                     <th className="px-4 py-3 text-left font-medium">Role</th>
-                    <th className="px-4 py-3 text-left font-medium">Listings</th>
+                    <th className="px-4 py-3 text-left font-medium">
+                      Listings
+                    </th>
                     <th className="px-4 py-3 text-left font-medium">Status</th>
                     <th className="px-4 py-3 text-left font-medium">Joined</th>
-                    <th className="px-4 py-3 text-right font-medium">Actions</th>
+                    <th className="px-4 py-3 text-right font-medium">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -114,16 +149,27 @@ export default function UsersPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                            {user.name?.charAt(0)?.toUpperCase() || user.email.charAt(0).toUpperCase()}
+                            {user.name?.charAt(0)?.toUpperCase() ||
+                              user.email.charAt(0).toUpperCase()}
                           </div>
                           <div>
                             <p className="font-medium">{user.name || "—"}</p>
-                            <p className="text-xs text-muted-foreground">{user.email}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {user.email}
+                            </p>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <Badge variant={user.role === "ADMIN" ? "default" : user.role === "MODERATOR" ? "secondary" : "outline"}>
+                        <Badge
+                          variant={
+                            user.role === "ADMIN"
+                              ? "default"
+                              : user.role === "MODERATOR"
+                                ? "secondary"
+                                : "outline"
+                          }
+                        >
                           {user.role}
                         </Badge>
                       </td>
@@ -133,7 +179,8 @@ export default function UsersPage() {
                           <Badge variant="destructive">Banned</Badge>
                         ) : user._count.warnings > 0 ? (
                           <Badge variant="default">
-                            {user._count.warnings} warning{user._count.warnings !== 1 ? "s" : ""}
+                            {user._count.warnings} warning
+                            {user._count.warnings !== 1 ? "s" : ""}
                           </Badge>
                         ) : (
                           <Badge variant="success">Active</Badge>
@@ -148,7 +195,9 @@ export default function UsersPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => unbanMutation.mutate({ userId: user.id })}
+                              onClick={() =>
+                                unbanMutation.mutate({ userId: user.id })
+                              }
                               disabled={unbanMutation.isPending}
                             >
                               <Unlock className="mr-1 h-3.5 w-3.5" /> Unban
@@ -164,7 +213,8 @@ export default function UsersPage() {
                                   setBanReason("");
                                 }}
                               >
-                                <AlertTriangle className="mr-1 h-3.5 w-3.5" /> Warn
+                                <AlertTriangle className="mr-1 h-3.5 w-3.5" />{" "}
+                                Warn
                               </Button>
                               <Button
                                 size="sm"
@@ -206,7 +256,12 @@ export default function UsersPage() {
                   onChange={(e) => setWarnReason(e.target.value)}
                 />
                 <Button
-                  onClick={() => warnMutation.mutate({ userId: selectedUserId, reason: warnReason })}
+                  onClick={() =>
+                    warnMutation.mutate({
+                      userId: selectedUserId,
+                      reason: warnReason,
+                    })
+                  }
                   disabled={!warnReason || warnMutation.isPending}
                 >
                   <AlertTriangle className="mr-1.5 h-4 w-4" /> Warn
@@ -254,11 +309,23 @@ export default function UsersPage() {
       {/* Pagination */}
       {data && data.pages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-sm text-muted-foreground">Page {page} of {data.pages}</span>
-          <Button variant="outline" size="sm" disabled={page >= data.pages} onClick={() => setPage(page + 1)}>
+          <span className="text-sm text-muted-foreground">
+            Page {page} of {data.pages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= data.pages}
+            onClick={() => setPage(page + 1)}
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>

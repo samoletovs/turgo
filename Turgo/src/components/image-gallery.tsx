@@ -4,11 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 // ──────────────────────────────────────────────
@@ -29,7 +25,11 @@ interface ImageGalleryProps {
 // SWIPE HOOK
 // ──────────────────────────────────────────────
 
-function useSwipe(onSwipeLeft: () => void, onSwipeRight: () => void, threshold = 50) {
+function useSwipe(
+  onSwipeLeft: () => void,
+  onSwipeRight: () => void,
+  threshold = 50,
+) {
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const onTouchStart = useCallback((e: React.TouchEvent) => {
@@ -79,7 +79,10 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
 
   const goTo = useCallback((idx: number) => setCurrent(idx), []);
   const goPrev = useCallback(() => setCurrent((i) => Math.max(0, i - 1)), []);
-  const goNext = useCallback(() => setCurrent((i) => Math.min(total - 1, i + 1)), []);
+  const goNext = useCallback(
+    () => setCurrent((i) => Math.min(total - 1, i + 1)),
+    [total],
+  );
 
   // Keyboard navigation (inline gallery — only when focused / not in lightbox)
   useEffect(() => {
@@ -96,7 +99,12 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
 
   if (total === 0) {
     return (
-      <div className={cn("flex aspect-[4/3] items-center justify-center rounded-xl bg-muted text-muted-foreground", className)}>
+      <div
+        className={cn(
+          "flex aspect-[4/3] items-center justify-center rounded-xl bg-muted text-muted-foreground",
+          className,
+        )}
+      >
         No images
       </div>
     );
@@ -105,7 +113,10 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
   return (
     <>
       {/* ── Inline Gallery ── */}
-      <div ref={containerRef} className={cn("overflow-hidden rounded-xl bg-muted", className)}>
+      <div
+        ref={containerRef}
+        className={cn("overflow-hidden rounded-xl bg-muted", className)}
+      >
         {/* Main image */}
         <button
           type="button"
@@ -148,7 +159,10 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
           <>
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); goPrev(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                goPrev();
+              }}
               disabled={!hasPrev}
               className="absolute left-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition hover:bg-black/60 disabled:opacity-30 disabled:cursor-default"
               aria-label="Previous image"
@@ -157,7 +171,10 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
             </button>
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); goNext(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                goNext();
+              }}
               disabled={!hasNext}
               className="absolute right-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition hover:bg-black/60 disabled:opacity-30 disabled:cursor-default"
               aria-label="Next image"
@@ -177,7 +194,9 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
                 onClick={() => goTo(idx)}
                 className={cn(
                   "relative h-14 w-14 shrink-0 overflow-hidden rounded-md border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  idx === current ? "border-primary ring-1 ring-primary/30" : "border-transparent opacity-70 hover:opacity-100",
+                  idx === current
+                    ? "border-primary ring-1 ring-primary/30"
+                    : "border-transparent opacity-70 hover:opacity-100",
                 )}
                 aria-label={`View image ${idx + 1}`}
               >
@@ -231,8 +250,14 @@ function LightboxBody({
   onClose: () => void;
 }) {
   const total = images.length;
-  const goPrev = useCallback(() => setCurrent(Math.max(0, current - 1)), [setCurrent, current]);
-  const goNext = useCallback(() => setCurrent(Math.min(total - 1, current + 1)), [setCurrent, current, total]);
+  const goPrev = useCallback(
+    () => setCurrent(Math.max(0, current - 1)),
+    [setCurrent, current],
+  );
+  const goNext = useCallback(
+    () => setCurrent(Math.min(total - 1, current + 1)),
+    [setCurrent, current, total],
+  );
 
   // Keyboard nav inside lightbox
   useEffect(() => {
@@ -248,7 +273,10 @@ function LightboxBody({
   const swipeHandlers = useSwipe(goNext, goPrev);
 
   return (
-    <div className="relative flex flex-col items-center justify-center" {...swipeHandlers}>
+    <div
+      className="relative flex flex-col items-center justify-center"
+      {...swipeHandlers}
+    >
       {/* Close button */}
       <button
         type="button"
@@ -324,7 +352,9 @@ function LightboxBody({
               onClick={() => setCurrent(idx)}
               className={cn(
                 "relative h-10 w-10 shrink-0 overflow-hidden rounded border transition-all",
-                idx === current ? "border-white ring-1 ring-white/50" : "border-transparent opacity-60 hover:opacity-100",
+                idx === current
+                  ? "border-white ring-1 ring-white/50"
+                  : "border-transparent opacity-60 hover:opacity-100",
               )}
               aria-label={`View image ${idx + 1}`}
             >

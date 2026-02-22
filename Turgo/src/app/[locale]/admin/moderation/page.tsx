@@ -1,10 +1,9 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -13,13 +12,13 @@ import {
   Flag,
   ChevronLeft,
   ChevronRight,
-  Search,
-  Eye,
 } from "lucide-react";
 
 export default function ModerationPage() {
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<"MODERATION" | "REJECTED" | "ACTIVE">("MODERATION");
+  const [statusFilter, setStatusFilter] = useState<
+    "MODERATION" | "REJECTED" | "ACTIVE"
+  >("MODERATION");
 
   const { data, refetch, isLoading } = trpc.admin.moderationQueue.useQuery({
     status: statusFilter,
@@ -51,9 +50,16 @@ export default function ModerationPage() {
             key={s}
             variant={statusFilter === s ? "default" : "outline"}
             size="sm"
-            onClick={() => { setStatusFilter(s); setPage(1); }}
+            onClick={() => {
+              setStatusFilter(s);
+              setPage(1);
+            }}
           >
-            {s === "MODERATION" ? "Pending" : s === "REJECTED" ? "Rejected" : "Approved"}
+            {s === "MODERATION"
+              ? "Pending"
+              : s === "REJECTED"
+                ? "Rejected"
+                : "Approved"}
           </Button>
         ))}
         {data && (
@@ -101,7 +107,8 @@ export default function ModerationPage() {
                     <h3 className="font-semibold truncate">{listing.title}</h3>
                     <p className="text-sm text-muted-foreground">
                       {listing.user.name || listing.user.email} &middot;{" "}
-                      {(listing.category.name as Record<string, string>).en || listing.category.slug}
+                      {(listing.category.name as Record<string, string>).en ||
+                        listing.category.slug}
                     </p>
                     <p className="text-sm font-medium mt-1">
                       &euro;{listing.price.toFixed(2)}
@@ -119,7 +126,10 @@ export default function ModerationPage() {
                     <Button
                       size="sm"
                       onClick={() =>
-                        moderate.mutate({ listingId: listing.id, action: "APPROVE" })
+                        moderate.mutate({
+                          listingId: listing.id,
+                          action: "APPROVE",
+                        })
                       }
                       disabled={moderate.isPending}
                       className="flex-1"

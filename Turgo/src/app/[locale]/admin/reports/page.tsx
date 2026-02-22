@@ -1,24 +1,18 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  Flag,
-  CheckCircle,
-  XCircle,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-} from "lucide-react";
+import { CheckCircle, XCircle, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function ReportsPage() {
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<"OPEN" | "REVIEWING" | "RESOLVED" | "DISMISSED" | undefined>("OPEN");
+  const [statusFilter, setStatusFilter] = useState<
+    "OPEN" | "REVIEWING" | "RESOLVED" | "DISMISSED" | undefined
+  >("OPEN");
   const [resolveNote, setResolveNote] = useState("");
 
   const { data, refetch, isLoading } = trpc.admin.reports.useQuery({
@@ -28,11 +22,18 @@ export default function ReportsPage() {
   });
 
   const resolveMutation = trpc.admin.resolveReport.useMutation({
-    onSuccess: () => { toast.success("Report resolved"); setResolveNote(""); refetch(); },
+    onSuccess: () => {
+      toast.success("Report resolved");
+      setResolveNote("");
+      refetch();
+    },
     onError: (err) => toast.error(err.message),
   });
 
-  const statusColors: Record<string, "default" | "secondary" | "destructive" | "success" | "outline"> = {
+  const statusColors: Record<
+    string,
+    "default" | "secondary" | "destructive" | "success" | "outline"
+  > = {
     OPEN: "destructive",
     REVIEWING: "default",
     RESOLVED: "success",
@@ -43,7 +44,9 @@ export default function ReportsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Reports</h1>
-        <p className="text-muted-foreground">Flagged listings reported by users</p>
+        <p className="text-muted-foreground">
+          Flagged listings reported by users
+        </p>
       </div>
 
       {/* Status filters */}
@@ -53,7 +56,10 @@ export default function ReportsPage() {
             key={s}
             variant={statusFilter === s ? "default" : "outline"}
             size="sm"
-            onClick={() => { setStatusFilter(s); setPage(1); }}
+            onClick={() => {
+              setStatusFilter(s);
+              setPage(1);
+            }}
           >
             {s}
           </Button>
@@ -61,18 +67,32 @@ export default function ReportsPage() {
         <Button
           variant={!statusFilter ? "default" : "outline"}
           size="sm"
-          onClick={() => { setStatusFilter(undefined); setPage(1); }}
+          onClick={() => {
+            setStatusFilter(undefined);
+            setPage(1);
+          }}
         >
           All
         </Button>
-        {data && <Badge variant="secondary" className="ml-auto">{data.total} total</Badge>}
+        {data && (
+          <Badge variant="secondary" className="ml-auto">
+            {data.total} total
+          </Badge>
+        )}
       </div>
 
       {/* Reports list */}
       {isLoading ? (
         <div className="space-y-3">
           {[...Array(4)].map((_, i) => (
-            <Card key={i}><CardContent className="p-6"><div className="animate-pulse space-y-3"><div className="h-4 bg-muted rounded w-3/4" /><div className="h-3 bg-muted rounded w-1/2" /></div></CardContent></Card>
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse space-y-3">
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-3 bg-muted rounded w-1/2" />
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       ) : data?.reports.length === 0 ? (
@@ -97,11 +117,15 @@ export default function ReportsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold">{report.listing.title}</h3>
-                      <Badge variant={statusColors[report.status]}>{report.status}</Badge>
+                      <Badge variant={statusColors[report.status]}>
+                        {report.status}
+                      </Badge>
                       <Badge variant="outline">{report.reason}</Badge>
                     </div>
                     {report.details && (
-                      <p className="text-sm text-muted-foreground mt-1">{report.details}</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {report.details}
+                      </p>
                     )}
                     <p className="text-xs text-muted-foreground mt-1">
                       Reported {new Date(report.createdAt).toLocaleDateString()}
@@ -109,7 +133,8 @@ export default function ReportsPage() {
                     </p>
                   </div>
 
-                  {(report.status === "OPEN" || report.status === "REVIEWING") && (
+                  {(report.status === "OPEN" ||
+                    report.status === "REVIEWING") && (
                     <div className="flex flex-col gap-2 shrink-0">
                       <div className="flex gap-1">
                         <Button
@@ -152,11 +177,23 @@ export default function ReportsPage() {
       {/* Pagination */}
       {data && data.pages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-sm text-muted-foreground">Page {page} of {data.pages}</span>
-          <Button variant="outline" size="sm" disabled={page >= data.pages} onClick={() => setPage(page + 1)}>
+          <span className="text-sm text-muted-foreground">
+            Page {page} of {data.pages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= data.pages}
+            onClick={() => setPage(page + 1)}
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
