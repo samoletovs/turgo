@@ -10,7 +10,13 @@ function authedCtx(overrides: Partial<TRPCContext> = {}): TRPCContext {
   return {
     db: mockDb as unknown as TRPCContext["db"],
     session: {
-      user: { id: "user-1", name: "Test", email: "t@t.com", role: "USER" },
+      user: {
+        id: "user-1",
+        name: "Test",
+        email: "t@t.com",
+        role: "USER",
+        locale: "en",
+      },
       expires: new Date(Date.now() + 86400_000).toISOString(),
     },
     ...overrides,

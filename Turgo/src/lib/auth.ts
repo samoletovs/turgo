@@ -189,7 +189,7 @@ export const authConfig: NextAuthConfig = {
 
       // Determine whether we need to refresh from the database
       let needsRefresh = false;
-      const age = Date.now() - (token.lastRefreshedAt ?? 0);
+      const age = Date.now() - (Number(token.lastRefreshedAt) || 0);
 
       if (age > TOKEN_REFRESH_INTERVAL_MS) {
         needsRefresh = true;
