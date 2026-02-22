@@ -5,12 +5,17 @@ import { LOCALES, APP_URL } from "@/lib/constants";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ConciergeChat } from "@/components/concierge-chat";
+import { BottomNav } from "@/components/bottom-nav";
 import { Providers } from "@/components/providers";
 import { CookieConsentBanner } from "@/components/cookie-consent";
 import { SkipToContent } from "@/components/a11y";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { JsonLd } from "@/components/json-ld";
-import { websiteJsonLd, organizationJsonLd, generatePageMetadata } from "@/lib/seo";
+import {
+  websiteJsonLd,
+  organizationJsonLd,
+  generatePageMetadata,
+} from "@/lib/seo";
 import { auth } from "@/lib/auth";
 import type { Metadata } from "next";
 
@@ -81,13 +86,21 @@ export default async function LocaleLayout({
         <div className="flex min-h-screen flex-col">
           <Navbar
             locale={locale}
-            user={session?.user ? { name: session.user.name || "", avatar: session.user.image || undefined } : null}
+            user={
+              session?.user
+                ? {
+                    name: session.user.name || "",
+                    avatar: session.user.image || undefined,
+                  }
+                : null
+            }
           />
-          <main id="main-content" className="flex-1" role="main">
+          <main id="main-content" className="flex-1 pb-16 md:pb-0" role="main">
             <ErrorBoundary>{children}</ErrorBoundary>
           </main>
           <Footer locale={locale} />
         </div>
+        <BottomNav locale={locale} />
         <ConciergeChat locale={locale} />
         <CookieConsentBanner />
       </Providers>

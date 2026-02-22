@@ -2,16 +2,40 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { db } from "@/server/db";
 import { registerSchema } from "@/lib/validators";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { RATE_LIMITS } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit: 5 attempts per hour per IP
+    const ip = getClientIp(req);
+    const rl = await rateLimit({
+      key: `register:${ip}`,
+      limit: RATE_LIMITS.REGISTER.max,
+      windowMs: RATE_LIMITS.REGISTER.windowMs,
+    });
+    if (!rl.success) {
+      return NextResponse.json(
+        { message: "Too many registration attempts. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rl.reset - Date.now()) / 1000)),
+          },
+        },
+      );
+    }
+
     const body = await req.json();
     const parsed = registerSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
-        { message: "Invalid input", errors: parsed.error.flatten().fieldErrors },
-        { status: 400 }
+        {
+          message: "Invalid input",
+          errors: parsed.error.flatten().fieldErrors,
+        },
+        { status: 400 },
       );
     }
 
@@ -25,11 +49,11 @@ export async function POST(req: NextRequest) {
     if (existingUser) {
       return NextResponse.json(
         { message: "An account with this email already exists" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
-    // Hash password  
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Create user
@@ -61,20 +85,22 @@ export async function POST(req: NextRequest) {
           planId: freePlan.id,
           status: "ACTIVE",
           currentPeriodStart: new Date(),
-          currentPeriodEnd: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000), // ~100 years
+          currentPeriodEnd: new Date(
+            Date.now() + 100 * 365 * 24 * 60 * 60 * 1000,
+          ), // ~100 years
         },
       });
     }
 
     return NextResponse.json(
       { message: "Account created successfully", user },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error("[REGISTER_ERROR]", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

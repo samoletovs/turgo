@@ -3,6 +3,7 @@ import { type Session } from "next-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
 import { db } from "@/server/db";
+import { rateLimit } from "@/lib/rate-limit";
 import type { UserTier } from "@/server/services/ai";
 
 /** Context passed to every tRPC procedure */
@@ -65,7 +66,10 @@ export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
   });
 
   if (!user || (user.role !== "ADMIN" && user.role !== "MODERATOR")) {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Admin access required",
+    });
   }
 
   return next({
@@ -82,7 +86,7 @@ export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
 /** Resolve user's subscription tier */
 async function resolveUserTier(
   userId: string,
-  database: typeof db
+  database: typeof db,
 ): Promise<UserTier> {
   const subscription = await database.subscription.findUnique({
     where: { userId },
@@ -128,7 +132,8 @@ export const paidProcedure = t.procedure.use(async ({ ctx, next }) => {
   if (userTier === "free") {
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: "This feature requires a Pro or Business subscription. Upgrade at /pricing.",
+      message:
+        "This feature requires a Pro or Business subscription. Upgrade at /pricing.",
     });
   }
 
@@ -139,3 +144,42 @@ export const paidProcedure = t.procedure.use(async ({ ctx, next }) => {
     },
   });
 });
+
+// ──────────────────────────────────────────────
+// RATE-LIMITED PROCEDURE
+// ──────────────────────────────────────────────
+
+/**
+ * Creates a protected procedure with sliding-window rate limiting.
+ * Uses the authenticated user's ID as the rate-limit key.
+ *
+ * @param opts.max      Max requests in the window (matches RATE_LIMITS shape)
+ * @param opts.limit    Alias for max (either works)
+ * @param opts.windowMs Window size in milliseconds
+ */
+export function createRateLimitedProcedure(opts: {
+  max?: number;
+  limit?: number;
+  windowMs: number;
+}) {
+  const limit = opts.max ?? opts.limit ?? 100;
+  return protectedProcedure.use(async ({ ctx, next, path }) => {
+    const userId = ctx.session.user.id ?? "unknown";
+    const key = `trpc:${path}:${userId}`;
+
+    const result = await rateLimit({
+      key,
+      limit,
+      windowMs: opts.windowMs,
+    });
+
+    if (!result.success) {
+      throw new TRPCError({
+        code: "TOO_MANY_REQUESTS",
+        message: `Rate limit exceeded. Try again in ${Math.ceil((result.reset - Date.now()) / 1000)}s.`,
+      });
+    }
+
+    return next();
+  });
+}

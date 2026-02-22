@@ -1,8 +1,10 @@
 /** Application-wide constants */
 
 export const APP_NAME = "Turgo";
-export const APP_DESCRIPTION = "Agent-first classifieds platform for the Baltics";
-export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+export const APP_DESCRIPTION =
+  "Agent-first classifieds platform for the Baltics";
+export const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 /** Supported locales */
 export const LOCALES = ["en", "lv", "ru", "lt", "et"] as const;
@@ -89,8 +91,13 @@ export const BOOST_PRICES = {
 export const RATE_LIMITS = {
   AUTH: { max: 5, windowMs: 60_000 },
   API: { max: 100, windowMs: 60_000 },
-  UPLOAD: { max: 20, windowMs: 60_000 },
+  UPLOAD: { max: 30, windowMs: 3_600_000 },
   AGENT: { max: 50, windowMs: 60_000 },
+  CONCIERGE: { max: 20, windowMs: 60_000 },
+  REGISTER: { max: 5, windowMs: 3_600_000 },
+  LISTING_CREATE: { max: 30, windowMs: 3_600_000 },
+  MESSAGE_SEND: { max: 60, windowMs: 60_000 },
+  AGENT_CREATE: { max: 10, windowMs: 3_600_000 },
 } as const;
 
 /** File upload constraints */

@@ -194,6 +194,16 @@ export function SearchBar({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             autoFocus={autoFocus}
+            role="combobox"
+            aria-expanded={isOpen}
+            aria-haspopup="listbox"
+            aria-autocomplete="list"
+            aria-controls="search-listbox"
+            aria-activedescendant={
+              isOpen && selectedIndex >= 0
+                ? `search-option-${selectedIndex}`
+                : undefined
+            }
             className={cn(
               "pr-8",
               compact ? "h-9 pl-9 text-sm" : "h-11 pl-10 text-base",
@@ -223,17 +233,40 @@ export function SearchBar({
       </form>
 
       {/* Suggestions dropdown */}
+      {/* Visually hidden live region for screen reader announcements */}
+      <div
+        className="sr-only"
+        aria-live="polite"
+        aria-atomic="true"
+        role="status"
+      >
+        {isOpen && suggestions.length > 0
+          ? `${suggestions.length} suggestion${suggestions.length === 1 ? "" : "s"} available`
+          : ""}
+      </div>
+
       {isOpen && suggestions.length > 0 && (
         <div
           ref={dropdownRef}
           className="absolute left-0 right-0 top-full z-50 rounded-b-lg border border-t-0 bg-popover shadow-lg"
         >
-          <ul className="py-1">
+          <ul
+            id="search-listbox"
+            role="listbox"
+            aria-label="Search suggestions"
+            className="py-1"
+          >
             {suggestions.map((s, i) => (
-              <li key={`${s.type}-${s.text}-${i}`}>
+              <li
+                key={`${s.type}-${s.text}-${i}`}
+                id={`search-option-${i}`}
+                role="option"
+                aria-selected={i === selectedIndex}
+              >
                 <button
                   onClick={() => selectSuggestion(s)}
                   onMouseEnter={() => setSelectedIndex(i)}
+                  tabIndex={-1}
                   className={cn(
                     "flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors",
                     i === selectedIndex

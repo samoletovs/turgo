@@ -1,6 +1,11 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "@/server/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  createRateLimitedProcedure,
+} from "@/server/trpc";
 import { sendMessageSchema } from "@/lib/validators";
+import { RATE_LIMITS } from "@/lib/constants";
 import { emitMessage } from "@/server/socket";
 import {
   processAutoRespond,
@@ -8,13 +13,20 @@ import {
   approveAgentMessage,
   rejectAgentMessage,
 } from "@/server/services/messaging";
-import { translateAndStoreMessage, translateMessageOnDemand, detectLanguage } from "@/server/services/translation";
-import { notifyNewMessage, notifyNegotiationEvent } from "@/server/services/notification";
+import {
+  translateAndStoreMessage,
+  translateMessageOnDemand,
+  detectLanguage,
+} from "@/server/services/translation";
+import {
+  notifyNewMessage,
+  notifyNegotiationEvent,
+} from "@/server/services/notification";
 import type { Locale } from "@/lib/constants";
 
 export const messageRouter = createTRPCRouter({
   /** Send a message — with agent auto-respond/auto-negotiate integration */
-  send: protectedProcedure
+  send: createRateLimitedProcedure(RATE_LIMITS.MESSAGE_SEND)
     .input(sendMessageSchema)
     .mutation(async ({ ctx, input }) => {
       let conversationId = input.conversationId;
@@ -118,7 +130,9 @@ export const messageRouter = createTRPCRouter({
       }
 
       // Auto-translate for Pro/Business users (non-blocking)
-      translateAndStoreMessage(message.id, ctx.session.user.id!).catch(console.error);
+      translateAndStoreMessage(message.id, ctx.session.user.id!).catch(
+        console.error,
+      );
 
       // Process auto-respond (selling agent)
       processAutoRespond({
@@ -150,11 +164,12 @@ export const messageRouter = createTRPCRouter({
         listingId: z.string().cuid(),
         offerPrice: z.number().positive(),
         message: z.string().max(500).optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const content =
-        input.message || `I'd like to offer €${input.offerPrice} for this item.`;
+        input.message ||
+        `I'd like to offer €${input.offerPrice} for this item.`;
 
       const message = await ctx.db.message.create({
         data: {
@@ -227,7 +242,7 @@ export const messageRouter = createTRPCRouter({
       z.object({
         messageId: z.string().cuid(),
         editedContent: z.string().max(2000).optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       await approveAgentMessage({
@@ -274,12 +289,12 @@ export const messageRouter = createTRPCRouter({
       z.object({
         messageId: z.string().cuid(),
         targetLocale: z.enum(["en", "lv", "ru", "lt", "et"]),
-      })
+      }),
     )
     .mutation(async ({ ctx: _ctx, input }) => {
       const translation = await translateMessageOnDemand(
         input.messageId,
-        input.targetLocale as Locale
+        input.targetLocale as Locale,
       );
       return { translation, locale: input.targetLocale };
     }),
@@ -338,7 +353,7 @@ export const messageRouter = createTRPCRouter({
         conversationId: z.string().cuid(),
         limit: z.number().int().min(1).max(100).default(50),
         cursor: z.string().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       // Verify user is participant

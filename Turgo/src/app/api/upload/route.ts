@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { processAndStoreImage, validateUpload } from "@/server/services/storage";
+import {
+  processAndStoreImage,
+  validateUpload,
+} from "@/server/services/storage";
+import { rateLimit } from "@/lib/rate-limit";
+import { RATE_LIMITS } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,20 +14,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Rate limit: 30 uploads per hour per user
+    const rl = await rateLimit({
+      key: `upload:${session.user.id}`,
+      limit: RATE_LIMITS.UPLOAD.max,
+      windowMs: RATE_LIMITS.UPLOAD.windowMs,
+    });
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Upload rate limit exceeded. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rl.reset - Date.now()) / 1000)),
+          },
+        },
+      );
+    }
+
     const formData = await req.formData();
     const files = formData.getAll("files") as File[];
 
     if (!files.length) {
-      return NextResponse.json(
-        { error: "No files provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No files provided" }, { status: 400 });
     }
 
     if (files.length > 10) {
       return NextResponse.json(
         { error: "Maximum 10 files per upload" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -63,10 +83,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("[UPLOAD_ERROR]", error);
-    return NextResponse.json(
-      { error: "Upload failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }
 

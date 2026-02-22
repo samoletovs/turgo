@@ -3,8 +3,14 @@ import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
+  createRateLimitedProcedure,
 } from "@/server/trpc";
-import { createListingSchema, updateListingSchema, listingFilterSchema } from "@/lib/validators";
+import {
+  createListingSchema,
+  updateListingSchema,
+  listingFilterSchema,
+} from "@/lib/validators";
+import { RATE_LIMITS } from "@/lib/constants";
 
 export const listingRouter = createTRPCRouter({
   /** Get a single listing by ID */
@@ -63,11 +69,20 @@ export const listingRouter = createTRPCRouter({
 
       const orderBy: Record<string, string> = {};
       switch (sortBy) {
-        case "price_asc": orderBy.price = "asc"; break;
-        case "price_desc": orderBy.price = "desc"; break;
-        case "views": orderBy.viewCount = "desc"; break;
-        case "oldest": orderBy.createdAt = "asc"; break;
-        default: orderBy.createdAt = "desc";
+        case "price_asc":
+          orderBy.price = "asc";
+          break;
+        case "price_desc":
+          orderBy.price = "desc";
+          break;
+        case "views":
+          orderBy.viewCount = "desc";
+          break;
+        case "oldest":
+          orderBy.createdAt = "asc";
+          break;
+        default:
+          orderBy.createdAt = "desc";
       }
 
       const [listings, total] = await Promise.all([
@@ -95,7 +110,7 @@ export const listingRouter = createTRPCRouter({
     }),
 
   /** Create a new listing */
-  create: protectedProcedure
+  create: createRateLimitedProcedure(RATE_LIMITS.LISTING_CREATE)
     .input(createListingSchema)
     .mutation(async ({ ctx, input }) => {
       // Generate slug from title
@@ -131,7 +146,7 @@ export const listingRouter = createTRPCRouter({
       z.object({
         id: z.string().cuid(),
         data: updateListingSchema,
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const existing = await ctx.db.listing.findFirst({
@@ -186,10 +201,19 @@ export const listingRouter = createTRPCRouter({
   myListings: protectedProcedure
     .input(
       z.object({
-        status: z.enum(["DRAFT", "ACTIVE", "SOLD", "EXPIRED", "MODERATION", "REJECTED"]).optional(),
+        status: z
+          .enum([
+            "DRAFT",
+            "ACTIVE",
+            "SOLD",
+            "EXPIRED",
+            "MODERATION",
+            "REJECTED",
+          ])
+          .optional(),
         page: z.number().int().min(1).default(1),
         limit: z.number().int().min(1).max(50).default(20),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const where: Record<string, unknown> = { userId: ctx.session.user.id! };
@@ -210,7 +234,12 @@ export const listingRouter = createTRPCRouter({
         ctx.db.listing.count({ where: where as never }),
       ]);
 
-      return { listings, total, page: input.page, totalPages: Math.ceil(total / input.limit) };
+      return {
+        listings,
+        total,
+        page: input.page,
+        totalPages: Math.ceil(total / input.limit),
+      };
     }),
 
   /** Lightweight view-count increment (fire-and-forget from client) */

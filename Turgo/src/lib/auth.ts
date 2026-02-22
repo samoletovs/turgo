@@ -10,6 +10,40 @@ import GitHubProvider from "next-auth/providers/github";
 import bcrypt from "bcryptjs";
 import { db } from "@/server/db";
 
+// ── Redis helper for force-refresh flag ──────────────────────
+let redis: import("ioredis").default | null = null;
+let redisUnavailable = false;
+
+async function getRedis() {
+  if (redisUnavailable) return null;
+  if (redis) return redis;
+  try {
+    const { default: IORedis } = await import("ioredis");
+    const url = process.env.REDIS_URL || "redis://localhost:6379";
+    redis = new IORedis(url, {
+      maxRetriesPerRequest: 1,
+      connectTimeout: 3000,
+      lazyConnect: true,
+    });
+    await redis.connect();
+    return redis;
+  } catch {
+    redisUnavailable = true;
+    return null;
+  }
+}
+
+/** Set a force-refresh flag so the JWT callback re-queries the DB on next request. */
+export async function triggerAuthRefresh(userId: string): Promise<void> {
+  const client = await getRedis();
+  if (client) {
+    await client.set(`auth:refresh:${userId}`, "1", "EX", 60);
+  }
+}
+
+// ── Token refresh interval (5 minutes) ──────────────────────
+const TOKEN_REFRESH_INTERVAL_MS = 300_000;
+
 export const authConfig: NextAuthConfig = {
   pages: {
     signIn: "/auth/signin",
@@ -42,7 +76,7 @@ export const authConfig: NextAuthConfig = {
 
         const isValid = await bcrypt.compare(
           credentials.password as string,
-          user.passwordHash
+          user.passwordHash,
         );
 
         if (!isValid) {
@@ -66,18 +100,16 @@ export const authConfig: NextAuthConfig = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      allowDangerousEmailAccountLinking: true,
     }),
     GitHubProvider({
       clientId: process.env.GITHUB_ID!,
       clientSecret: process.env.GITHUB!,
-      allowDangerousEmailAccountLinking: true,
     }),
   ],
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider !== "credentials") {
-        // OAuth sign-in: upsert user + link account
+        // OAuth sign-in: enforce safe account linking
         if (!user.email) return false;
 
         const existingUser = await db.user.findUnique({
@@ -114,7 +146,7 @@ export const authConfig: NextAuthConfig = {
 
           user.id = newUser.id;
         } else {
-          // Check if this OAuth account is already linked
+          // Check if this specific OAuth account is already linked
           const existingAccount = await db.account.findUnique({
             where: {
               provider_providerAccountId: {
@@ -125,20 +157,19 @@ export const authConfig: NextAuthConfig = {
           });
 
           if (!existingAccount) {
-            await db.account.create({
-              data: {
+            // Check if the existing user has ANY linked account for this provider
+            const linkedToThis = await db.account.findFirst({
+              where: {
                 userId: existingUser.id,
-                type: account!.type,
                 provider: account!.provider,
-                providerAccountId: account!.providerAccountId,
-                access_token: account!.access_token ?? undefined,
-                refresh_token: account!.refresh_token ?? undefined,
-                token_type: account!.token_type ?? undefined,
-                scope: account!.scope ?? undefined,
-                id_token: account!.id_token ?? undefined,
-                expires_at: account!.expires_at ?? undefined,
               },
             });
+
+            if (!linkedToThis) {
+              // Account exists but is NOT linked to this OAuth provider.
+              // Reject to prevent account takeover — user must link from settings.
+              return "/auth/error?error=OAuthAccountNotLinked&message=An+account+with+this+email+already+exists.+Please+sign+in+with+your+original+method+and+link+accounts+in+settings.";
+            }
           }
 
           user.id = existingUser.id;
@@ -148,22 +179,54 @@ export const authConfig: NextAuthConfig = {
       return true;
     },
     async jwt({ token, user }) {
+      // Initial sign-in: populate token fields from user object
       if (user) {
-        token.id = user.id;
+        token.id = user.id as string;
+        token.lastRefreshedAt = 0; // force a DB fetch on first request
       }
 
-      // Refresh role from DB periodically
-      if (token.id) {
+      if (!token.id) return token;
+
+      // Determine whether we need to refresh from the database
+      let needsRefresh = false;
+      const age = Date.now() - (token.lastRefreshedAt ?? 0);
+
+      if (age > TOKEN_REFRESH_INTERVAL_MS) {
+        needsRefresh = true;
+      }
+
+      // Check Redis force-refresh flag (non-blocking; skip if Redis down)
+      if (!needsRefresh) {
+        try {
+          const client = await getRedis();
+          if (client) {
+            const flag = await client.get(`auth:refresh:${token.id}`);
+            if (flag) {
+              needsRefresh = true;
+              await client.del(`auth:refresh:${token.id}`);
+            }
+          }
+        } catch {
+          // Redis errors should not break auth
+        }
+      }
+
+      if (needsRefresh) {
         const dbUser = await db.user.findUnique({
           where: { id: token.id as string },
           select: { role: true, locale: true, name: true, avatar: true },
         });
-        if (dbUser) {
-          token.role = dbUser.role;
-          token.locale = dbUser.locale;
-          token.name = dbUser.name;
-          token.picture = dbUser.avatar;
+
+        if (!dbUser) {
+          // User has been deleted — return empty object to force sign-out
+          return {} as typeof token;
         }
+
+        token.role = dbUser.role;
+        token.locale = dbUser.locale;
+        token.name = dbUser.name;
+        token.picture = dbUser.avatar;
+        token.lastRefreshedAt = Date.now();
       }
 
       return token;
@@ -172,7 +235,8 @@ export const authConfig: NextAuthConfig = {
       if (session.user) {
         session.user.id = token.id as string;
         (session.user as unknown as Record<string, unknown>).role = token.role;
-        (session.user as unknown as Record<string, unknown>).locale = token.locale;
+        (session.user as unknown as Record<string, unknown>).locale =
+          token.locale;
       }
       return session;
     },
