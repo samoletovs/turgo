@@ -431,11 +431,7 @@ describe("message.getMessages", () => {
         sender: { id: "seller-1", name: "Seller", avatar: null },
       },
     ]);
-    // updateMany is not in default mock — add it
-    if (!mockDb.message.updateMany) {
-      (mockDb.message as Record<string, unknown>).updateMany = vi.fn();
-    }
-    (mockDb.message.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+    mockDb.message.updateMany.mockResolvedValue({
       count: 1,
     });
 
@@ -453,7 +449,7 @@ describe("message.getMessages", () => {
         }),
         data: { isRead: true },
       }),
-    );
+    ) as unknown;
   });
 
   it("throws UNAUTHORIZED without session", async () => {

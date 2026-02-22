@@ -14,12 +14,7 @@ vi.mock("@/server/services/ai", () => ({
   ]),
 }));
 
-// Add marketSnapshot mock to db (not in shared setup)
-(mockDb as Record<string, unknown>).marketSnapshot = {
-  findMany: vi.fn(),
-  findFirst: vi.fn(),
-  create: vi.fn(),
-};
+// marketSnapshot is now built into mockDb from shared setup
 
 import {
   calculateOptimalPrice,
@@ -48,11 +43,7 @@ describe("calculateOptimalPrice", () => {
   };
 
   it("returns suggested price, factors, curve, and reasoning", async () => {
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findMany: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findMany.mockResolvedValue([
+    mockDb.marketSnapshot.findMany.mockResolvedValue([
       {
         medianPrice: 180,
         listingCount: 15,
@@ -72,11 +63,7 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("returns all 10 pricing factors between 0 and 1", async () => {
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findMany: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findMany.mockResolvedValue([
+    mockDb.marketSnapshot.findMany.mockResolvedValue([
       { medianPrice: 200, listingCount: 10, demandScore: 1, date: new Date() },
     ]);
 
@@ -103,11 +90,7 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("generates pricing curve with correct start and end", async () => {
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findMany: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findMany.mockResolvedValue([
+    mockDb.marketSnapshot.findMany.mockResolvedValue([
       { medianPrice: 300, listingCount: 5, demandScore: 1, date: new Date() },
     ]);
 
@@ -126,11 +109,7 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("handles no market data (uses userBasePrice as fallback)", async () => {
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findMany: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findMany.mockResolvedValue([]);
+    mockDb.marketSnapshot.findMany.mockResolvedValue([]);
 
     const result = await calculateOptimalPrice(baseParams);
 
@@ -139,11 +118,7 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("sets condition factor to 1 for NEW items", async () => {
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findMany: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findMany.mockResolvedValue([
+    mockDb.marketSnapshot.findMany.mockResolvedValue([
       { medianPrice: 200, listingCount: 10, demandScore: 1, date: new Date() },
     ]);
 
@@ -155,11 +130,7 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("sets condition factor to 0.7 for REFURBISHED items", async () => {
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findMany: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findMany.mockResolvedValue([
+    mockDb.marketSnapshot.findMany.mockResolvedValue([
       { medianPrice: 200, listingCount: 10, demandScore: 1, date: new Date() },
     ]);
 
@@ -171,11 +142,7 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("adjusts supply factor for high listing count", async () => {
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findMany: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findMany.mockResolvedValue([
+    mockDb.marketSnapshot.findMany.mockResolvedValue([
       { medianPrice: 200, listingCount: 60, demandScore: 1, date: new Date() },
     ]);
 
@@ -185,11 +152,7 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("handles high urgency (ONE_DAY)", async () => {
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findMany: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findMany.mockResolvedValue([
+    mockDb.marketSnapshot.findMany.mockResolvedValue([
       { medianPrice: 200, listingCount: 10, demandScore: 1, date: new Date() },
     ]);
 
@@ -209,11 +172,7 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("never returns suggestedPrice less than 1", async () => {
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findMany: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findMany.mockResolvedValue([
+    mockDb.marketSnapshot.findMany.mockResolvedValue([
       { medianPrice: 0, listingCount: 0, demandScore: 0, date: new Date() },
     ]);
 

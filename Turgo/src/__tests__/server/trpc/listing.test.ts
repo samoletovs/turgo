@@ -19,6 +19,7 @@ function authedCtx(overrides: Partial<TRPCContext> = {}): TRPCContext {
       },
       expires: new Date(Date.now() + 86400_000).toISOString(),
     },
+    headers: new Headers(),
     ...overrides,
   };
 }
@@ -27,6 +28,7 @@ function anonCtx(overrides: Partial<TRPCContext> = {}): TRPCContext {
   return {
     db: mockDb as unknown as TRPCContext["db"],
     session: null,
+    headers: new Headers(),
     ...overrides,
   };
 }

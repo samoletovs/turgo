@@ -42,6 +42,7 @@ function createMockPrismaModel() {
     findMany: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    updateMany: vi.fn(),
     delete: vi.fn(),
     deleteMany: vi.fn(),
     count: vi.fn(),
@@ -73,6 +74,9 @@ export const mockDb = {
   account: createMockPrismaModel(),
   session: createMockPrismaModel(),
   offer: createMockPrismaModel(),
+  review: createMockPrismaModel(),
+  marketSnapshot: createMockPrismaModel(),
+  agentMatch: createMockPrismaModel(),
   $transaction: vi.fn((fn: (tx: unknown) => unknown) => fn(mockDb)),
   $connect: vi.fn(),
   $disconnect: vi.fn(),
@@ -85,12 +89,10 @@ vi.mock("@/server/db", () => ({
 
 // ─── Mock rate-limit (always allow in tests by default) ──────
 vi.mock("@/lib/rate-limit", () => ({
-  rateLimit: vi
-    .fn()
-    .mockResolvedValue({
-      success: true,
-      remaining: 99,
-      reset: Date.now() + 60_000,
-    }),
+  rateLimit: vi.fn().mockResolvedValue({
+    success: true,
+    remaining: 99,
+    reset: Date.now() + 60_000,
+  }),
   getClientIp: vi.fn().mockReturnValue("127.0.0.1"),
 }));

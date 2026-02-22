@@ -1,17 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mockDb } from "@/__tests__/setup";
 
-// Ensure marketSnapshot mock exists
-(mockDb as Record<string, unknown>).marketSnapshot = {
-  findMany: vi.fn(),
-  findFirst: vi.fn(),
-  create: vi.fn(),
-};
-(mockDb as Record<string, unknown>).agentMatch = {
-  create: vi.fn(),
-  findMany: vi.fn(),
-};
-
 import {
   calculateDealScore,
   monitorForMatches,
@@ -61,11 +50,7 @@ describe("calculateDealScore", () => {
 
   it("returns all 7 score components", async () => {
     mockDb.listing.findUnique.mockResolvedValue(mkListing());
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findFirst: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findFirst.mockResolvedValue({
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({
       medianPrice: 120,
       date: new Date(),
     });
@@ -84,11 +69,7 @@ describe("calculateDealScore", () => {
 
   it("gives higher priceVsMarket when listing price is far below median", async () => {
     mockDb.listing.findUnique.mockResolvedValue(mkListing({ price: 50 }));
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findFirst: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 200 });
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 200 });
 
     const result = await calculateDealScore(baseParams);
 
@@ -97,11 +78,7 @@ describe("calculateDealScore", () => {
 
   it("gives zero priceVsMarket when listing price is above median", async () => {
     mockDb.listing.findUnique.mockResolvedValue(mkListing({ price: 300 }));
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findFirst: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
 
     const result = await calculateDealScore(baseParams);
 
@@ -116,11 +93,7 @@ describe("calculateDealScore", () => {
       createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
     });
 
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findFirst: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
 
     mockDb.listing.findUnique.mockResolvedValue(oldListing);
     const oldResult = await calculateDealScore(baseParams);
@@ -135,11 +108,7 @@ describe("calculateDealScore", () => {
     mockDb.listing.findUnique.mockResolvedValue(
       mkListing({ managedByAgent: true }),
     );
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findFirst: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
 
     const agentResult = await calculateDealScore(baseParams);
 
@@ -156,11 +125,7 @@ describe("calculateDealScore", () => {
   it("scores listing quality based on images and description length", async () => {
     // With images and long description → 10
     mockDb.listing.findUnique.mockResolvedValue(mkListing());
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findFirst: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
 
     const goodQuality = await calculateDealScore(baseParams);
     expect(goodQuality.listingQuality).toBe(10);
@@ -177,11 +142,7 @@ describe("calculateDealScore", () => {
     mockDb.listing.findUnique.mockResolvedValue(
       mkListing({ user: { _count: { reviewsReceived: 10 } } }),
     );
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findFirst: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
 
     const result = await calculateDealScore(baseParams);
     expect(result.sellerReputation).toBe(10); // capped at 10
@@ -191,11 +152,7 @@ describe("calculateDealScore", () => {
     mockDb.listing.findUnique.mockResolvedValue(
       mkListing({ locationId: "loc-1" }),
     );
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findFirst: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
 
     const result = await calculateDealScore({
       ...baseParams,
@@ -208,11 +165,7 @@ describe("calculateDealScore", () => {
     mockDb.listing.findUnique.mockResolvedValue(
       mkListing({ locationId: "loc-2" }),
     );
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findFirst: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
 
     const result = await calculateDealScore({
       ...baseParams,
@@ -225,11 +178,7 @@ describe("calculateDealScore", () => {
     mockDb.listing.findUnique.mockResolvedValue(
       mkListing({ condition: "NEW", price: 80 }),
     );
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findFirst: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
 
     const result = await calculateDealScore(baseParams);
     expect(result.conditionVsPrice).toBe(10);
@@ -246,11 +195,7 @@ describe("calculateDealScore", () => {
         user: { _count: { reviewsReceived: 50 } },
       }),
     );
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findFirst: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 500 });
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 500 });
 
     const result = await calculateDealScore({
       ...baseParams,
@@ -261,11 +206,7 @@ describe("calculateDealScore", () => {
 
   it("handles missing market snapshot gracefully", async () => {
     mockDb.listing.findUnique.mockResolvedValue(mkListing());
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findFirst: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findFirst.mockResolvedValue(null);
+    mockDb.marketSnapshot.findFirst.mockResolvedValue(null);
 
     const result = await calculateDealScore(baseParams);
     expect(result.total).toBeGreaterThanOrEqual(0);
@@ -325,29 +266,15 @@ describe("monitorForMatches", () => {
     mockDb.listing.findMany.mockResolvedValue([fakeListing]);
     // Mock the inner calculateDealScore calls
     mockDb.listing.findUnique.mockResolvedValue(fakeListing);
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findFirst: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 300 });
-    (
-      mockDb as Record<string, unknown> & {
-        agentMatch: { create: ReturnType<typeof vi.fn> };
-      }
-    ).agentMatch.create.mockResolvedValue({});
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 300 });
+    mockDb.agentMatch.create.mockResolvedValue({});
     mockDb.agentAction.create.mockResolvedValue({});
     mockDb.buyingAgent.update.mockResolvedValue({});
 
     const result = await monitorForMatches("ba-1");
 
     expect(result).toBeGreaterThanOrEqual(1);
-    expect(
-      (
-        mockDb as Record<string, unknown> & {
-          agentMatch: { create: ReturnType<typeof vi.fn> };
-        }
-      ).agentMatch.create,
-    ).toHaveBeenCalled();
+    expect(mockDb.agentMatch.create).toHaveBeenCalled();
     expect(mockDb.agentAction.create).toHaveBeenCalled();
   });
 
@@ -378,22 +305,12 @@ describe("monitorForMatches", () => {
 
     mockDb.listing.findMany.mockResolvedValue([poorListing]);
     mockDb.listing.findUnique.mockResolvedValue(poorListing);
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findFirst: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
 
     const result = await monitorForMatches("ba-2");
 
     expect(result).toBe(0);
-    expect(
-      (
-        mockDb as Record<string, unknown> & {
-          agentMatch: { create: ReturnType<typeof vi.fn> };
-        }
-      ).agentMatch.create,
-    ).not.toHaveBeenCalled();
+    expect(mockDb.agentMatch.create).not.toHaveBeenCalled();
   });
 
   it("excludes already-matched listings", async () => {
@@ -449,16 +366,8 @@ describe("monitorForMatches", () => {
 
     mockDb.listing.findMany.mockResolvedValue([goodListing]);
     mockDb.listing.findUnique.mockResolvedValue(goodListing);
-    (
-      mockDb as Record<string, unknown> & {
-        marketSnapshot: { findFirst: ReturnType<typeof vi.fn> };
-      }
-    ).marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 300 });
-    (
-      mockDb as Record<string, unknown> & {
-        agentMatch: { create: ReturnType<typeof vi.fn> };
-      }
-    ).agentMatch.create.mockResolvedValue({});
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 300 });
+    mockDb.agentMatch.create.mockResolvedValue({});
     mockDb.agentAction.create.mockResolvedValue({});
     mockDb.buyingAgent.update.mockResolvedValue({});
 
