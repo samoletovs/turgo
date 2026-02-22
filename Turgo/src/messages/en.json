@@ -31,7 +31,8 @@
     "perMonth": "/month",
     "grid": "Grid",
     "list": "List",
-    "map": "Map"
+    "map": "Map",
+    "location": "Location"
   },
   "nav": {
     "home": "Home",
@@ -289,9 +290,18 @@
     },
     "boost": {
       "title": "Boost Listing",
+      "subtitle": "Give your listing extra visibility",
       "recommended": "Boost recommended",
       "active": "Currently boosted",
-      "notNeeded": "No boost needed"
+      "notNeeded": "No boost needed",
+      "boost": "Boost",
+      "days": "days",
+      "highlighted": "Highlighted",
+      "highlightedDesc": "Stand out with a colored border in search results",
+      "featured": "Featured",
+      "featuredDesc": "Appear in the Featured section on the homepage",
+      "top": "Top Placement",
+      "topDesc": "Pin to the top of search results for maximum visibility"
     },
     "summary": {
       "title": "Daily Summary",
@@ -469,11 +479,40 @@
       "priority": "Priority support",
       "api": "API access"
     },
+    "monthly": "Monthly",
+    "yearly": "Yearly",
     "cta": {
       "current": "Current Plan",
       "upgrade": "Upgrade",
       "getStarted": "Get Started"
     }
+  },
+  "liquidation": {
+    "title": "Batch Liquidation",
+    "uploadDesc": "Upload photos of all items you want to sell. Our AI will identify each item and suggest prices.",
+    "dropPhotos": "Click or drag photos here",
+    "analyzeItems": "Analyze Items",
+    "analyzingTitle": "Identifying Items…",
+    "analyzingDesc": "Our AI is analyzing your photos to identify individual items",
+    "identifiedItems": "Identified Items",
+    "selected": "selected",
+    "itemTitle": "Item title",
+    "suggestedPrice": "AI suggested",
+    "deadline": "Selling deadline for all items",
+    "urgency": {
+      "oneDay": "Sell today",
+      "threeDays": "Within 3 days",
+      "oneWeek": "This week",
+      "twoWeeks": "Within 2 weeks",
+      "oneMonth": "This month"
+    },
+    "back": "Back",
+    "publishAll": "Publish All",
+    "publishingTitle": "Publishing Listings…",
+    "publishingDesc": "Creating listings and activating AI selling agents",
+    "doneTitle": "All Done!",
+    "doneDesc": "{count} listings created with AI selling agents",
+    "createMore": "Sell More Items"
   },
   "footer": {
     "about": "About",
@@ -538,11 +577,42 @@
     },
     "terms": {
       "title": "Terms of Service",
-      "lastUpdated": "Last updated: February 2026"
+      "lastUpdated": "Last updated: February 2026",
+      "toc": "Table of Contents",
+      "sections": {
+        "acceptance": { "title": "Acceptance of Terms" },
+        "platform": { "title": "Platform Description" },
+        "accounts": { "title": "User Accounts & Obligations" },
+        "listings": { "title": "Listings & Content" },
+        "agents": { "title": "AI Agent Services" },
+        "payments": { "title": "Payments & Subscriptions" },
+        "ip": { "title": "Intellectual Property" },
+        "liability": { "title": "Limitation of Liability" },
+        "termination": { "title": "Termination" },
+        "governing": { "title": "Governing Law & Disputes" },
+        "gdpr": { "title": "Data Protection (GDPR)" },
+        "changes": { "title": "Changes to Terms" },
+        "contact": { "title": "Contact Information" }
+      }
     },
     "privacy": {
       "title": "Privacy Policy",
-      "lastUpdated": "Last updated: February 2026"
+      "lastUpdated": "Last updated: February 2026",
+      "sections": {
+        "controller": { "title": "Data Controller" },
+        "dataCollected": { "title": "Data We Collect" },
+        "purposes": { "title": "Purposes of Processing" },
+        "legalBases": { "title": "Legal Bases for Processing" },
+        "retention": { "title": "Data Retention Periods" },
+        "thirdParties": { "title": "Third-Party Data Sharing" },
+        "cookies": { "title": "Cookies & Tracking" },
+        "rights": { "title": "Your Data Protection Rights" },
+        "children": { "title": "Children's Privacy" },
+        "international": { "title": "International Data Transfers" },
+        "dpo": { "title": "Data Protection Officer" },
+        "complaint": { "title": "Right to Complain" },
+        "changes": { "title": "Changes to This Policy" }
+      }
     }
   },
   "settings": {
@@ -709,5 +779,104 @@
       "description": "You're all caught up! New notifications will appear here.",
       "cta": "Browse Listings"
     }
+  },
+  "myListings": {
+    "title": "My Listings",
+    "subtitle": "Manage your listings, track performance, and take action",
+    "createNew": "New Listing",
+    "filterByStatus": "Filter by status",
+    "listingsCount": "listings",
+    "empty": "No listings yet",
+    "emptyDesc": "Create your first listing to start selling",
+    "createFirst": "Create Your First Listing",
+    "edit": "Edit",
+    "boost": "Boost",
+    "views": "views",
+    "messages": "messages",
+    "prev": "Previous",
+    "next": "Next",
+    "deleteTitle": "Delete Listing",
+    "deleteDesc": "Are you sure you want to delete this listing? This action cannot be undone.",
+    "cancel": "Cancel",
+    "confirmDelete": "Delete"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "subtitle": "Track your listing performance and market insights",
+    "totalViews": "Total Views",
+    "totalInquiries": "Total Inquiries",
+    "conversionRate": "Inquiry Rate",
+    "activeListings": "Active Listings",
+    "viewsOverTime": "Views Over Time",
+    "last7Days": "Last 7 days",
+    "conversionTitle": "Inquiry Conversion",
+    "conversionDesc": "Views to inquiries funnel",
+    "topPerforming": "Top Performing Listings",
+    "topPerformingDesc": "Your most-viewed listings ranked by engagement",
+    "noListings": "No listings to analyze yet",
+    "priceImpact": "Price Change Impact",
+    "priceImpactDesc": "How pricing affects your listing visibility",
+    "moreViews": "Gaining traction",
+    "lessViews": "Needs attention",
+    "noActiveListings": "No active listings to analyze"
+  },
+  "savedSearches": {
+    "title": "Saved Searches",
+    "subtitle": "Manage your saved searches and notification preferences",
+    "newSearch": "New Search",
+    "empty": "No saved searches",
+    "emptyDesc": "Save a search from the search page to get notified about new matches",
+    "goSearch": "Go to Search",
+    "notifyOn": "Notifications on",
+    "notifyOff": "Notifications off",
+    "noFilters": "No filters applied",
+    "categoryFilter": "Category filter",
+    "locationFilter": "Location filter",
+    "allListings": "All listings",
+    "lastNotified": "Last notified",
+    "neverNotified": "Never notified",
+    "run": "Run",
+    "deleteTitle": "Delete Saved Search",
+    "deleteDesc": "Are you sure you want to delete this saved search? You will stop receiving notifications.",
+    "cancel": "Cancel",
+    "confirmDelete": "Delete",
+    "editTitle": "Rename Search",
+    "editDesc": "Enter a new name for this saved search",
+    "searchName": "Search name",
+    "save": "Save"
+  },
+  "editListing": {
+    "title": "Edit Listing",
+    "subtitle": "Update your listing details",
+    "backToListing": "Back to listing",
+    "currentPhotos": "Current Photos",
+    "details": "Details",
+    "titleLabel": "Title",
+    "descriptionLabel": "Description",
+    "category": "Category",
+    "categoryLabel": "Category",
+    "selectCategory": "Select category",
+    "subcategory": "Subcategory",
+    "selectSubcategory": "Select subcategory",
+    "conditionLabel": "Condition",
+    "price": "Price",
+    "priceLabel": "Price",
+    "negotiable": "Price is negotiable",
+    "location": "Location",
+    "region": "Country / Region",
+    "selectLocation": "Select location",
+    "area": "City / Area",
+    "selectArea": "Select area",
+    "contact": "Contact Information",
+    "phone": "Phone (optional)",
+    "email": "Email (optional)",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes",
+    "updated": "Listing Updated!",
+    "updatedDesc": "Your changes have been saved. Redirecting...",
+    "errorTitleMin": "Title must be at least 5 characters",
+    "errorDescMin": "Description must be at least 20 characters",
+    "errorPrice": "Enter a valid price",
+    "errorCategory": "Select a category"
   }
 }

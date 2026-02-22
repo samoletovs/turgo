@@ -1,6 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -97,9 +98,11 @@ export default function ModerationPage() {
               <CardContent className="p-4">
                 <div className="flex gap-4">
                   {listing.images?.[0] && (
-                    <img
+                    <Image
                       src={listing.images[0].url}
                       alt=""
+                      width={80}
+                      height={80}
                       className="h-20 w-20 rounded-lg object-cover"
                     />
                   )}

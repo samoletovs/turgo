@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -8,12 +8,16 @@ import {
   ChevronDown,
   ChevronRight,
   RotateCcw,
+  LayoutGrid,
+  LayoutList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useFilterStore } from "@/stores/useFilterStore";
+import type { ViewMode, Condition } from "@/stores/useFilterStore";
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -80,6 +84,23 @@ export function FilterSidebar({
     currentFilters.category || null,
   );
 
+  // Zustand filter store — sync URL filters into store
+  const { viewMode, setViewMode, setFilter } = useFilterStore();
+
+  // Keep store in sync with URL-driven currentFilters
+  useEffect(() => {
+    if (currentFilters.category) setFilter("category", currentFilters.category);
+    if (currentFilters.condition)
+      setFilter("condition", currentFilters.condition as Condition);
+    if (currentFilters.location) setFilter("location", currentFilters.location);
+    if (currentFilters.minPrice || currentFilters.maxPrice) {
+      setFilter("priceRange", {
+        min: currentFilters.minPrice,
+        max: currentFilters.maxPrice,
+      });
+    }
+  }, [currentFilters, setFilter]);
+
   // Toggle section accordion
   const toggleSection = (key: string) => {
     setExpandedSections((prev) => {
@@ -138,17 +159,38 @@ export function FilterSidebar({
             </Badge>
           )}
         </div>
-        {activeFilterCount > 0 && (
+        <div className="flex items-center gap-1">
+          {/* View mode toggle */}
           <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 gap-1 text-xs text-muted-foreground"
-            onClick={resetFilters}
+            variant={viewMode === "grid" ? "secondary" : "ghost"}
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => setViewMode("grid")}
+            aria-label="Grid view"
           >
-            <RotateCcw className="h-3 w-3" />
-            {t("reset")}
+            <LayoutGrid className="h-3.5 w-3.5" />
           </Button>
-        )}
+          <Button
+            variant={viewMode === "list" ? "secondary" : "ghost"}
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => setViewMode("list")}
+            aria-label="List view"
+          >
+            <LayoutList className="h-3.5 w-3.5" />
+          </Button>
+          {activeFilterCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 gap-1 text-xs text-muted-foreground"
+              onClick={resetFilters}
+            >
+              <RotateCcw className="h-3 w-3" />
+              {t("reset")}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* ── Categories ── */}
@@ -173,7 +215,8 @@ export function FilterSidebar({
                 }}
                 className={cn(
                   "flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-sm transition-colors hover:bg-muted",
-                  currentFilters.category === cat.slug && "bg-muted font-medium text-primary",
+                  currentFilters.category === cat.slug &&
+                    "bg-muted font-medium text-primary",
                 )}
               >
                 <span className="flex items-center gap-1.5">
@@ -184,11 +227,13 @@ export function FilterSidebar({
                   <Badge variant="secondary" className="text-[10px] px-1">
                     {cat.count}
                   </Badge>
-                  {cat.children && cat.children.length > 0 && (
-                    expandedCategory === cat.slug
-                      ? <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                      : <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                  )}
+                  {cat.children &&
+                    cat.children.length > 0 &&
+                    (expandedCategory === cat.slug ? (
+                      <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                    ))}
                 </span>
               </button>
 
@@ -201,12 +246,15 @@ export function FilterSidebar({
                       onClick={() =>
                         applyFilter(
                           "category",
-                          currentFilters.category === sub.slug ? cat.slug : sub.slug,
+                          currentFilters.category === sub.slug
+                            ? cat.slug
+                            : sub.slug,
                         )
                       }
                       className={cn(
                         "flex w-full items-center justify-between rounded-md px-2 py-1 text-xs transition-colors hover:bg-muted",
-                        currentFilters.category === sub.slug && "bg-muted font-medium text-primary",
+                        currentFilters.category === sub.slug &&
+                          "bg-muted font-medium text-primary",
                       )}
                     >
                       <span>{sub.name}</span>
@@ -265,11 +313,15 @@ export function FilterSidebar({
             <button
               key={cond}
               onClick={() =>
-                applyFilter("condition", currentFilters.condition === cond ? undefined : cond)
+                applyFilter(
+                  "condition",
+                  currentFilters.condition === cond ? undefined : cond,
+                )
               }
               className={cn(
                 "flex w-full items-center rounded-md px-2.5 py-1.5 text-sm transition-colors hover:bg-muted",
-                currentFilters.condition === cond && "bg-muted font-medium text-primary",
+                currentFilters.condition === cond &&
+                  "bg-muted font-medium text-primary",
               )}
             >
               {cond.charAt(0) + cond.slice(1).toLowerCase()}
@@ -291,11 +343,15 @@ export function FilterSidebar({
               <button
                 key={loc.id}
                 onClick={() =>
-                  applyFilter("location", currentFilters.location === loc.slug ? undefined : loc.slug)
+                  applyFilter(
+                    "location",
+                    currentFilters.location === loc.slug ? undefined : loc.slug,
+                  )
                 }
                 className={cn(
                   "flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-sm transition-colors hover:bg-muted",
-                  currentFilters.location === loc.slug && "bg-muted font-medium text-primary",
+                  currentFilters.location === loc.slug &&
+                    "bg-muted font-medium text-primary",
                 )}
               >
                 <span>{loc.name}</span>
@@ -326,12 +382,15 @@ export function FilterSidebar({
               onClick={() =>
                 applyFilter(
                   "countryCode",
-                  currentFilters.countryCode === country.code ? undefined : country.code,
+                  currentFilters.countryCode === country.code
+                    ? undefined
+                    : country.code,
                 )
               }
               className={cn(
                 "flex w-full items-center rounded-md px-2.5 py-1.5 text-sm transition-colors hover:bg-muted",
-                currentFilters.countryCode === country.code && "bg-muted font-medium text-primary",
+                currentFilters.countryCode === country.code &&
+                  "bg-muted font-medium text-primary",
               )}
             >
               {country.name}
@@ -465,7 +524,9 @@ function DynamicAttributeFilter({
       const options = attribute.options ?? [];
       return (
         <div>
-          <Label className="text-xs text-muted-foreground mb-1 block">{attribute.name}</Label>
+          <Label className="text-xs text-muted-foreground mb-1 block">
+            {attribute.name}
+          </Label>
           <div className="flex flex-wrap gap-1">
             {options.map((opt) => (
               <button
@@ -502,7 +563,9 @@ function DynamicAttributeFilter({
     case "NUMBER":
       return (
         <div>
-          <Label className="text-xs text-muted-foreground mb-1 block">{attribute.name}</Label>
+          <Label className="text-xs text-muted-foreground mb-1 block">
+            {attribute.name}
+          </Label>
           <Input
             type="number"
             placeholder={attribute.name}
@@ -517,7 +580,9 @@ function DynamicAttributeFilter({
     default:
       return (
         <div>
-          <Label className="text-xs text-muted-foreground mb-1 block">{attribute.name}</Label>
+          <Label className="text-xs text-muted-foreground mb-1 block">
+            {attribute.name}
+          </Label>
           <Input
             type="text"
             placeholder={attribute.name}
@@ -540,7 +605,12 @@ export function MobileFilterTrigger({
   onClick: () => void;
 }) {
   return (
-    <Button variant="outline" size="sm" className="gap-1.5 lg:hidden" onClick={onClick}>
+    <Button
+      variant="outline"
+      size="sm"
+      className="gap-1.5 lg:hidden"
+      onClick={onClick}
+    >
       <SlidersHorizontal className="h-3.5 w-3.5" />
       Filters
       {activeCount > 0 && (

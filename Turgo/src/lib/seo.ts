@@ -12,7 +12,7 @@ export function generateHrefLangs(path: string) {
   };
 
   return LOCALES.map((locale) => ({
-    hrefLang: hrefLangMap[locale],
+    hreflang: hrefLangMap[locale],
     href: `${APP_URL}/${locale}${path}`,
   }));
 }
@@ -44,7 +44,7 @@ export function generatePageMetadata({
     alternates: {
       canonical: url,
       languages: Object.fromEntries(
-        LOCALES.map((loc) => [loc, `${APP_URL}/${loc}${path}`])
+        LOCALES.map((loc) => [loc, `${APP_URL}/${loc}${path}`]),
       ),
     },
     openGraph: {
@@ -137,9 +137,7 @@ export function listingJsonLd({
       priceCurrency: currency,
       availability: "https://schema.org/InStock",
       itemCondition: condition ? conditionMap[condition] : undefined,
-      seller: seller
-        ? { "@type": "Person", name: seller.name }
-        : undefined,
+      seller: seller ? { "@type": "Person", name: seller.name } : undefined,
     },
     datePosted,
   };
@@ -158,7 +156,13 @@ export function organizationJsonLd() {
       "@type": "ContactPoint",
       email: "support@turgo.io",
       contactType: "customer service",
-      availableLanguage: ["English", "Latvian", "Russian", "Lithuanian", "Estonian"],
+      availableLanguage: [
+        "English",
+        "Latvian",
+        "Russian",
+        "Lithuanian",
+        "Estonian",
+      ],
     },
     areaServed: [
       { "@type": "Country", name: "Latvia" },
@@ -169,9 +173,7 @@ export function organizationJsonLd() {
 }
 
 /** JSON-LD structured data for breadcrumbs */
-export function breadcrumbJsonLd(
-  items: { name: string; url: string }[]
-) {
+export function breadcrumbJsonLd(items: { name: string; url: string }[]) {
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",

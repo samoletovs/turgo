@@ -1,6 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -108,9 +109,11 @@ export default function ReportsPage() {
               <CardContent className="p-4">
                 <div className="flex items-start gap-4">
                   {report.listing.images?.[0] && (
-                    <img
+                    <Image
                       src={report.listing.images[0].url}
                       alt=""
+                      width={64}
+                      height={64}
                       className="h-16 w-16 rounded-lg object-cover"
                     />
                   )}

@@ -20,6 +20,13 @@ import {
 } from "./notification";
 import { sendAgentMatchNotification } from "./email";
 import { runScraper } from "./scraper-sslv";
+import { moderateListing } from "./agent-moderation";
+import { checkListingFraud } from "./agent-antifraud";
+import { handleSupportMessage } from "./agent-support";
+import { runDailyQualityCheck } from "./agent-quality";
+import { runSeoOptimization } from "./agent-seo";
+import { runDailyEngagement } from "./agent-engagement";
+import { generateDailyReport, generateWeeklySummary } from "./agent-analytics";
 import { APP_URL } from "@/lib/constants";
 
 // ──────────────────────────────────────────────
@@ -522,16 +529,104 @@ export function registerAllWorkers(): void {
     }
   });
 
-  // Quality check queue
+  // Quality / Moderation queue
   registerWorker("quality", async (job: Job) => {
     switch (job.name) {
       case "quality-check":
         return processQualityCheck(job);
-      case "moderation-review":
-        console.log(`[Worker] Moderation review:`, job.data);
+      case "quality-daily":
+        console.log(`[Worker] Processing quality-daily`, job.data);
+        try {
+          const qualityReport = await runDailyQualityCheck();
+          console.log(`[Worker] Quality daily complete:`, qualityReport);
+        } catch (error) {
+          console.error(`[Worker] Quality daily failed:`, error);
+        }
         break;
+      case "moderation-review": {
+        console.log(`[Worker] Processing moderation-review`, job.data);
+        const { listingId } = job.data as { listingId: string };
+        if (listingId) {
+          try {
+            const modResult = await moderateListing(listingId);
+            console.log(`[Worker] Moderation result:`, modResult.outcome);
+          } catch (error) {
+            console.error(`[Worker] Moderation failed:`, error);
+          }
+        }
+        break;
+      }
+      case "moderation-antifraud": {
+        console.log(`[Worker] Processing moderation-antifraud`, job.data);
+        const { listingId: fraudListingId } = job.data as { listingId: string };
+        if (fraudListingId) {
+          try {
+            const fraudResult = await checkListingFraud(fraudListingId);
+            console.log(`[Worker] Anti-fraud result:`, fraudResult.action);
+          } catch (error) {
+            console.error(`[Worker] Anti-fraud failed:`, error);
+          }
+        }
+        break;
+      }
       default:
         console.warn(`[Worker] Unknown quality job: ${job.name}`);
+    }
+  });
+
+  // Support queue
+  registerWorker("support", async (job: Job) => {
+    switch (job.name) {
+      case "support-ticket": {
+        console.log(`[Worker] Processing support-ticket`, job.data);
+        const { userId, message, locale, history } = job.data as {
+          userId: string;
+          message: string;
+          locale?: string;
+          history?: {
+            role: "system" | "user" | "assistant";
+            content: string;
+          }[];
+        };
+        try {
+          const supportResult = await handleSupportMessage({
+            userId,
+            message,
+            locale,
+            history,
+          });
+          console.log(
+            `[Worker] Support result: ${supportResult.category} (confidence: ${supportResult.confidence}%)`,
+          );
+        } catch (error) {
+          console.error(`[Worker] Support ticket failed:`, error);
+        }
+        break;
+      }
+      default:
+        console.warn(`[Worker] Unknown support job: ${job.name}`);
+    }
+  });
+
+  // Engagement queue
+  registerWorker("engagement", async (job: Job) => {
+    switch (job.name) {
+      case "engagement-daily":
+        console.log(`[Worker] Processing engagement-daily`, job.data);
+        try {
+          const engReport = await runDailyEngagement();
+          console.log(
+            `[Worker] Engagement complete: ${engReport.totalSent} emails sent`,
+          );
+        } catch (error) {
+          console.error(`[Worker] Engagement daily failed:`, error);
+        }
+        break;
+      case "engagement-email":
+        console.log(`[Worker] Processing engagement-email`, job.data);
+        break;
+      default:
+        console.warn(`[Worker] Unknown engagement job: ${job.name}`);
     }
   });
 
@@ -539,9 +634,50 @@ export function registerAllWorkers(): void {
   registerWorker("analytics", async (job: Job) => {
     switch (job.name) {
       case "analytics-snapshot":
-        return processAnalyticsSnapshot(job);
+        console.log(`[Worker] Processing analytics-snapshot`, job.data);
+        try {
+          const analyticsReport = await generateDailyReport();
+          console.log(
+            `[Worker] Analytics daily: ${analyticsReport.users.newToday} new users, ${analyticsReport.listings.newToday} new listings, ${analyticsReport.anomalies.length} anomalies`,
+          );
+          // Also run market snapshot
+          await processAnalyticsSnapshot(job);
+        } catch (error) {
+          console.error(`[Worker] Analytics snapshot failed:`, error);
+        }
+        break;
+      case "analytics-weekly":
+        console.log(`[Worker] Processing analytics-weekly`, job.data);
+        try {
+          const weeklySummary = await generateWeeklySummary();
+          console.log(
+            `[Worker] Weekly summary: growth ${weeklySummary.growthRate}%`,
+          );
+        } catch (error) {
+          console.error(`[Worker] Weekly summary failed:`, error);
+        }
+        break;
       default:
         console.warn(`[Worker] Unknown analytics job: ${job.name}`);
+    }
+  });
+
+  // SEO queue
+  registerWorker("seo", async (job: Job) => {
+    switch (job.name) {
+      case "seo-optimization":
+        console.log(`[Worker] Processing seo-optimization`, job.data);
+        try {
+          const seoReport = await runSeoOptimization();
+          console.log(
+            `[Worker] SEO: ${seoReport.listingsOptimized} listings, ${seoReport.categoriesOptimized} categories, ${seoReport.sitemapEntries} sitemap entries`,
+          );
+        } catch (error) {
+          console.error(`[Worker] SEO optimization failed:`, error);
+        }
+        break;
+      default:
+        console.warn(`[Worker] Unknown SEO job: ${job.name}`);
     }
   });
 

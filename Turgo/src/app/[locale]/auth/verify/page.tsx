@@ -24,7 +24,7 @@ export default function VerifyPage() {
   const email = searchParams.get("email");
   const token = searchParams.get("token");
 
-  const [status, setStatus] = useState<VerifyStatus>(() => {
+  const [status, _setStatus] = useState<VerifyStatus>(() => {
     // If redirected from the API route with a status param
     if (statusParam === "success") return "success";
     if (statusParam === "expired") return "expired";

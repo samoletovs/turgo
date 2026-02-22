@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { AgentIntent } from "@/types";
+import { useUiStore } from "@/stores/useUiStore";
 
 interface ChatMessage {
   id: string;
@@ -63,8 +64,10 @@ const INTENT_ICONS: Record<AgentIntent, React.ReactNode> = {
 export function ConciergeChat({ locale = "en" }: { locale?: string }) {
   const t = useTranslations("concierge");
   const router = useRouter();
+  const { conciergeMinimized, setConciergeMinimized } = useUiStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
+  const isMinimized = conciergeMinimized;
+  const setIsMinimized = setConciergeMinimized;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -157,7 +160,7 @@ export function ConciergeChat({ locale = "en" }: { locale?: string }) {
               label: a.label,
               action: a.action,
               url: a.url,
-            })
+            }),
           ),
         };
 
@@ -173,7 +176,9 @@ export function ConciergeChat({ locale = "en" }: { locale?: string }) {
           {
             id: `error-${Date.now()}`,
             role: "assistant",
-            content: t("error") || "Sorry, I'm having trouble right now. Please try again.",
+            content:
+              t("error") ||
+              "Sorry, I'm having trouble right now. Please try again.",
             timestamp: new Date(),
           },
         ]);
@@ -181,7 +186,7 @@ export function ConciergeChat({ locale = "en" }: { locale?: string }) {
         setIsLoading(false);
       }
     },
-    [isLoading, locale, messages, isMinimized, t]
+    [isLoading, locale, messages, isMinimized, t],
   );
 
   const handleActionClick = (action: SuggestedAction) => {
@@ -316,10 +321,14 @@ export function ConciergeChat({ locale = "en" }: { locale?: string }) {
                   {INTENT_ICONS[currentIntent]}
                 </span>
                 <span className="text-[11px] text-muted-foreground">
-                  {currentIntent === "sell" && "Selling mode — I'll help you list your item"}
-                  {currentIntent === "buy" && "Buying mode — I'll help you find what you need"}
-                  {currentIntent === "support" && "Support mode — Let me help with your issue"}
-                  {currentIntent === "browse" && "Browse mode — Exploring listings"}
+                  {currentIntent === "sell" &&
+                    "Selling mode — I'll help you list your item"}
+                  {currentIntent === "buy" &&
+                    "Buying mode — I'll help you find what you need"}
+                  {currentIntent === "support" &&
+                    "Support mode — Let me help with your issue"}
+                  {currentIntent === "browse" &&
+                    "Browse mode — Exploring listings"}
                 </span>
                 <button
                   onClick={() => setCurrentIntent(null)}
@@ -399,9 +408,18 @@ export function ConciergeChat({ locale = "en" }: { locale?: string }) {
                   </div>
                   <div className="rounded-2xl rounded-bl-md bg-muted px-4 py-3">
                     <div className="flex gap-1">
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground/40" style={{ animationDelay: "0ms" }} />
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground/40" style={{ animationDelay: "150ms" }} />
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground/40" style={{ animationDelay: "300ms" }} />
+                      <span
+                        className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground/40"
+                        style={{ animationDelay: "0ms" }}
+                      />
+                      <span
+                        className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground/40"
+                        style={{ animationDelay: "150ms" }}
+                      />
+                      <span
+                        className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground/40"
+                        style={{ animationDelay: "300ms" }}
+                      />
                     </div>
                   </div>
                 </div>

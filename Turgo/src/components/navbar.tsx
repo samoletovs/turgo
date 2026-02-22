@@ -22,11 +22,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { APP_NAME, LOCALES, LOCALE_LABELS, LOCALE_FLAGS } from "@/lib/constants";
-import { useState } from "react";
+import {
+  APP_NAME,
+  LOCALES,
+  LOCALE_LABELS,
+  LOCALE_FLAGS,
+} from "@/lib/constants";
 import { Link, useRouter, usePathname } from "@/i18n/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { RegionSelector } from "@/components/region-selector";
+import { useUiStore } from "@/stores/useUiStore";
 
 interface NavbarProps {
   locale: string;
@@ -37,14 +42,21 @@ export function Navbar({ locale, user }: NavbarProps) {
   const t = useTranslations("nav");
   const router = useRouter();
   const pathname = usePathname();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const {
+    isMobileNavOpen: mobileMenuOpen,
+    toggleMobileNav,
+    setMobileNavOpen,
+  } = useUiStore();
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl shrink-0">
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-bold text-xl shrink-0"
+        >
           <Bot className="h-6 w-6 text-primary" />
           <span className="hidden sm:inline">{APP_NAME}</span>
         </Link>
@@ -112,7 +124,10 @@ export function Navbar({ locale, user }: NavbarProps) {
               router.replace(pathname, { locale: newLocale });
             }}
           >
-            <SelectTrigger className="w-auto gap-1 border-none h-8 px-2" aria-label="Change language">
+            <SelectTrigger
+              className="w-auto gap-1 border-none h-8 px-2"
+              aria-label="Change language"
+            >
               <Globe className="h-3.5 w-3.5" />
               <SelectValue />
             </SelectTrigger>
@@ -137,9 +152,13 @@ export function Navbar({ locale, user }: NavbarProps) {
           variant="ghost"
           size="icon"
           className="md:hidden ml-auto"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          onClick={toggleMobileNav}
         >
-          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {mobileMenuOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
         </Button>
       </div>
 
@@ -176,31 +195,51 @@ export function Navbar({ locale, user }: NavbarProps) {
 
             {user ? (
               <>
-                <Button variant="ghost" asChild className="w-full justify-start">
+                <Button
+                  variant="ghost"
+                  asChild
+                  className="w-full justify-start"
+                >
                   <Link href="/favorites">
                     <Heart className="h-4 w-4 mr-2" />
                     {t("favorites")}
                   </Link>
                 </Button>
-                <Button variant="ghost" asChild className="w-full justify-start">
+                <Button
+                  variant="ghost"
+                  asChild
+                  className="w-full justify-start"
+                >
                   <Link href="/messages">
                     <MessageSquare className="h-4 w-4 mr-2" />
                     {t("messages")}
                   </Link>
                 </Button>
-                <Button variant="ghost" asChild className="w-full justify-start">
+                <Button
+                  variant="ghost"
+                  asChild
+                  className="w-full justify-start"
+                >
                   <Link href="/agents">
                     <Bot className="h-4 w-4 mr-2" />
                     {t("agents")}
                   </Link>
                 </Button>
-                <Button variant="ghost" asChild className="w-full justify-start">
+                <Button
+                  variant="ghost"
+                  asChild
+                  className="w-full justify-start"
+                >
                   <Link href="/profile">
                     <User className="h-4 w-4 mr-2" />
                     {t("profile")}
                   </Link>
                 </Button>
-                <Button variant="ghost" asChild className="w-full justify-start">
+                <Button
+                  variant="ghost"
+                  asChild
+                  className="w-full justify-start"
+                >
                   <Link href="/dashboard/settings">
                     <Settings className="h-4 w-4 mr-2" />
                     {t("settings")}
@@ -209,10 +248,18 @@ export function Navbar({ locale, user }: NavbarProps) {
               </>
             ) : (
               <>
-                <Button variant="outline" asChild className="w-full justify-start">
+                <Button
+                  variant="outline"
+                  asChild
+                  className="w-full justify-start"
+                >
                   <Link href="/auth/signin">{t("signIn")}</Link>
                 </Button>
-                <Button variant="ghost" asChild className="w-full justify-start">
+                <Button
+                  variant="ghost"
+                  asChild
+                  className="w-full justify-start"
+                >
                   <Link href="/auth/register">{t("signUp")}</Link>
                 </Button>
               </>

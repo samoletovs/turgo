@@ -41,6 +41,32 @@ export {
   generatePriceAdjustSchedule,
 } from "./agent-pricing";
 
+// New operational agents
+export { moderateListing } from "./agent-moderation";
+export type { ModerationResult, ModerationOutcome } from "./agent-moderation";
+export { handleSupportMessage, getQuickAnswer } from "./agent-support";
+export type { SupportResponse, SupportCategory } from "./agent-support";
+export { checkListingFraud, checkMessageFraud } from "./agent-antifraud";
+export type { FraudCheckResult, FraudRisk } from "./agent-antifraud";
+export { runDailyQualityCheck, calculateListingQuality } from "./agent-quality";
+export type { QualityReport, ListingQualityScore } from "./agent-quality";
+export {
+  generateListingSeo,
+  generateCategorySeo,
+  generateSitemap,
+  auditHreflang,
+  runSeoOptimization,
+} from "./agent-seo";
+export type { SeoMetadata, SeoReport } from "./agent-seo";
+export { runDailyEngagement } from "./agent-engagement";
+export type { EngagementReport } from "./agent-engagement";
+export { generateDailyReport, generateWeeklySummary } from "./agent-analytics";
+export type {
+  PlatformHealthReport,
+  Anomaly,
+  WeeklySummary,
+} from "./agent-analytics";
+
 // Orchestration
 export {
   scheduleJob,

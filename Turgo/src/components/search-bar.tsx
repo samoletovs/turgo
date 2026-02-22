@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Search, X, Loader2, Tag, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useFilterStore } from "@/stores/useFilterStore";
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -99,31 +100,37 @@ export function SearchBar({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  // Zustand filter store — reset filters on new search
+  const resetFilters = useFilterStore((s) => s.resetFilters);
+
   const submit = useCallback(
     (text: string) => {
       const q = text.trim();
       if (!q) return;
       setIsOpen(false);
+      // Reset filters when starting a new search
+      resetFilters();
       if (onSearch) {
         onSearch(q);
       } else {
         router.push(`/${locale}/search?q=${encodeURIComponent(q)}`);
       }
     },
-    [locale, onSearch, router],
+    [locale, onSearch, resetFilters, router],
   );
 
   const selectSuggestion = useCallback(
     (suggestion: Suggestion) => {
       setIsOpen(false);
       if (suggestion.type === "category" && suggestion.slug) {
+        resetFilters();
         router.push(`/${locale}/search?category=${suggestion.slug}`);
       } else {
         setQuery(suggestion.text);
         submit(suggestion.text);
       }
     },
-    [locale, router, submit],
+    [locale, resetFilters, router, submit],
   );
 
   // Keyboard navigation

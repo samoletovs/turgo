@@ -3,7 +3,7 @@ import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, publicProcedure } from "@/server/trpc";
-import { forgotPasswordSchema, resetPasswordSchema } from "@/lib/validators";
+import { forgotPasswordSchema } from "@/lib/validators";
 import { sendPasswordResetEmail } from "@/server/services/email";
 
 const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour

@@ -29,10 +29,16 @@ export type AgentJobType =
   | "buying-agent-monitor"
   | "buying-agent-auto-negotiate"
   | "moderation-review"
+  | "moderation-antifraud"
+  | "support-ticket"
   | "scraper-sslv"
   | "quality-check"
+  | "quality-daily"
   | "engagement-email"
-  | "analytics-snapshot";
+  | "engagement-daily"
+  | "analytics-snapshot"
+  | "analytics-weekly"
+  | "seo-optimization";
 
 const queues = new Map<string, Queue>();
 
@@ -206,11 +212,23 @@ export async function initializeOrchestrator() {
     "*/5 * * * *",
   );
 
-  // Daily quality check at 6 AM
-  await scheduleRecurring("quality", "quality-check", {}, "0 6 * * *");
+  // Daily quality check at 6 AM (full quality pipeline)
+  await scheduleRecurring("quality", "quality-daily", {}, "0 6 * * *");
+
+  // Basic quality check for recent listings at noon
+  await scheduleRecurring("quality", "quality-check", {}, "0 12 * * *");
+
+  // Daily engagement emails at 10 AM
+  await scheduleRecurring("engagement", "engagement-daily", {}, "0 10 * * *");
 
   // Daily analytics snapshot at 1 AM
   await scheduleRecurring("analytics", "analytics-snapshot", {}, "0 1 * * *");
+
+  // Weekly analytics summary every Monday at 9 AM
+  await scheduleRecurring("analytics", "analytics-weekly", {}, "0 9 * * 1");
+
+  // SEO optimization daily at 4 AM
+  await scheduleRecurring("seo", "seo-optimization", {}, "0 4 * * *");
 
   // SS.lv scraper (if enabled)
   if (process.env.SSLV_SCRAPER_ENABLED === "true") {
