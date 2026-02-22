@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import {
   Crown,
   ArrowUpRight,
@@ -13,7 +13,13 @@ import {
 import { auth } from "@/lib/auth";
 import { db } from "@/server/db";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
 import { SubscriptionActions } from "./subscription-client";
@@ -22,7 +28,9 @@ interface SubscriptionPageProps {
   params: Promise<{ locale: string }>;
 }
 
-export default async function SubscriptionPage({ params }: SubscriptionPageProps) {
+export default async function SubscriptionPage({
+  params,
+}: SubscriptionPageProps) {
   const { locale } = await params;
   const session = await auth();
 
@@ -103,15 +111,15 @@ export default async function SubscriptionPage({ params }: SubscriptionPageProps
                 isActive && !isCancelPending
                   ? "bg-green-500/10 text-green-600 border-0"
                   : isCancelPending
-                  ? "bg-yellow-500/10 text-yellow-600 border-0"
-                  : ""
+                    ? "bg-yellow-500/10 text-yellow-600 border-0"
+                    : ""
               }
             >
               {isCancelPending
                 ? "Cancelling"
                 : isActive
-                ? "Active"
-                : subscription?.status || "Free"}
+                  ? "Active"
+                  : subscription?.status || "Free"}
             </Badge>
           </div>
         </CardHeader>
@@ -138,8 +146,8 @@ export default async function SubscriptionPage({ params }: SubscriptionPageProps
             <div className="mb-4 flex items-start gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm dark:border-yellow-800 dark:bg-yellow-950">
               <AlertCircle className="mt-0.5 h-4 w-4 text-yellow-600" />
               <span className="text-yellow-800 dark:text-yellow-200">
-                Your subscription is set to cancel at the end of the current period.
-                You can resume it anytime before then.
+                Your subscription is set to cancel at the end of the current
+                period. You can resume it anytime before then.
               </span>
             </div>
           )}
@@ -158,7 +166,7 @@ export default async function SubscriptionPage({ params }: SubscriptionPageProps
           {/* Action buttons */}
           <div className="flex gap-3">
             {planName === "FREE" ? (
-              <Link href={`/${locale}/pricing`}>
+              <Link href="/pricing">
                 <Button className="gap-1">
                   <ArrowUpRight className="h-4 w-4" />
                   Upgrade Plan
@@ -187,17 +195,27 @@ export default async function SubscriptionPage({ params }: SubscriptionPageProps
                 key === "listings"
                   ? "Active Listings"
                   : key === "sellingAgents"
-                  ? "Selling Agents"
-                  : "Buying Agents";
+                    ? "Selling Agents"
+                    : "Buying Agents";
               const isUnlimited = max === -1 || max > 9999;
-              const percentage = isUnlimited ? 0 : max > 0 ? (current / max) * 100 : 0;
+              const percentage = isUnlimited
+                ? 0
+                : max > 0
+                  ? (current / max) * 100
+                  : 0;
               const isNearLimit = !isUnlimited && percentage >= 80;
 
               return (
                 <div key={key}>
                   <div className="flex items-center justify-between text-sm mb-1">
                     <span>{label}</span>
-                    <span className={isNearLimit ? "text-orange-500 font-medium" : "text-muted-foreground"}>
+                    <span
+                      className={
+                        isNearLimit
+                          ? "text-orange-500 font-medium"
+                          : "text-muted-foreground"
+                      }
+                    >
                       {current} / {isUnlimited ? "Unlimited" : max}
                     </span>
                   </div>
@@ -217,13 +235,13 @@ export default async function SubscriptionPage({ params }: SubscriptionPageProps
           </div>
 
           {Object.values(usageLimits).some(
-            ({ current, max }) => max > 0 && max < 9999 && current >= max
+            ({ current, max }) => max > 0 && max < 9999 && current >= max,
           ) && (
             <div className="mt-4 flex items-start gap-2 rounded-lg border border-orange-200 bg-orange-50 p-3 text-sm dark:border-orange-800 dark:bg-orange-950">
               <AlertCircle className="mt-0.5 h-4 w-4 text-orange-600" />
               <span className="text-orange-800 dark:text-orange-200">
                 You&apos;ve reached your plan limit.{" "}
-                <Link href={`/${locale}/pricing`} className="underline font-medium">
+                <Link href="/pricing" className="underline font-medium">
                   Upgrade
                 </Link>{" "}
                 for more capacity.
@@ -241,15 +259,30 @@ export default async function SubscriptionPage({ params }: SubscriptionPageProps
         <CardContent>
           <div className="grid grid-cols-2 gap-3 text-sm">
             {[
-              { label: "Photos per listing", value: plan?.maxPhotosPerListing ?? 5 },
-              { label: "Listing duration", value: `${plan?.listingDurationDays ?? 30} days` },
+              {
+                label: "Photos per listing",
+                value: plan?.maxPhotosPerListing ?? 5,
+              },
+              {
+                label: "Listing duration",
+                value: `${plan?.listingDurationDays ?? 30} days`,
+              },
               { label: "Saved searches", value: plan?.maxSavedSearches ?? 3 },
               { label: "Premium AI", value: plan?.hasAiPremium ? "Yes" : "No" },
               { label: "Analytics", value: plan?.hasAnalytics ? "Yes" : "No" },
-              { label: "Auto-negotiate", value: plan?.hasAutoNegotiate ? "Yes" : "No" },
-              { label: "Auto-translate", value: plan?.hasAutoTranslate ? "Yes" : "No" },
+              {
+                label: "Auto-negotiate",
+                value: plan?.hasAutoNegotiate ? "Yes" : "No",
+              },
+              {
+                label: "Auto-translate",
+                value: plan?.hasAutoTranslate ? "Yes" : "No",
+              },
             ].map((item) => (
-              <div key={item.label} className="flex items-center justify-between rounded-lg border p-3">
+              <div
+                key={item.label}
+                className="flex items-center justify-between rounded-lg border p-3"
+              >
                 <span className="text-muted-foreground">{item.label}</span>
                 <span className="font-medium flex items-center gap-1">
                   {item.value === "Yes" ? (
@@ -262,8 +295,8 @@ export default async function SubscriptionPage({ params }: SubscriptionPageProps
                       ? "Unlimited"
                       : item.value
                     : item.value !== "Yes" && item.value !== "No"
-                    ? item.value
-                    : null}
+                      ? item.value
+                      : null}
                 </span>
               </div>
             ))}

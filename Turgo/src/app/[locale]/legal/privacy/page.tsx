@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { generatePageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({
@@ -376,7 +376,7 @@ export default async function PrivacyPolicyPage({
               cookie banner or in your browser settings. For more details, see
               our{" "}
               <Link
-                href={`/${locale}/legal/cookies`}
+                href="/legal/cookies"
                 className="text-primary hover:underline"
               >
                 Cookie Policy

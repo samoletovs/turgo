@@ -38,7 +38,13 @@ export type AgentJobType =
   | "engagement-daily"
   | "analytics-snapshot"
   | "analytics-weekly"
-  | "seo-optimization";
+  | "seo-optimization"
+  | "liquidation-price-adjust"
+  | "liquidation-batch-check"
+  | "watchdog-duplicate-check"
+  | "watchdog-message-scan"
+  | "timing-snapshot"
+  | "swap-matching";
 
 const queues = new Map<string, Queue>();
 
@@ -235,6 +241,36 @@ export async function initializeOrchestrator() {
     const cron = process.env.SSLV_SCRAPER_CRON || "0 3 * * *";
     await scheduleRecurring("scraper", "scraper-sslv", {}, cron);
   }
+
+  // Liquidation batch pricing adjustments every hour
+  await scheduleRecurring(
+    "liquidation",
+    "liquidation-price-adjust",
+    {},
+    "0 */1 * * *",
+  );
+
+  // Liquidation batch completion check every 30 minutes
+  await scheduleRecurring(
+    "liquidation",
+    "liquidation-batch-check",
+    {},
+    "*/30 * * * *",
+  );
+
+  // Watchdog message scan every 15 minutes
+  await scheduleRecurring(
+    "watchdog",
+    "watchdog-message-scan",
+    {},
+    "*/15 * * * *",
+  );
+
+  // Timing data snapshot daily at 2 AM (after analytics snapshot)
+  await scheduleRecurring("timing", "timing-snapshot", {}, "0 2 * * *");
+
+  // Swap matching daily at 11 AM
+  await scheduleRecurring("swap", "swap-matching", {}, "0 11 * * *");
 
   console.log(
     "[Agent Orchestrator] Initialized — workers registered, CRON jobs scheduled",

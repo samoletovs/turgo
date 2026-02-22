@@ -126,6 +126,46 @@ STORAGE_CONNECTION=$(az storage account show-connection-string \
   --name "$STORAGE_ACCOUNT" \
   --query connectionString -o tsv)
 
+# ── 5b. Azure OpenAI (GPT-4o-mini — cost-optimized) ──
+OPENAI_NAME="oai-${PROJECT}"
+OPENAI_LOCATION="swedencentral"   # Best model availability in EU
+echo "▸ Creating Azure OpenAI resource: $OPENAI_NAME..."
+az cognitiveservices account create \
+  --resource-group "$RESOURCE_GROUP" \
+  --name "$OPENAI_NAME" \
+  --location "$OPENAI_LOCATION" \
+  --kind OpenAI \
+  --sku S0 \
+  --custom-domain "$OPENAI_NAME" \
+  --output none
+
+echo "▸ Deploying GPT-4o-mini (30K TPM)..."
+az cognitiveservices account deployment create \
+  --resource-group "$RESOURCE_GROUP" \
+  --name "$OPENAI_NAME" \
+  --deployment-name gpt-4o-mini \
+  --model-name gpt-4o-mini \
+  --model-version "2024-07-18" \
+  --model-format OpenAI \
+  --sku-name Standard \
+  --sku-capacity 30 \
+  --output none
+
+echo "▸ Deploying text-embedding-3-small (30K TPM)..."
+az cognitiveservices account deployment create \
+  --resource-group "$RESOURCE_GROUP" \
+  --name "$OPENAI_NAME" \
+  --deployment-name text-embedding-3-small \
+  --model-name text-embedding-3-small \
+  --model-version "1" \
+  --model-format OpenAI \
+  --sku-name GlobalStandard \
+  --sku-capacity 30 \
+  --output none
+
+OPENAI_ENDPOINT=$(az cognitiveservices account show --resource-group "$RESOURCE_GROUP" --name "$OPENAI_NAME" --query "properties.endpoint" -o tsv)
+OPENAI_KEY=$(az cognitiveservices account keys list --resource-group "$RESOURCE_GROUP" --name "$OPENAI_NAME" --query "key1" -o tsv)
+
 # ── 6. Container Apps Environment ──
 echo "▸ Creating Container Apps Environment..."
 az containerapp env create \
@@ -179,7 +219,13 @@ az containerapp create \
     "NEXT_PUBLIC_APP_URL=https://placeholder.azurecontainerapps.io" \
     "AZURE_STORAGE_CONNECTION_STRING=${STORAGE_CONNECTION}" \
     "AZURE_STORAGE_CONTAINER_NAME=listings" \
-    "AI_PROVIDER=github" \
+    "AI_PROVIDER=azure" \
+    "AZURE_OPENAI_API_KEY=${OPENAI_KEY}" \
+    "AZURE_OPENAI_ENDPOINT=${OPENAI_ENDPOINT}" \
+    "AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4o-mini" \
+    "AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-3-small" \
+    "AZURE_OPENAI_VISION_DEPLOYMENT=gpt-4o-mini" \
+    "AZURE_OPENAI_API_VERSION=2024-12-01-preview" \
     "NODE_ENV=production" \
   --output none
 
@@ -228,6 +274,8 @@ echo "MEILISEARCH_HOST         = $MEILISEARCH_HOST"
 echo "MEILISEARCH_API_KEY      = $MEILI_MASTER_KEY"
 echo "NEXTAUTH_SECRET          = $NEXTAUTH_SECRET"
 echo "AZURE_STORAGE_CONNECTION = $STORAGE_CONNECTION"
+echo "AZURE_OPENAI_ENDPOINT    = $OPENAI_ENDPOINT"
+echo "AZURE_OPENAI_API_KEY     = $OPENAI_KEY"
 echo ""
 echo "─── Estimated Monthly Cost ───────────────────────────────"
 echo "PostgreSQL Flexible (B1ms):  ~\$12/mo"
@@ -236,6 +284,7 @@ echo "Container Apps (app):        ~\$5-15/mo (scales to zero)"
 echo "Container Apps (meilisearch): ~\$5/mo"
 echo "Container Registry (Basic):  ~\$5/mo"
 echo "Blob Storage:                ~\$1/mo"
+echo "Azure OpenAI (GPT-4o-mini):  ~\$0-2/mo (pay-per-token)"
 echo "────────────────────────────────────────────────────"
-echo "TOTAL ESTIMATED:             ~\$44-54/mo"
+echo "TOTAL ESTIMATED:             ~\$44-56/mo"
 echo ""

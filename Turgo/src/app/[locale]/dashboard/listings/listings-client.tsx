@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import {
   Plus,
@@ -135,7 +135,7 @@ export function MyListingsClient({ locale }: MyListingsClientProps) {
           <h1 className="text-2xl font-bold">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
-        <Link href={`/${locale}/listing/new`}>
+        <Link href="/listing/new">
           <Button size="sm" className="gap-1.5">
             <Plus className="h-4 w-4" />
             {t("createNew")}
@@ -214,7 +214,7 @@ export function MyListingsClient({ locale }: MyListingsClientProps) {
             <p className="mb-4 text-sm text-muted-foreground">
               {t("emptyDesc")}
             </p>
-            <Link href={`/${locale}/listing/new`}>
+            <Link href="/listing/new">
               <Button size="sm">
                 <Plus className="mr-1 h-4 w-4" />
                 {t("createFirst")}
@@ -236,7 +236,7 @@ export function MyListingsClient({ locale }: MyListingsClientProps) {
             return (
               <Card key={listing.id} className="group overflow-hidden">
                 {/* Image */}
-                <Link href={`/${locale}/listing/${listing.slug}`}>
+                <Link href={`/listing/${listing.slug}`}>
                   <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                     <Image
                       src={imageUrl}
@@ -272,7 +272,7 @@ export function MyListingsClient({ locale }: MyListingsClientProps) {
                 </Link>
 
                 <CardContent className="p-3">
-                  <Link href={`/${locale}/listing/${listing.slug}`}>
+                  <Link href={`/listing/${listing.slug}`}>
                     <h3 className="line-clamp-2 text-sm font-medium leading-snug hover:text-primary">
                       {listing.title}
                     </h3>
@@ -299,7 +299,7 @@ export function MyListingsClient({ locale }: MyListingsClientProps) {
                   {/* Actions */}
                   <div className="mt-3 flex gap-1.5">
                     <Link
-                      href={`/${locale}/listing/${listing.slug}/edit`}
+                      href={`/listing/${listing.slug}/edit`}
                       className="flex-1"
                     >
                       <Button
@@ -320,7 +320,7 @@ export function MyListingsClient({ locale }: MyListingsClientProps) {
                       <Trash2 className="h-3 w-3" />
                     </Button>
                     {status === "ACTIVE" && (
-                      <Link href={`/${locale}/pricing`}>
+                      <Link href="/pricing">
                         <Button
                           variant="outline"
                           size="sm"
@@ -351,7 +351,7 @@ export function MyListingsClient({ locale }: MyListingsClientProps) {
               <Card key={listing.id} className="group">
                 <CardContent className="flex items-center gap-4 p-3">
                   {/* Thumbnail */}
-                  <Link href={`/${locale}/listing/${listing.slug}`}>
+                  <Link href={`/listing/${listing.slug}`}>
                     <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
                       <Image
                         src={imageUrl}
@@ -367,7 +367,7 @@ export function MyListingsClient({ locale }: MyListingsClientProps) {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <Link href={`/${locale}/listing/${listing.slug}`}>
+                      <Link href={`/listing/${listing.slug}`}>
                         <h3 className="truncate text-sm font-medium hover:text-primary">
                           {listing.title}
                         </h3>
@@ -409,7 +409,7 @@ export function MyListingsClient({ locale }: MyListingsClientProps) {
 
                   {/* Actions */}
                   <div className="hidden sm:flex gap-1.5 shrink-0">
-                    <Link href={`/${locale}/listing/${listing.slug}/edit`}>
+                    <Link href={`/listing/${listing.slug}/edit`}>
                       <Button
                         variant="outline"
                         size="sm"
@@ -419,7 +419,7 @@ export function MyListingsClient({ locale }: MyListingsClientProps) {
                       </Button>
                     </Link>
                     {status === "ACTIVE" && (
-                      <Link href={`/${locale}/pricing`}>
+                      <Link href="/pricing">
                         <Button
                           variant="outline"
                           size="sm"

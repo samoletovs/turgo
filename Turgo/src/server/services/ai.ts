@@ -13,11 +13,24 @@
  * All providers implement the same interface so agents are provider-agnostic.
  */
 
-import type { AiChatMessage, AiCompletionResult, AiCompletionOptions, AiEmbeddingResult } from "@/types";
+import type {
+  AiChatMessage,
+  AiCompletionResult,
+  AiCompletionOptions,
+  AiEmbeddingResult,
+} from "@/types";
 
 // Provider implementations
-import { githubModelsComplete, githubModelsEmbed, githubModelsAnalyzeImage } from "./ai-dev";
-import { azureOpenAiComplete, azureOpenAiEmbed, azureAnalyzeImage } from "./ai-premium";
+import {
+  githubModelsComplete,
+  githubModelsEmbed,
+  githubModelsAnalyzeImage,
+} from "./ai-dev";
+import {
+  azureOpenAiComplete,
+  azureOpenAiEmbed,
+  azureAnalyzeImage,
+} from "./ai-premium";
 import { ollamaComplete, ollamaEmbed, freeAnalyzeImage } from "./ai-free";
 
 export type AiProvider = "github" | "azure" | "ollama";
@@ -46,10 +59,9 @@ function resolveProvider(userTier?: UserTier): AiProvider {
   // Ollama mode: always use Ollama
   if (envProvider === "ollama") return "ollama";
 
-  // Azure (production): route by tier
+  // Azure mode: all tiers use Azure OpenAI (GPT-4o-mini is cost-effective enough)
   if (envProvider === "azure") {
-    if (userTier === "pro" || userTier === "business") return "azure";
-    return "ollama"; // Free users get Ollama in production
+    return "azure";
   }
 
   return "github";
@@ -62,7 +74,7 @@ function resolveProvider(userTier?: UserTier): AiProvider {
 /** Unified AI completion — routes to the correct provider */
 export async function aiComplete(
   options: AiCompletionOptions,
-  userTier?: UserTier
+  userTier?: UserTier,
 ): Promise<AiCompletionResult> {
   const provider = resolveProvider(userTier);
 
@@ -81,10 +93,18 @@ export async function aiComplete(
     console.error(`[AI Router] ${provider} failed, trying fallback:`, error);
     // Cascade fallback: azure → github → ollama → mock
     if (provider === "azure") {
-      try { return await githubModelsComplete(options); } catch { /* fall through */ }
+      try {
+        return await githubModelsComplete(options);
+      } catch {
+        /* fall through */
+      }
     }
     if (provider !== "ollama") {
-      try { return await ollamaComplete(options); } catch { /* fall through */ }
+      try {
+        return await ollamaComplete(options);
+      } catch {
+        /* fall through */
+      }
     }
     return mockComplete(options);
   }
@@ -97,7 +117,7 @@ export async function aiComplete(
 /** Unified embedding generation */
 export async function aiEmbed(
   texts: string[],
-  userTier?: UserTier
+  userTier?: UserTier,
 ): Promise<AiEmbeddingResult> {
   const provider = resolveProvider(userTier);
 
@@ -115,7 +135,11 @@ export async function aiEmbed(
   } catch (error) {
     console.error(`[AI Router] Embedding ${provider} failed:`, error);
     if (provider === "azure") {
-      try { return await githubModelsEmbed(texts); } catch { /* fall through */ }
+      try {
+        return await githubModelsEmbed(texts);
+      } catch {
+        /* fall through */
+      }
     }
     return await ollamaEmbed(texts);
   }
@@ -129,7 +153,7 @@ export async function aiEmbed(
 export async function aiAnalyzeImage(
   imageUrl: string,
   prompt?: string,
-  userTier?: UserTier
+  userTier?: UserTier,
 ): Promise<AiCompletionResult> {
   const provider = resolveProvider(userTier);
 
@@ -156,7 +180,9 @@ export async function aiAnalyzeImage(
 
 /** Mock response for when no AI provider is available */
 function mockComplete(options: AiCompletionOptions): AiCompletionResult {
-  const lastUserMsg = options.messages.findLast((m: AiChatMessage) => m.role === "user");
+  const lastUserMsg = options.messages.findLast(
+    (m: AiChatMessage) => m.role === "user",
+  );
   return {
     content: `[AI Mock] Response to: "${lastUserMsg?.content?.toString().slice(0, 50) || "unknown"}"`,
     model: "mock",
@@ -167,7 +193,7 @@ function mockComplete(options: AiCompletionOptions): AiCompletionResult {
 /** Helper: create a system + user message pair */
 export function createMessages(
   systemPrompt: string,
-  userMessage: string
+  userMessage: string,
 ): AiChatMessage[] {
   return [
     { role: "system", content: systemPrompt },

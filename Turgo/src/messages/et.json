@@ -28,7 +28,11 @@
     "showLess": "Näita vähem",
     "noResults": "Tulemusi ei leitud",
     "currency": "€",
-    "perMonth": "/kuus"
+    "perMonth": "/kuus",
+    "grid": "Ruudustik",
+    "list": "Nimekiri",
+    "map": "Kaart",
+    "location": "Asukoht"
   },
   "nav": {
     "home": "Avaleht",
@@ -43,14 +47,25 @@
     "signIn": "Logi sisse",
     "signUp": "Registreeru",
     "signOut": "Logi välja",
-    "pricing": "Hinnad"
+    "pricing": "Hinnad",
+    "search": "Search",
+    "mobileNav": "Mobile navigation",
+    "searchPlaceholder": "What are you looking for?"
   },
   "home": {
     "hero": {
       "title": "Osta ja müü targemalt AI agentidega",
       "subtitle": "Esimene turg, kus intelligentsed agendid töötavad 24/7 parima tehingu nimel",
       "searchPlaceholder": "Mida otsite?",
-      "cta": "Alusta müüki AI-ga"
+      "cta": "Alusta müüki AI-ga",
+      "browseBelow": "or browse categories below ↓",
+      "agentName": "Turgo AI Agent",
+      "demoOnline": "● Online",
+      "demoUserMessage": "Sell my iPhone 15 Pro",
+      "demoSimilar": "23 similar listings",
+      "demoSuggestedPrice": "Suggested price: €849",
+      "demoAgentReply": "I'll handle everything!",
+      "demoListingCreated": "Listing created"
     },
     "featured": "Esiletõstetud kuulutused",
     "recentlyAdded": "Hiljuti lisatud",
@@ -92,6 +107,14 @@
         "title": "Sõlmi tehing",
         "description": "Saa teavitus, kui agent leiab ideaalse ostja parima hinnaga"
       }
+    },
+    "stats": {
+      "aiValue": "24/7",
+      "aiDesc": "AI agents working for you",
+      "smartValue": "Smart",
+      "smartDesc": "Dynamic pricing optimization",
+      "fastValue": "Fast",
+      "fastDesc": "Auto-respond to buyers instantly"
     }
   },
   "auth": {
@@ -149,11 +172,55 @@
       "EXPIRED": "Aegunud",
       "MODERATION": "Ülevaatamisel",
       "REJECTED": "Tagasi lükatud"
-    }
+    },
+    "createManually": "Loo kuulutus käsitsi",
+    "createManuallyDesc": "Täitke kõik andmed ise",
+    "reportDialog": {
+      "title": "Teata kuulutusest",
+      "description": "Aidake meil turgu turvalisena hoida, teatades reegleid rikkuvatest kuulutustest.",
+      "reason": "Põhjus",
+      "reasonPlaceholder": "Valige põhjus",
+      "details": "Lisateave",
+      "detailsPlaceholder": "Kirjeldage probleemi lähemalt (vähemalt 10 tähemärki)...",
+      "submit": "Esita teade",
+      "submitting": "Esitamine...",
+      "success": "Teade edukalt esitatud. Vaatame selle läbi.",
+      "alreadyReported": "Olete sellest kuulutusest juba teatanud",
+      "cannotReportOwn": "Oma kuulutusest ei saa teatada",
+      "reasons": {
+        "SPAM": "Rämpspost",
+        "FRAUD": "Pettus",
+        "INAPPROPRIATE": "Sobimatu sisu",
+        "DUPLICATE": "Duplikaat",
+        "WRONG_CATEGORY": "Vale kategooria",
+        "MISLEADING_PRICE": "Eksitav hind",
+        "PROHIBITED_ITEM": "Keelatud ese",
+        "OTHER": "Muu"
+      }
+    },
+    "featured": "Featured",
+    "photos": "photos",
+    "negotiable": "Price negotiable",
+    "seller": "Seller",
+    "memberSince": "Member since",
+    "aiAgent": "AI Selling Agent",
+    "status": "Status",
+    "active": "Active",
+    "autoResponding": "Auto-responding to inquiries",
+    "dynamicPricing": "Dynamic pricing enabled",
+    "safetyTips": "Safety tips",
+    "safetyTip1": "Meet in a safe, public place",
+    "safetyTip2": "Don't pay in advance",
+    "safetyTip3": "Inspect the item before paying",
+    "similarListings": "Similar Listings",
+    "noImage": "No image",
+    "favorites": "favorites"
   },
   "sell": {
     "title": "Müü AI agendiga",
     "subtitle": "Lase meie AI-l luua täiuslik kuulutus ja müüa kiiremini",
+    "orCreateManually": "Eelistate ise teha?",
+    "createManuallyLink": "Loo kuulutus käsitsi",
     "wizard": {
       "step1": {
         "title": "Mida müüte?",
@@ -219,7 +286,51 @@
       "TWO_WEEKS": "2 nädala jooksul",
       "ONE_MONTH": "Sel kuul",
       "NO_RUSH": "Pole kiiret"
-    }
+    },
+    "negotiate": {
+      "accept": "Pakkumine vastu võetud",
+      "counter": "Vastupakkumine saadetud",
+      "reject": "Pakkumine tagasi lükatud",
+      "escalate": "Saadetud müüjale ülevaatamiseks"
+    },
+    "boost": {
+      "title": "Tõsta kuulutus esile",
+      "subtitle": "Suurendage oma kuulutuse nähtavust",
+      "recommended": "Esiletõstmine soovitatud",
+      "active": "Praegu esile tõstetud",
+      "notNeeded": "Esiletõstmine pole vajalik",
+      "boost": "Tõsta esile",
+      "days": "päeva",
+      "highlighted": "Esile tõstetud",
+      "highlightedDesc": "Paistke silma värvilise raamiga otsingutulemustes",
+      "featured": "Soovitatud",
+      "featuredDesc": "Ilmuge avalehe Soovitatud sektsioonis",
+      "top": "Tippositsioon",
+      "topDesc": "Kinnitage otsingutulemuste tippu maksimaalse nähtavuse tagamiseks"
+    },
+    "summary": {
+      "title": "Päeva kokkuvõte",
+      "views": "Vaatamised",
+      "inquiries": "Päringud",
+      "offers": "Pakkumised",
+      "priceChanges": "Hinnamuutused"
+    },
+    "myAgents": "My AI Agents",
+    "manageAgents": "Manage your selling and buying agents",
+    "newSellingAgent": "New Selling Agent",
+    "noSellingAgents": "No selling agents",
+    "noSellingAgentsDesc": "Create a listing with an AI agent to automate pricing and responses",
+    "noBuyingAgents": "No buying agents",
+    "noBuyingAgentsDesc": "Set up a buying agent to automatically find deals matching your criteria",
+    "autoReply": "Auto-reply",
+    "autoPrice": "Auto-price",
+    "recentActivity": "Recent activity",
+    "viewListing": "View Listing",
+    "pause": "Pause",
+    "resume": "Resume",
+    "anyCategory": "Any category",
+    "budgetUpTo": "Budget: up to",
+    "recentMatches": "Recent matches"
   },
   "concierge": {
     "title": "AI konsjeerž",
@@ -230,7 +341,16 @@
       "Leia hea pakkumine telefonile",
       "Kuidas AI agent töötab?",
       "Mis on keskmine hind..."
-    ]
+    ],
+    "online": "Online",
+    "mode": "mode",
+    "intentSell": "Selling mode — I'll help you list your item",
+    "intentBuy": "Buying mode — I'll help you find what you need",
+    "intentSupport": "Support mode — Let me help with your issue",
+    "intentBrowse": "Browse mode — Exploring listings",
+    "quickSell": "Sell an item",
+    "quickBuy": "Find a deal",
+    "quickBrowse": "Browse"
   },
   "pricing": {
     "title": "Valige plaan",
@@ -260,6 +380,8 @@
       "priority": "Prioriteetne tugi",
       "api": "API ligipääs"
     },
+    "monthly": "Kuutasu",
+    "yearly": "Aastatasu",
     "cta": {
       "current": "Praegune plaan",
       "upgrade": "Uuenda",
@@ -278,9 +400,21 @@
     "cookies": "Küpsiste poliitika"
   },
   "errors": {
-    "notFound": { "title": "Lehte ei leitud", "description": "Otsitavat lehte pole olemas või see on teisaldatud.", "cta": "Avalehele" },
-    "server": { "title": "Midagi läks valesti", "description": "Meil on tehnilisi probleeme. Palun proovige hiljem.", "cta": "Proovi uuesti" },
-    "boundary": { "title": "Ootamatu viga", "description": "Midagi ootamatut juhtus. Palun laadige leht uuesti.", "cta": "Laadi uuesti" }
+    "notFound": {
+      "title": "Lehte ei leitud",
+      "description": "Otsitavat lehte pole olemas või see on teisaldatud.",
+      "cta": "Avalehele"
+    },
+    "server": {
+      "title": "Midagi läks valesti",
+      "description": "Meil on tehnilisi probleeme. Palun proovige hiljem.",
+      "cta": "Proovi uuesti"
+    },
+    "boundary": {
+      "title": "Ootamatu viga",
+      "description": "Midagi ootamatut juhtus. Palun laadige leht uuesti.",
+      "cta": "Laadi uuesti"
+    }
   },
   "cookie": {
     "title": "Kasutame küpsiseid",
@@ -297,24 +431,822 @@
     "save": "Salvesta eelistused"
   },
   "legal": {
-    "cookies": { "title": "Küpsiste poliitika", "lastUpdated": "Viimati uuendatud: veebruar 2026", "intro": "See poliitika selgitab, kuidas Turgo kasutab küpsiseid.", "whatAreCookies": "Mis on küpsised", "whatAreCookiesDesc": "Küpsised on väikesed tekstifailid, mis salvestatakse teie seadmesse.", "typesTitle": "Kasutatavate küpsiste tüübid", "necessary": "Vajalikud küpsised", "necessaryDesc": "Need küpsised on saidi toimimiseks hädavajalikud.", "analytics": "Analüütilised küpsised", "analyticsDesc": "Need küpsised aitavad meil mõista külastajate käitumist.", "marketing": "Turundusküpsised", "marketingDesc": "Need küpsised näitavad asjakohaseid reklaame.", "manage": "Küpsiste haldamine", "manageDesc": "Saate küpsiseid hallata brauseri seadetes.", "contact": "Võtke meiega ühendust", "contactDesc": "Küsimused? Kirjutage: privacy@turgo.io" },
-    "terms": { "title": "Kasutustingimused", "lastUpdated": "Viimati uuendatud: veebruar 2026" },
-    "privacy": { "title": "Privaatsuspoliitika", "lastUpdated": "Viimati uuendatud: veebruar 2026" }
+    "cookies": {
+      "title": "Küpsiste poliitika",
+      "lastUpdated": "Viimati uuendatud: veebruar 2026",
+      "intro": "See poliitika selgitab, kuidas Turgo kasutab küpsiseid.",
+      "whatAreCookies": "Mis on küpsised",
+      "whatAreCookiesDesc": "Küpsised on väikesed tekstifailid, mis salvestatakse teie seadmesse.",
+      "typesTitle": "Kasutatavate küpsiste tüübid",
+      "necessary": "Vajalikud küpsised",
+      "necessaryDesc": "Need küpsised on saidi toimimiseks hädavajalikud.",
+      "analytics": "Analüütilised küpsised",
+      "analyticsDesc": "Need küpsised aitavad meil mõista külastajate käitumist.",
+      "marketing": "Turundusküpsised",
+      "marketingDesc": "Need küpsised näitavad asjakohaseid reklaame.",
+      "manage": "Küpsiste haldamine",
+      "manageDesc": "Saate küpsiseid hallata brauseri seadetes.",
+      "contact": "Võtke meiega ühendust",
+      "contactDesc": "Küsimused? Kirjutage: privacy@turgo.io"
+    },
+    "terms": {
+      "title": "Kasutustingimused",
+      "lastUpdated": "Viimati uuendatud: veebruar 2026",
+      "toc": "Sisukord",
+      "sections": {
+        "acceptance": {
+          "title": "Tingimuste aktsepteerimine"
+        },
+        "platform": {
+          "title": "Platvormi kirjeldus"
+        },
+        "accounts": {
+          "title": "Kasutajakontod ja kohustused"
+        },
+        "listings": {
+          "title": "Kuulutused ja sisu"
+        },
+        "agents": {
+          "title": "AI agentide teenused"
+        },
+        "payments": {
+          "title": "Maksed ja tellimused"
+        },
+        "ip": {
+          "title": "Intellektuaalomand"
+        },
+        "liability": {
+          "title": "Vastutuse piirangud"
+        },
+        "termination": {
+          "title": "Lõpetamine"
+        },
+        "governing": {
+          "title": "Kohaldatav õigus ja vaidlused"
+        },
+        "gdpr": {
+          "title": "Andmekaitse (GDPR)"
+        },
+        "changes": {
+          "title": "Tingimuste muudatused"
+        },
+        "contact": {
+          "title": "Kontaktandmed"
+        }
+      }
+    },
+    "privacy": {
+      "title": "Privaatsuspoliitika",
+      "lastUpdated": "Viimati uuendatud: veebruar 2026",
+      "sections": {
+        "controller": {
+          "title": "Vastutav töötleja"
+        },
+        "dataCollected": {
+          "title": "Kogutavad andmed"
+        },
+        "purposes": {
+          "title": "Töötlemise eesmärgid"
+        },
+        "legalBases": {
+          "title": "Õiguslikud alused"
+        },
+        "retention": {
+          "title": "Andmete säilitamise perioodid"
+        },
+        "thirdParties": {
+          "title": "Andmete jagamine kolmandate osapooltega"
+        },
+        "cookies": {
+          "title": "Küpsised ja jälgimine"
+        },
+        "rights": {
+          "title": "Teie andmekaitseõigused"
+        },
+        "children": {
+          "title": "Laste privaatsus"
+        },
+        "international": {
+          "title": "Rahvusvaheline andmeedastus"
+        },
+        "dpo": {
+          "title": "Andmekaitsespetsialist"
+        },
+        "complaint": {
+          "title": "Õigus esitada kaebus"
+        },
+        "changes": {
+          "title": "Poliitika muudatused"
+        }
+      }
+    }
   },
   "settings": {
     "title": "Seaded",
     "subtitle": "Hallake oma konto eelistusi",
-    "profile": { "title": "Profiil", "name": "Nimi", "email": "E-post", "phone": "Telefon", "bio": "Enesetutvustus", "save": "Salvesta profiil", "saved": "Profiil salvestatud" },
-    "locale": { "title": "Keel ja piirkond", "language": "Keel", "country": "Riik", "currency": "Valuuta", "timezone": "Ajavöönd" },
-    "notifications": { "title": "Teavitused", "email": "E-posti teavitused", "emailDesc": "Saate teavitusi e-postiga", "push": "Push-teavitused", "pushDesc": "Saate push-teavitusi brauseris", "agentUpdates": "Agendi uuendused", "agentUpdatesDesc": "Teavitused AI agentide tegevustest", "newMessages": "Uued sõnumid", "newMessagesDesc": "Teavitused uutest sõnumitest", "priceAlerts": "Hinnateavitused", "priceAlertsDesc": "Teavitused hinnamuutustest", "marketing": "Turundus", "marketingDesc": "Tooteuudised ja eripakkumised" },
-    "appearance": { "title": "Välimus", "theme": "Teema", "light": "Hele", "dark": "Tume", "system": "Süsteemi" },
-    "data": { "title": "Andmed ja privaatsus", "export": "Ekspordi andmed", "exportDesc": "Laadige alla oma andmete koopia JSON-vormingus", "exportBtn": "Ekspordi", "exporting": "Eksportimine...", "exported": "Eksport alustatud. Saate e-kirja lingiga.", "delete": "Kustuta konto", "deleteDesc": "Kustutage konto ja kõik andmed pöördumatult.", "deleteBtn": "Kustuta konto", "deleteConfirm": "Kas olete kindel? Kõik andmed kustutatakse pöördumatult.", "deleteConfirmBtn": "Jah, kustuta" }
+    "profile": {
+      "title": "Profiil",
+      "name": "Nimi",
+      "email": "E-post",
+      "phone": "Telefon",
+      "bio": "Enesetutvustus",
+      "save": "Salvesta profiil",
+      "saved": "Profiil salvestatud",
+      "description": "Hallake isikuandmeid ja avalikku profiili",
+      "emailHint": "E-posti ei saa muuta. Vajadusel pöörduge toe poole.",
+      "bioPlaceholder": "Rääkige teistele kasutajatele natuke enda kohta...",
+      "changeAvatar": "Muuda fotot",
+      "avatarHint": "JPG, PNG või GIF. Maks. 2MB.",
+      "avatarUpdated": "Avatar uuendatud"
+    },
+    "locale": {
+      "title": "Keel ja piirkond",
+      "language": "Keel",
+      "country": "Riik",
+      "currency": "Valuuta",
+      "timezone": "Ajavöönd",
+      "description": "Seadke eelistatud keel, riik ja valuuta"
+    },
+    "notifications": {
+      "title": "Teavitused",
+      "email": "E-posti teavitused",
+      "emailDesc": "Saate teavitusi e-postiga",
+      "push": "Push-teavitused",
+      "pushDesc": "Saate push-teavitusi brauseris",
+      "agentUpdates": "Agendi uuendused",
+      "agentUpdatesDesc": "Teavitused AI agentide tegevustest",
+      "newMessages": "Uued sõnumid",
+      "newMessagesDesc": "Teavitused uutest sõnumitest",
+      "priceAlerts": "Hinnateavitused",
+      "priceAlertsDesc": "Teavitused hinnamuutustest",
+      "marketing": "Turundus",
+      "marketingDesc": "Tooteuudised ja eripakkumised",
+      "description": "Valige, kuidas ja millal soovite teavitusi saada",
+      "saveBtn": "Salvesta eelistused",
+      "saved": "Teavituste eelistused salvestatud"
+    },
+    "appearance": {
+      "title": "Välimus",
+      "theme": "Teema",
+      "light": "Hele",
+      "dark": "Tume",
+      "system": "Süsteemi"
+    },
+    "data": {
+      "title": "Andmed ja privaatsus",
+      "export": "Ekspordi andmed",
+      "exportDesc": "Laadige alla oma andmete koopia JSON-vormingus",
+      "exportBtn": "Ekspordi",
+      "exporting": "Eksportimine...",
+      "exported": "Eksport alustatud. Saate e-kirja lingiga.",
+      "delete": "Kustuta konto",
+      "deleteDesc": "Kustutage konto ja kõik andmed pöördumatult.",
+      "deleteBtn": "Kustuta konto",
+      "deleteConfirm": "Kas olete kindel? Kõik andmed kustutatakse pöördumatult.",
+      "deleteConfirmBtn": "Jah, kustuta",
+      "privacy": "Privaatsusseaded",
+      "privacyDesc": "Hallake oma andmete kasutamist",
+      "marketingOptIn": "Turunduskommunikatsioon",
+      "marketingOptInDesc": "Saage e-kirju uutest funktsioonidest, nõuannetest ja eripakkumistest",
+      "exportError": "Andmete eksport ebaõnnestus. Proovige uuesti.",
+      "deleteTypeConfirm": "Sisestage DELETE kinnitamiseks",
+      "deleteSuccess": "Konto kustutamine alustatud. Teid logitakse peagi välja."
+    }
   },
-  "verifyEmail": { "title": "Kinnitage e-post", "sent": "Saatsime kinnituslingi aadressile", "check": "Kontrollige postkasti ja klõpsake lingil.", "resend": "Saada uuesti", "resent": "Kiri saadetud!", "expired": "See link on aegunud.", "success": "E-post kinnitatud!", "successDesc": "Teie e-post on kinnitatud. Nüüd on kõik funktsioonid saadaval.", "continue": "Jätka" },
-  "forgotPassword": { "title": "Lähtesta parool", "description": "Sisestage e-posti aadress ja saadame teile lingi.", "email": "E-post", "submit": "Saada link", "sent": "Link saadetud!", "sentDesc": "Kui konto on olemas, saate lingi.", "backToSignIn": "Tagasi sisselogimisele", "newPassword": "Uus parool", "confirmPassword": "Kinnita parool", "resetSubmit": "Lähtesta parool", "resetSuccess": "Parool lähtestatud!", "resetSuccessDesc": "Parool uuendatud. Logige uue parooliga sisse.", "invalidToken": "Link on kehtetu või aegunud.", "requestNew": "Taotle uut linki" },
-  "onboarding": { "welcome": { "title": "Tere tulemast Turgosse!", "subtitle": "Seadistage konto mõne sammuga" }, "step1": { "title": "Valige riik", "subtitle": "Märkige oma asukoht" }, "step2": { "title": "Teie huvid", "subtitle": "Valige huvipakkuvad kategooriad" }, "step3": { "title": "Kuidas kasutate Turgot?", "subtitle": "See aitab kogemust kohandada", "buying": "Tahan osta", "selling": "Tahan müüa", "both": "Nii osta kui müüa" }, "step4": { "title": "Kõik valmis!", "subtitle": "Teie konto on valmis. Alustage avastamist!", "exploreCta": "Sirvi kuulutusi", "sellCta": "Loo esimene kuulutus" }, "skip": "Jäta vahele", "continue": "Jätka", "finish": "Alusta" },
-  "region": { "title": "Valige piirkond", "latvia": "Läti", "lithuania": "Leedu", "estonia": "Eesti", "allBaltics": "Kogu Baltikum" },
-  "darkMode": { "light": "Hele", "dark": "Tume", "system": "Süsteemi" },
-  "a11y": { "skipToContent": "Liigu põhisisu juurde", "openMenu": "Ava menüü", "closeMenu": "Sulge menüü", "toggleTheme": "Vaheta teemat", "changeLanguage": "Muuda keelt", "loading": "Sisu laadimine", "searchResults": "Otsingutulemused" },
-  "empty": { "favorites": { "title": "Lemmikuid veel pole", "description": "Alustage sirvimist ja salvestage meeldivad kuulutused", "cta": "Sirvi kuulutusi" }, "messages": { "title": "Sõnumeid veel pole", "description": "Kui võtate müüjaga ühendust, ilmuvad sõnumid siia", "cta": "Sirvi kuulutusi" }, "listings": { "title": "Kuulutusi veel pole", "description": "Looge esimene kuulutus AI abiga", "cta": "Loo kuulutus" }, "agents": { "title": "Agente veel pole", "description": "Seadistage AI agendid automatiseerimiseks", "cta": "Loo agent" }, "search": { "title": "Midagi ei leitud", "description": "Proovige filtreid muuta", "cta": "Tühjenda filtrid" }, "notifications": { "title": "Teavitusi pole", "description": "Kõik on läbi vaadatud! Uued teavitused ilmuvad siia.", "cta": "Sirvi kuulutusi" } }
+  "verifyEmail": {
+    "title": "Kinnitage e-post",
+    "sent": "Saatsime kinnituslingi aadressile",
+    "check": "Kontrollige postkasti ja klõpsake lingil.",
+    "resend": "Saada uuesti",
+    "resent": "Kiri saadetud!",
+    "expired": "See link on aegunud.",
+    "success": "E-post kinnitatud!",
+    "successDesc": "Teie e-post on kinnitatud. Nüüd on kõik funktsioonid saadaval.",
+    "continue": "Jätka"
+  },
+  "forgotPassword": {
+    "title": "Lähtesta parool",
+    "description": "Sisestage e-posti aadress ja saadame teile lingi.",
+    "email": "E-post",
+    "submit": "Saada link",
+    "sent": "Link saadetud!",
+    "sentDesc": "Kui konto on olemas, saate lingi.",
+    "backToSignIn": "Tagasi sisselogimisele",
+    "newPassword": "Uus parool",
+    "confirmPassword": "Kinnita parool",
+    "resetSubmit": "Lähtesta parool",
+    "resetSuccess": "Parool lähtestatud!",
+    "resetSuccessDesc": "Parool uuendatud. Logige uue parooliga sisse.",
+    "invalidToken": "Link on kehtetu või aegunud.",
+    "requestNew": "Taotle uut linki"
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Tere tulemast Turgosse!",
+      "subtitle": "Seadistage konto mõne sammuga"
+    },
+    "step1": {
+      "title": "Valige riik",
+      "subtitle": "Märkige oma asukoht"
+    },
+    "step2": {
+      "title": "Teie huvid",
+      "subtitle": "Valige huvipakkuvad kategooriad"
+    },
+    "step3": {
+      "title": "Kuidas kasutate Turgot?",
+      "subtitle": "See aitab kogemust kohandada",
+      "buying": "Tahan osta",
+      "selling": "Tahan müüa",
+      "both": "Nii osta kui müüa"
+    },
+    "step4": {
+      "title": "Kõik valmis!",
+      "subtitle": "Teie konto on valmis. Alustage avastamist!",
+      "exploreCta": "Sirvi kuulutusi",
+      "sellCta": "Loo esimene kuulutus"
+    },
+    "skip": "Jäta vahele",
+    "continue": "Jätka",
+    "finish": "Alusta"
+  },
+  "region": {
+    "title": "Valige piirkond",
+    "latvia": "Läti",
+    "lithuania": "Leedu",
+    "estonia": "Eesti",
+    "allBaltics": "Kogu Baltikum"
+  },
+  "darkMode": {
+    "light": "Hele",
+    "dark": "Tume",
+    "system": "Süsteemi"
+  },
+  "a11y": {
+    "skipToContent": "Liigu põhisisu juurde",
+    "openMenu": "Ava menüü",
+    "closeMenu": "Sulge menüü",
+    "toggleTheme": "Vaheta teemat",
+    "changeLanguage": "Muuda keelt",
+    "loading": "Sisu laadimine",
+    "searchResults": "Otsingutulemused"
+  },
+  "empty": {
+    "favorites": {
+      "title": "Lemmikuid veel pole",
+      "description": "Alustage sirvimist ja salvestage meeldivad kuulutused",
+      "cta": "Sirvi kuulutusi"
+    },
+    "messages": {
+      "title": "Sõnumeid veel pole",
+      "description": "Kui võtate müüjaga ühendust, ilmuvad sõnumid siia",
+      "cta": "Sirvi kuulutusi"
+    },
+    "listings": {
+      "title": "Kuulutusi veel pole",
+      "description": "Looge esimene kuulutus AI abiga",
+      "cta": "Loo kuulutus"
+    },
+    "agents": {
+      "title": "Agente veel pole",
+      "description": "Seadistage AI agendid automatiseerimiseks",
+      "cta": "Loo agent"
+    },
+    "search": {
+      "title": "Midagi ei leitud",
+      "description": "Proovige filtreid muuta",
+      "cta": "Tühjenda filtrid"
+    },
+    "notifications": {
+      "title": "Teavitusi pole",
+      "description": "Kõik on läbi vaadatud! Uued teavitused ilmuvad siia.",
+      "cta": "Sirvi kuulutusi"
+    }
+  },
+  "review": {
+    "title": "Arvustused",
+    "writeReview": "Kirjuta arvustus",
+    "rating": "Hinnang",
+    "comment": "Kommentaar",
+    "commentPlaceholder": "Jagage oma kogemust selle kasutajaga...",
+    "submit": "Esita arvustus",
+    "submitting": "Esitamine...",
+    "success": "Arvustus edukalt esitatud!",
+    "noReviews": "Arvustusi veel pole",
+    "noReviewsDesc": "Olge esimene, kes jätab arvustuse.",
+    "averageRating": "Keskmine hinnang",
+    "totalReviews": "{count} arvustust",
+    "alreadyReviewed": "Olete selle kasutaja juba hinnanud",
+    "noInteraction": "Saate hinnata ainult kasutajaid, kellega olete suhelnud",
+    "cannotReviewSelf": "Iseennast ei saa hinnata",
+    "stars": {
+      "1": "Kehv",
+      "2": "Rahuldav",
+      "3": "Hea",
+      "4": "Väga hea",
+      "5": "Suurepärane"
+    }
+  },
+  "publicProfile": {
+    "memberSince": "Liige alates {date}",
+    "listings": "Kuulutused",
+    "reviews": "Arvustused",
+    "viewListings": "Vaata kuulutusi",
+    "noUser": "Kasutajat ei leitud"
+  },
+  "dashboard": {
+    "title": "Juhtpaneel",
+    "subtitle": "Teie AI agendid ühe pilguga",
+    "stats": {
+      "activeSelling": "Aktiivsed müügiagendid",
+      "activeBuying": "Aktiivsed ostuagendid",
+      "actionsTaken": "Agentide tehtud toimingud",
+      "dealsFound": "Leitud tehinguid"
+    },
+    "myAgents": "Minu agendid",
+    "viewAll": "Vaata kõiki",
+    "noAgents": "Agente veel pole",
+    "noAgentsDesc": "Looge esimene AI agent automatiseerimise alustamiseks",
+    "recentActivity": "Viimane tegevus",
+    "noActivity": "Tegevust veel pole",
+    "agents": {
+      "title": "Kõik agendid",
+      "selling": "Müügiagendid",
+      "buying": "Ostuagendid",
+      "backToDashboard": "Tagasi juhtpaneelile",
+      "noSelling": "Müügiagente pole. Looge kuulutus AI agendiga alustamiseks.",
+      "noBuying": "Ostuagente pole. Seadistage agent automaatseks tehingute leidmiseks."
+    },
+    "detail": {
+      "backToAgents": "Tagasi agentide juurde",
+      "agentStats": "Agendi statistika",
+      "totalActions": "Toiminguid kokku",
+      "views": "Vaatamised",
+      "autoRespond": "Automaatne vastus",
+      "autoNegotiate": "Automaatne läbirääkimine",
+      "urgency": "Kiireloomulisus",
+      "priceFloor": "Minimaalne hind",
+      "matchesFound": "Leitud vasteid",
+      "maxBudget": "Maks. eelarve",
+      "timeline": "Agendi ajajoon",
+      "noActions": "Toiminguid pole veel salvestatud",
+      "noActionsDesc": "Toimingud ilmuvad siia agendi töö käigus",
+      "pause": "Peata",
+      "resume": "Jätka",
+      "stop": "Lõpeta",
+      "viewListing": "Vaata kuulutust",
+      "recentMatches": "Viimased vasted"
+    },
+    "sell": "Sell",
+    "buy": "Buy",
+    "subscription": "Subscription",
+    "createSellingAgent": "Create Selling Agent",
+    "actions": "actions",
+    "buyingAgent": "Buying Agent",
+    "budget": "Budget:",
+    "matches": "matches"
+  },
+  "dealScore": {
+    "title": "Tehingu skoor",
+    "exceptional": "Erakordne tehing",
+    "great": "Suurepärane tehing",
+    "good": "Hea tehing",
+    "fair": "Keskmine tehing",
+    "belowAverage": "Alla keskmise",
+    "factors": {
+      "priceVsMarket": "Hind vs turg",
+      "timeOnMarket": "Aeg turul",
+      "sellerUrgency": "Müüja kiireloomulisus",
+      "listingQuality": "Kuulutuse kvaliteet",
+      "sellerReputation": "Müüja maine",
+      "location": "Asukoht",
+      "conditionVsPrice": "Seisukord vs hind"
+    },
+    "recommendation": {
+      "buy": "Soovitame — see on hea tehing.",
+      "watch": "Mõistlik — tasub jälgida, kaaluge läbirääkimisi.",
+      "pass": "Jätke vahele — tõenäoliselt leidub paremaid pakkumisi."
+    }
+  },
+  "priceCurve": {
+    "title": "Hinnastrateegia",
+    "start": "Algus",
+    "current": "Praegune",
+    "floor": "Miinimum",
+    "urgency": {
+      "ONE_DAY": "Müü täna",
+      "THREE_DAYS": "3 päeva plaan",
+      "ONE_WEEK": "1 nädala plaan",
+      "TWO_WEEKS": "2 nädala plaan",
+      "ONE_MONTH": "1 kuu plaan",
+      "NO_RUSH": "Pole kiiret"
+    }
+  },
+  "browse": {
+    "title": "Sirvi kuulutusi",
+    "searchPlaceholder": "Otsi midagi...",
+    "filters": "Filtrid",
+    "categories": "Kategooriad",
+    "priceRange": "Hinnavahemik",
+    "condition": "Seisukord",
+    "location": "Asukoht",
+    "country": "Riik",
+    "specifications": "Spetsifikatsioonid",
+    "results": "tulemust",
+    "result": "tulemus",
+    "for": "otsing",
+    "noResults": "Midagi ei leitud",
+    "noResultsDesc": "Proovige otsingu- või filtrikriteeriume muuta",
+    "clearFilters": "Tühjenda filtrid",
+    "sort": {
+      "newest": "Uuemad enne",
+      "oldest": "Vanemad enne",
+      "priceAsc": "Hind: odavamad enne",
+      "priceDesc": "Hind: kallimad enne",
+      "views": "Enim vaadatud"
+    },
+    "view": {
+      "grid": "Ruudustik",
+      "list": "Nimekiri",
+      "map": "Kaart"
+    },
+    "savedSearch": {
+      "save": "Salvesta otsing",
+      "title": "Salvesta see otsing",
+      "description": "Saage teavitus, kui uued kuulutused vastavad teie kriteeriumidele.",
+      "name": "Otsingu nimi",
+      "namePlaceholder": "nt BMW X5 alla 25 tuh € Tallinnas",
+      "emailNotify": "Teavita e-postiga uutest vastetest",
+      "criteria": "Teie otsingukriteeriumid:",
+      "allListings": "Kõik kuulutused",
+      "saved": "Salvestatud!",
+      "saving": "Salvestamine..."
+    },
+    "agentPrompt": {
+      "title": "Laske AI agendil leida teile parimad pakkumised",
+      "titleWithQuery": "Laske AI agendil leida \"{query}\" teile",
+      "description": "Seadke kriteeriumid ja meie ostuagent jälgib 24/7, teavitab headest tehingutest ja isegi kaupleb teie eest.",
+      "cta": "Loo ostuagent"
+    },
+    "mapNoData": "Kaardiandmed puuduvad",
+    "mapNoDataDesc": "Nendel kuulutustel puuduvad asukoha koordinaadid. Proovige lülituda ruudustiku- või nimekirjavaatesse.",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "min": "Min",
+    "max": "Max",
+    "go": "Go",
+    "new": "New",
+    "used": "Used",
+    "refurbished": "Refurbished"
+  },
+  "liquidation": {
+    "title": "Hulgimüük",
+    "uploadDesc": "Laadige üles fotod kõigist esemetest, mida soovite müüa. Meie AI tuvastab iga eseme ja soovitab hindu.",
+    "dropPhotos": "Klõpsake või lohistage fotod siia",
+    "analyzeItems": "Analüüsi esemeid",
+    "analyzingTitle": "Esemete tuvastamine…",
+    "analyzingDesc": "Meie AI analüüsib teie fotosid üksikute esemete tuvastamiseks",
+    "identifiedItems": "Tuvastatud esemed",
+    "selected": "valitud",
+    "itemTitle": "Eseme pealkiri",
+    "suggestedPrice": "AI soovitab",
+    "deadline": "Müügitähtaeg kõigile esemetele",
+    "urgency": {
+      "oneDay": "Müü täna",
+      "threeDays": "3 päeva jooksul",
+      "oneWeek": "Sel nädalal",
+      "twoWeeks": "2 nädala jooksul",
+      "oneMonth": "Sel kuul"
+    },
+    "back": "Tagasi",
+    "publishAll": "Avalda kõik",
+    "publishingTitle": "Kuulutuste avaldamine…",
+    "publishingDesc": "Kuulutuste loomine ja AI müügiagentide aktiveerimine",
+    "doneTitle": "Kõik valmis!",
+    "doneDesc": "{count} kuulutust AI müügiagentidega loodud",
+    "createMore": "Müü veel esemeid"
+  },
+  "myListings": {
+    "title": "Minu kuulutused",
+    "subtitle": "Hallake kuulutusi, jälgige tulemusi ja tegutsege",
+    "createNew": "Uus kuulutus",
+    "filterByStatus": "Filtreeri oleku järgi",
+    "listingsCount": "kuulutust",
+    "empty": "Kuulutusi veel pole",
+    "emptyDesc": "Looge esimene kuulutus müügi alustamiseks",
+    "createFirst": "Loo esimene kuulutus",
+    "edit": "Muuda",
+    "boost": "Tõsta esile",
+    "views": "vaatamist",
+    "messages": "sõnumit",
+    "prev": "Eelmine",
+    "next": "Järgmine",
+    "deleteTitle": "Kustuta kuulutus",
+    "deleteDesc": "Kas olete kindel, et soovite selle kuulutuse kustutada? Seda toimingut ei saa tagasi võtta.",
+    "cancel": "Tühista",
+    "confirmDelete": "Kustuta"
+  },
+  "analytics": {
+    "title": "Analüütika",
+    "subtitle": "Jälgige kuulutuste tulemusi ja turuülevaateid",
+    "totalViews": "Vaatamisi kokku",
+    "totalInquiries": "Päringuid kokku",
+    "conversionRate": "Päringu määr",
+    "activeListings": "Aktiivsed kuulutused",
+    "viewsOverTime": "Vaatamised aja jooksul",
+    "last7Days": "Viimased 7 päeva",
+    "conversionTitle": "Päringu konversioon",
+    "conversionDesc": "Vaatamistest päringuteni",
+    "topPerforming": "Parimad kuulutused",
+    "topPerformingDesc": "Enim vaadatud kuulutused kaasamise järgi",
+    "noListings": "Kuulutusi analüüsimiseks veel pole",
+    "priceImpact": "Hinnamuutuse mõju",
+    "priceImpactDesc": "Kuidas hinnastamine mõjutab kuulutuse nähtavust",
+    "moreViews": "Kogub hoogu",
+    "lessViews": "Vajab tähelepanu",
+    "noActiveListings": "Aktiivseid kuulutusi analüüsimiseks pole"
+  },
+  "savedSearches": {
+    "title": "Salvestatud otsingud",
+    "subtitle": "Hallake salvestatud otsinguid ja teavituste seadeid",
+    "newSearch": "Uus otsing",
+    "empty": "Salvestatud otsinguid pole",
+    "emptyDesc": "Salvestage otsing otsingulehelt, et saada teavitusi uutest vastetest",
+    "goSearch": "Mine otsima",
+    "notifyOn": "Teavitused sees",
+    "notifyOff": "Teavitused väljas",
+    "noFilters": "Filtreid pole rakendatud",
+    "categoryFilter": "Kategooria filter",
+    "locationFilter": "Asukoha filter",
+    "allListings": "Kõik kuulutused",
+    "lastNotified": "Viimati teavitatud",
+    "neverNotified": "Pole kunagi teavitatud",
+    "run": "Käivita",
+    "deleteTitle": "Kustuta salvestatud otsing",
+    "deleteDesc": "Kas olete kindel? Te ei saa enam teavitusi.",
+    "cancel": "Tühista",
+    "confirmDelete": "Kustuta",
+    "editTitle": "Nimeta otsing ümber",
+    "editDesc": "Sisestage salvestatud otsingule uus nimi",
+    "searchName": "Otsingu nimi",
+    "save": "Salvesta"
+  },
+  "editListing": {
+    "title": "Muuda kuulutust",
+    "subtitle": "Uuendage kuulutuse andmeid",
+    "backToListing": "Tagasi kuulutuse juurde",
+    "currentPhotos": "Praegused fotod",
+    "details": "Üksikasjad",
+    "titleLabel": "Pealkiri",
+    "descriptionLabel": "Kirjeldus",
+    "category": "Kategooria",
+    "categoryLabel": "Kategooria",
+    "selectCategory": "Valige kategooria",
+    "subcategory": "Alamkategooria",
+    "selectSubcategory": "Valige alamkategooria",
+    "conditionLabel": "Seisukord",
+    "price": "Hind",
+    "priceLabel": "Hind",
+    "negotiable": "Hind on läbiräägitav",
+    "location": "Asukoht",
+    "region": "Riik / piirkond",
+    "selectLocation": "Valige asukoht",
+    "area": "Linn / piirkond",
+    "selectArea": "Valige piirkond",
+    "contact": "Kontaktandmed",
+    "phone": "Telefon (valikuline)",
+    "email": "E-post (valikuline)",
+    "cancel": "Tühista",
+    "saveChanges": "Salvesta muudatused",
+    "updated": "Kuulutus uuendatud!",
+    "updatedDesc": "Muudatused on salvestatud. Suunamine...",
+    "errorTitleMin": "Pealkiri peab olema vähemalt 5 tähemärki",
+    "errorDescMin": "Kirjeldus peab olema vähemalt 20 tähemärki",
+    "errorPrice": "Sisestage kehtiv hind",
+    "errorCategory": "Valige kategooria"
+  },
+  "about": {
+    "title": "Turgost",
+    "subtitle": "Agentidel põhinev kuulutuste platvorm, mis on loodud Balti regioonile. Ühendame tehisintellekti kohaliku turu sügava tundmisega.",
+    "mission": {
+      "title": "Meie missioon",
+      "desc": "Kujundame ümber seda, kuidas inimesed ostavad ja müüvad veebis. Ühendades tipptasemel AI agente Balti turgude sügava mõistmisega, oleme loonud platvormi, kus intelligentsed agendid töötavad ööpäevaringselt."
+    },
+    "story": {
+      "title": "Meie lugu",
+      "p1": "Turgo sündis lihtsast frustratsioonist: kuulutuste platvormid Baltikumis polnud aastakümneid arenenud.",
+      "p2": "Küsisime endalt: mis oleks, kui AI agendid saaksid seda kõike hallata?",
+      "p3": "See visioon sai Turgoks — esimeseks agentidel põhinevaks kuulutuste platvormiks Lätile, Leedule ja Eestile."
+    },
+    "values": {
+      "title": "Põhiväärtused",
+      "agentFirst": {
+        "title": "Agent ennekõike",
+        "desc": "AI agendid on kõige, mida me loome, tuumaks."
+      },
+      "balticFocus": {
+        "title": "Balti fookus",
+        "desc": "Loodud Lätile, Leedule ja Eestile."
+      },
+      "trustSafety": {
+        "title": "Usaldus ja turvalisus",
+        "desc": "AI modereerimine ja kontrollitud profiilid tagavad turvalise turu."
+      },
+      "innovation": {
+        "title": "Innovatsioon",
+        "desc": "Nihutame piire sellele, mida kuulutuste platvormid suudavad."
+      }
+    },
+    "market": {
+      "title": "Balti turu fookus",
+      "desc": "Turgo tegutseb kõigis kolmes Balti riigis.",
+      "latvia": {
+        "flag": "🇱🇻",
+        "name": "Läti",
+        "desc": "Riia turg läti ja vene keele toega"
+      },
+      "lithuania": {
+        "flag": "🇱🇹",
+        "name": "Leedu",
+        "desc": "Vilnius, Kaunas ja kaugemal leedu keele toega"
+      },
+      "estonia": {
+        "flag": "🇪🇪",
+        "name": "Eesti",
+        "desc": "Tallinn ja Eesti piirkonnad eesti keele toega"
+      }
+    },
+    "tech": {
+      "title": "Tehnoloogia",
+      "ai": {
+        "title": "AI agendid",
+        "desc": "Intelligentsed müügi- ja ostuagendid."
+      },
+      "pricing": {
+        "title": "Nutikas hinnastamine",
+        "desc": "Reaalajas turuanalüüs."
+      },
+      "realtime": {
+        "title": "Reaalajas sõnumid",
+        "desc": "WebSocket vestlus AI toega."
+      },
+      "i18n": {
+        "title": "5 keele tugi",
+        "desc": "Täielik lokaliseerimine inglise, läti, leedu, eesti ja vene keeles."
+      }
+    },
+    "team": {
+      "title": "Meie meeskond",
+      "desc": "Väike, kuid võimas inseneride, disainerite ja Balti turu spetsialistide meeskond."
+    },
+    "contact": {
+      "title": "Võtke ühendust",
+      "emailLabel": "Üldised päringud",
+      "officeLabel": "Kontor",
+      "address": "Riia, Läti (kaugtöö meeskond üle Baltikumi)",
+      "careersLabel": "Karjäär",
+      "supportLabel": "Tugi"
+    }
+  },
+  "contact": {
+    "title": "Võtke meiega ühendust",
+    "subtitle": "Kas teil on küsimusi, tagasisidet või koostööpakkumisi? Kuulame teid hea meelega.",
+    "form": {
+      "title": "Saatke meile sõnum",
+      "name": "Teie nimi",
+      "namePlaceholder": "Jaan Tamm",
+      "email": "E-posti aadress",
+      "emailPlaceholder": "jaan@naide.ee",
+      "subject": "Teema",
+      "subjectPlaceholder": "Valige teema",
+      "subjects": {
+        "general": "Üldine päring",
+        "support": "Tehniline tugi",
+        "billing": "Arveldus ja maksed",
+        "partnership": "Koostöö",
+        "press": "Press ja meedia",
+        "feedback": "Tagasiside ja ettepanekud"
+      },
+      "message": "Sõnum",
+      "messagePlaceholder": "Rääkige, kuidas saame aidata...",
+      "send": "Saada sõnum",
+      "sending": "Saatmine...",
+      "success": "Sõnum edukalt saadetud!",
+      "error": "Saatmine ebaõnnestus. Proovige uuesti.",
+      "successTitle": "Sõnum saadetud!",
+      "successDesc": "Oleme teie sõnumi kätte saanud ja vastame 24 tunni jooksul.",
+      "sendAnother": "Saada veel"
+    },
+    "info": {
+      "email": {
+        "title": "E-post"
+      },
+      "office": {
+        "title": "Kontor",
+        "address": "Riia, Läti"
+      },
+      "hours": {
+        "title": "Toe tunnid",
+        "value": "E–R, 9:00–18:00 EET"
+      },
+      "languages": {
+        "title": "Keeled",
+        "value": "EN, LV, LT, ET, RU"
+      }
+    },
+    "social": {
+      "title": "Jälgige meid"
+    }
+  },
+  "help": {
+    "title": "Abikeskus",
+    "subtitle": "Leidke vastused levinumatele küsimustele Turgo kohta.",
+    "cta": {
+      "title": "Vajate veel abi?",
+      "desc": "Meie tugimeeskond on valmis teid aitama.",
+      "button": "Võtke toega ühendust"
+    },
+    "sections": {
+      "gettingStarted": {
+        "title": "Alustamine",
+        "q1": {
+          "q": "Kuidas kuulutust luua?",
+          "a": "Klõpsake navigeerimisribal '+ Müü'. Meie AI müügiagent juhendab teid samm-sammult."
+        },
+        "q2": {
+          "q": "Kuidas AI agendid töötavad?",
+          "a": "Turgo AI agendid automatiseerivad ostmist ja müümist. Müügiagendid optimeerivad hindu ja vastavad ostjatele."
+        },
+        "q3": {
+          "q": "Milliseid piirkondi ja keeli toetatakse?",
+          "a": "Turgo katab Lätit, Leedut ja Eestit. Platvorm on täielikult lokaliseeritud 5 keeles."
+        }
+      },
+      "sellingAgents": {
+        "title": "Müümine agentidega",
+        "q1": {
+          "q": "Kuidas AI agent hindu määrab?",
+          "a": "Meie hinnamootor analüüsib sarnaseid kuulutusi üle Baltikumi."
+        },
+        "q2": {
+          "q": "Kas saan agendi tegevust kontrollida?",
+          "a": "Jah! Teie määrate reeglid — automaatvastused, läbirääkimised, miinimumhind."
+        },
+        "q3": {
+          "q": "Mis on kuulutuse esiletõstmine?",
+          "a": "Esiletõstmine suurendab nähtavust: esiletõstmine, soovitamine ja kinnitamine üles."
+        }
+      },
+      "buyingAgents": {
+        "title": "Ostmine agentidega",
+        "q1": {
+          "q": "Kuidas ostuagenti seadistada?",
+          "a": "Otsige soovitut ja klõpsake 'Loo ostuagent'."
+        },
+        "q2": {
+          "q": "Mis on tehinguskoor?",
+          "a": "Tehinguskoor (0–100) näitab, kui hea pakkumine on võrreldes turuga."
+        },
+        "q3": {
+          "q": "Kas agent saab minu eest läbi rääkida?",
+          "a": "Jah, kui lubate automaatläbirääkimised."
+        }
+      },
+      "payments": {
+        "title": "Maksed ja tellimused",
+        "q1": {
+          "q": "Kas Turgo on tasuta?",
+          "a": "Jah! Tasuta plaan sisaldab kuni 5 kuulutust ja 1 AI agenti."
+        },
+        "q2": {
+          "q": "Kuidas tellimust hallata?",
+          "a": "Minge Seaded või Hinnakiri lehele."
+        },
+        "q3": {
+          "q": "Milliseid maksemeetodeid aktsepteeritakse?",
+          "a": "Aktsepteerime kõiki peamisi krediit- ja deebetkaarte Stripe kaudu."
+        }
+      },
+      "accountPrivacy": {
+        "title": "Konto ja privaatsus",
+        "q1": {
+          "q": "Kuidas on minu andmed kaitstud?",
+          "a": "Turgo on täielikult GDPR-iga kooskõlas. Kõik andmed on krüpteeritud."
+        },
+        "q2": {
+          "q": "Kas saan oma andmeid eksportida?",
+          "a": "Jah. Minge Seaded > Andmed ja privaatsus."
+        },
+        "q3": {
+          "q": "Kuidas kontot kustutada?",
+          "a": "Minge Seaded > Andmed ja privaatsus ja klõpsake 'Kustuta konto'."
+        }
+      }
+    }
+  },
+  "messages": {
+    "title": "Messages",
+    "selectConversation": "Select a conversation",
+    "selectConversationDesc": "Choose a conversation from the list to start chatting"
+  }
 }

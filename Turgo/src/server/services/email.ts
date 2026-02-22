@@ -5,6 +5,14 @@
 const FROM_EMAIL = process.env.EMAIL_FROM || "noreply@turgo.lv";
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 interface SendEmailOptions {
   to: string;
   subject: string;
@@ -15,8 +23,12 @@ interface SendEmailOptions {
 /** Send an email via Resend or log in development */
 export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
   if (process.env.NODE_ENV === "development" || !RESEND_API_KEY) {
-    console.log(`[Email] DEV MODE — To: ${options.to} Subject: ${options.subject}`);
-    console.log(`[Email] Body preview: ${options.text || options.html.slice(0, 200)}`);
+    console.log(
+      `[Email] DEV MODE — To: ${options.to} Subject: ${options.subject}`,
+    );
+    console.log(
+      `[Email] Body preview: ${options.text || options.html.slice(0, 200)}`,
+    );
     return true;
   }
 
@@ -96,7 +108,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
 /** Send agent match notification */
 export async function sendAgentMatchNotification(
   email: string,
-  matchDetails: { listingTitle: string; dealScore: number; url: string }
+  matchDetails: { listingTitle: string; dealScore: number; url: string },
 ) {
   return sendEmail({
     to: email,
@@ -106,7 +118,7 @@ export async function sendAgentMatchNotification(
         <h2>Your Buying Agent Found a Match!</h2>
         <p>We found a listing matching your criteria:</p>
         <div style="padding: 16px; background: #f3f4f6; border-radius: 8px; margin: 16px 0;">
-          <strong>${matchDetails.listingTitle}</strong>
+          <strong>${escapeHtml(matchDetails.listingTitle)}</strong>
           <p>Deal score: <strong>${matchDetails.dealScore}/100</strong></p>
         </div>
         <a href="${matchDetails.url}" style="display: inline-block; padding: 12px 24px; background: #059669; color: white; text-decoration: none; border-radius: 8px;">
@@ -126,7 +138,7 @@ export async function sendSavedSearchNotification(
     matchCount: number;
     listings: { title: string; price: number; url: string }[];
     manageUrl: string;
-  }
+  },
 ) {
   const listingRows = details.listings
     .slice(0, 5)
@@ -134,12 +146,12 @@ export async function sendSavedSearchNotification(
       (l) =>
         `<tr>
           <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
-            <a href="${l.url}" style="color: #2563eb; text-decoration: none; font-weight: 500;">${l.title}</a>
+            <a href="${l.url}" style="color: #2563eb; text-decoration: none; font-weight: 500;">${escapeHtml(l.title)}</a>
           </td>
           <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 600;">
             €${l.price.toFixed(2)}
           </td>
-        </tr>`
+        </tr>`,
     )
     .join("");
 
@@ -149,7 +161,7 @@ export async function sendSavedSearchNotification(
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>New Listings Match Your Saved Search</h2>
-        <p>Your search <strong>"${details.searchName}"</strong> has ${details.matchCount} new match${details.matchCount > 1 ? "es" : ""}:</p>
+        <p>Your search <strong>"${escapeHtml(details.searchName)}"</strong> has ${details.matchCount} new match${details.matchCount > 1 ? "es" : ""}:</p>
         <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
           ${listingRows}
         </table>

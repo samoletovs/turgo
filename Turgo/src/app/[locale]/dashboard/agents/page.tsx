@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import {
   Bot,
   TrendingUp,
@@ -63,7 +63,13 @@ export default async function AgentsListPage({ params }: AgentsListPageProps) {
           take: 3,
           include: {
             listing: {
-              select: { id: true, title: true, slug: true, price: true, currency: true },
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                price: true,
+                currency: true,
+              },
             },
           },
         },
@@ -77,7 +83,7 @@ export default async function AgentsListPage({ params }: AgentsListPageProps) {
       {/* Header */}
       <div className="mb-8">
         <Link
-          href={`/${locale}/dashboard`}
+          href="/dashboard"
           className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Dashboard
@@ -90,7 +96,7 @@ export default async function AgentsListPage({ params }: AgentsListPageProps) {
             </p>
           </div>
           <div className="flex gap-3">
-            <Link href={`/${locale}/sell`}>
+            <Link href="/sell">
               <Button size="sm" className="gap-1">
                 <Plus className="h-3.5 w-3.5" /> New Selling Agent
               </Button>
@@ -114,14 +120,15 @@ export default async function AgentsListPage({ params }: AgentsListPageProps) {
             <CardContent className="py-10 text-center">
               <Bot className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
               <p className="text-sm text-muted-foreground">
-                No selling agents. Create a listing with an AI agent to get started.
+                No selling agents. Create a listing with an AI agent to get
+                started.
               </p>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-3">
             {sellingAgents.map((agent) => (
-              <Link key={agent.id} href={`/${locale}/dashboard/agents/${agent.id}`}>
+              <Link key={agent.id} href={`/dashboard/agents/${agent.id}`}>
                 <Card className="transition-colors hover:bg-accent/30">
                   <CardContent className="flex items-center gap-4 p-4">
                     {/* Thumbnail */}
@@ -142,10 +149,15 @@ export default async function AgentsListPage({ params }: AgentsListPageProps) {
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{agent.listing.title}</p>
+                      <p className="font-medium truncate">
+                        {agent.listing.title}
+                      </p>
                       <div className="flex items-center gap-3 mt-0.5">
                         <p className="text-sm font-semibold text-primary">
-                          {formatPrice(agent.listing.price, agent.listing.currency)}
+                          {formatPrice(
+                            agent.listing.price,
+                            agent.listing.currency,
+                          )}
                         </p>
                         <div className="flex gap-2 text-xs text-muted-foreground">
                           <span className="flex items-center gap-0.5">
@@ -166,7 +178,8 @@ export default async function AgentsListPage({ params }: AgentsListPageProps) {
                       {/* Last activity */}
                       {agent.actions[0] && (
                         <p className="text-[11px] text-muted-foreground mt-1">
-                          Last: {agent.actions[0].actionType} — {formatRelativeTime(agent.actions[0].createdAt)}
+                          Last: {agent.actions[0].actionType} —{" "}
+                          {formatRelativeTime(agent.actions[0].createdAt)}
                         </p>
                       )}
                     </div>
@@ -174,10 +187,18 @@ export default async function AgentsListPage({ params }: AgentsListPageProps) {
                     {/* Status + actions */}
                     <div className="flex items-center gap-2">
                       <Badge
-                        variant={agent.status === "ACTIVE" ? "default" : "secondary"}
-                        className={agent.status === "ACTIVE" ? "bg-green-500/10 text-green-600 border-0" : ""}
+                        variant={
+                          agent.status === "ACTIVE" ? "default" : "secondary"
+                        }
+                        className={
+                          agent.status === "ACTIVE"
+                            ? "bg-green-500/10 text-green-600 border-0"
+                            : ""
+                        }
                       >
-                        <span className={`mr-1.5 h-1.5 w-1.5 rounded-full inline-block ${agent.status === "ACTIVE" ? "bg-green-500" : "bg-gray-400"}`} />
+                        <span
+                          className={`mr-1.5 h-1.5 w-1.5 rounded-full inline-block ${agent.status === "ACTIVE" ? "bg-green-500" : "bg-gray-400"}`}
+                        />
                         {agent.status}
                       </Badge>
                     </div>
@@ -211,9 +232,12 @@ export default async function AgentsListPage({ params }: AgentsListPageProps) {
         ) : (
           <div className="space-y-3">
             {buyingAgents.map((agent) => {
-              const criteria = agent.searchCriteria as Record<string, unknown> | null;
+              const criteria = agent.searchCriteria as Record<
+                string,
+                unknown
+              > | null;
               return (
-                <Link key={agent.id} href={`/${locale}/dashboard/agents/${agent.id}`}>
+                <Link key={agent.id} href={`/dashboard/agents/${agent.id}`}>
                   <Card className="transition-colors hover:bg-accent/30">
                     <CardContent className="flex items-center gap-4 p-4">
                       <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-blue-500/10">
@@ -240,10 +264,18 @@ export default async function AgentsListPage({ params }: AgentsListPageProps) {
                       </div>
 
                       <Badge
-                        variant={agent.status === "ACTIVE" ? "default" : "secondary"}
-                        className={agent.status === "ACTIVE" ? "bg-blue-500/10 text-blue-600 border-0" : ""}
+                        variant={
+                          agent.status === "ACTIVE" ? "default" : "secondary"
+                        }
+                        className={
+                          agent.status === "ACTIVE"
+                            ? "bg-blue-500/10 text-blue-600 border-0"
+                            : ""
+                        }
                       >
-                        <span className={`mr-1.5 h-1.5 w-1.5 rounded-full inline-block ${agent.status === "ACTIVE" ? "bg-green-500" : "bg-gray-400"}`} />
+                        <span
+                          className={`mr-1.5 h-1.5 w-1.5 rounded-full inline-block ${agent.status === "ACTIVE" ? "bg-green-500" : "bg-gray-400"}`}
+                        />
                         {agent.status}
                       </Badge>
                     </CardContent>

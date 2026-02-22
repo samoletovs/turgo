@@ -286,7 +286,8 @@ export function ConciergeChat({ locale = "en" }: { locale?: string }) {
                   <div className="flex items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
                     <p className="text-[10px] opacity-80">
-                      Online{currentIntent ? ` • ${currentIntent} mode` : ""}
+                      {t("online")}
+                      {currentIntent ? ` • ${currentIntent} ${t("mode")}` : ""}
                     </p>
                   </div>
                 </div>
@@ -321,14 +322,10 @@ export function ConciergeChat({ locale = "en" }: { locale?: string }) {
                   {INTENT_ICONS[currentIntent]}
                 </span>
                 <span className="text-[11px] text-muted-foreground">
-                  {currentIntent === "sell" &&
-                    "Selling mode — I'll help you list your item"}
-                  {currentIntent === "buy" &&
-                    "Buying mode — I'll help you find what you need"}
-                  {currentIntent === "support" &&
-                    "Support mode — Let me help with your issue"}
-                  {currentIntent === "browse" &&
-                    "Browse mode — Exploring listings"}
+                  {currentIntent === "sell" && t("intentSell")}
+                  {currentIntent === "buy" && t("intentBuy")}
+                  {currentIntent === "support" && t("intentSupport")}
+                  {currentIntent === "browse" && t("intentBrowse")}
                 </span>
                 <button
                   onClick={() => setCurrentIntent(null)}
@@ -432,9 +429,9 @@ export function ConciergeChat({ locale = "en" }: { locale?: string }) {
             {messages.length <= 1 && (
               <div className="flex gap-1 border-t px-3 py-2 overflow-x-auto">
                 {[
-                  { label: "Sell an item", action: "sell", icon: Tag },
-                  { label: "Find a deal", action: "buy", icon: ShoppingBag },
-                  { label: "Browse", action: "browse", icon: Search },
+                  { label: t("quickSell"), action: "sell", icon: Tag },
+                  { label: t("quickBuy"), action: "buy", icon: ShoppingBag },
+                  { label: t("quickBrowse"), action: "browse", icon: Search },
                 ].map((qa) => (
                   <button
                     key={qa.action}

@@ -28,7 +28,11 @@
     "showLess": "Rodyti mažiau",
     "noResults": "Rezultatų nerasta",
     "currency": "€",
-    "perMonth": "/mėn."
+    "perMonth": "/mėn.",
+    "grid": "Tinklelis",
+    "list": "Sąrašas",
+    "map": "Žemėlapis",
+    "location": "Vieta"
   },
   "nav": {
     "home": "Pagrindinis",
@@ -43,14 +47,25 @@
     "signIn": "Prisijungti",
     "signUp": "Registruotis",
     "signOut": "Atsijungti",
-    "pricing": "Kainos"
+    "pricing": "Kainos",
+    "search": "Search",
+    "mobileNav": "Mobile navigation",
+    "searchPlaceholder": "What are you looking for?"
   },
   "home": {
     "hero": {
       "title": "Pirkite ir parduokite protingiau su AI agentais",
       "subtitle": "Pirmoji prekyvietė, kur protingi agentai dirba 24/7 dėl geriausio sandorio",
       "searchPlaceholder": "Ko ieškote?",
-      "cta": "Pradėkite pardavinėti su AI"
+      "cta": "Pradėkite pardavinėti su AI",
+      "browseBelow": "or browse categories below ↓",
+      "agentName": "Turgo AI Agent",
+      "demoOnline": "● Online",
+      "demoUserMessage": "Sell my iPhone 15 Pro",
+      "demoSimilar": "23 similar listings",
+      "demoSuggestedPrice": "Suggested price: €849",
+      "demoAgentReply": "I'll handle everything!",
+      "demoListingCreated": "Listing created"
     },
     "featured": "Rekomenduojami skelbimai",
     "recentlyAdded": "Neseniai pridėti",
@@ -92,6 +107,14 @@
         "title": "Užbaikite sandorį",
         "description": "Gaukite pranešimą, kai agentas ras idealų pirkėją už geriausią kainą"
       }
+    },
+    "stats": {
+      "aiValue": "24/7",
+      "aiDesc": "AI agents working for you",
+      "smartValue": "Smart",
+      "smartDesc": "Dynamic pricing optimization",
+      "fastValue": "Fast",
+      "fastDesc": "Auto-respond to buyers instantly"
     }
   },
   "auth": {
@@ -149,11 +172,55 @@
       "EXPIRED": "Pasibaigęs",
       "MODERATION": "Tikrinama",
       "REJECTED": "Atmestas"
-    }
+    },
+    "createManually": "Sukurti skelbimu rankiniu būdu",
+    "createManuallyDesc": "Užpildykite visą informaciją patys",
+    "reportDialog": {
+      "title": "Pranešti apie skelbimu",
+      "description": "Padėkite mums užtikrinti saugumą, pranešdami apie taisykles pažidžiančius skelbimus.",
+      "reason": "Priežastis",
+      "reasonPlaceholder": "Pasirinkite priežastį",
+      "details": "Papildoma informacija",
+      "detailsPlaceholder": "Aprašykite problemą išsamiau (mažiausiai 10 simbolių)...",
+      "submit": "Pateikti pranešimą",
+      "submitting": "Pateikiama...",
+      "success": "Pranešimas sėkmingai pateiktas. Netrukus jį peržiūrėsime.",
+      "alreadyReported": "Jūs jau pranešėte apie šį skelbimu",
+      "cannotReportOwn": "Negalite pranešti apie savo skelbimu",
+      "reasons": {
+        "SPAM": "Šlamštas",
+        "FRAUD": "Sukčiavimas",
+        "INAPPROPRIATE": "Netinkamas turinys",
+        "DUPLICATE": "Dublikatas",
+        "WRONG_CATEGORY": "Neteisinga kategorija",
+        "MISLEADING_PRICE": "Klaidinanti kaina",
+        "PROHIBITED_ITEM": "Draudžiama prekė",
+        "OTHER": "Kita"
+      }
+    },
+    "featured": "Featured",
+    "photos": "photos",
+    "negotiable": "Price negotiable",
+    "seller": "Seller",
+    "memberSince": "Member since",
+    "aiAgent": "AI Selling Agent",
+    "status": "Status",
+    "active": "Active",
+    "autoResponding": "Auto-responding to inquiries",
+    "dynamicPricing": "Dynamic pricing enabled",
+    "safetyTips": "Safety tips",
+    "safetyTip1": "Meet in a safe, public place",
+    "safetyTip2": "Don't pay in advance",
+    "safetyTip3": "Inspect the item before paying",
+    "similarListings": "Similar Listings",
+    "noImage": "No image",
+    "favorites": "favorites"
   },
   "sell": {
     "title": "Parduokite su AI agentu",
     "subtitle": "Leiskite mūsų AI sukurti tobulą skelbimą ir parduoti greičiau",
+    "orCreateManually": "Norite tai padaryti patys?",
+    "createManuallyLink": "Sukurti skelbimu rankiniu būdu",
     "wizard": {
       "step1": {
         "title": "Ką parduodate?",
@@ -219,7 +286,51 @@
       "TWO_WEEKS": "Per 2 savaites",
       "ONE_MONTH": "Šį mėnesį",
       "NO_RUSH": "Neskubu"
-    }
+    },
+    "negotiate": {
+      "accept": "Pasiūlymas priimtas",
+      "counter": "Priešpriešinis pasiūlymas išsiųstas",
+      "reject": "Pasiūlymas atmestas",
+      "escalate": "Išsiųsta pardavėjui peržiūrėti"
+    },
+    "boost": {
+      "title": "Iškelti skelbimu",
+      "subtitle": "Padidinkite savo skelbimo matomumo",
+      "recommended": "Rekomenduojama iškelti",
+      "active": "Šiuo metu iškeltas",
+      "notNeeded": "Iškėlimas nereikalingas",
+      "boost": "Iškelti",
+      "days": "dienrn",
+      "highlighted": "Pažymėtas",
+      "highlightedDesc": "Išsiskirkite spalvotu rėmeliu paieškos rezultatuose",
+      "featured": "Rekomenduojamas",
+      "featuredDesc": "Pasirodykite Rekomenduojamu skyriuje pagrindiniame puslapyje",
+      "top": "Aukščiausia pozicija",
+      "topDesc": "Prisekite paieškos rezultatu viršuje maksimaliam matomumui"
+    },
+    "summary": {
+      "title": "Dienos suvestinė",
+      "views": "Peržiūros",
+      "inquiries": "Užklausos",
+      "offers": "Pasiūlymai",
+      "priceChanges": "Kainos pokyčiai"
+    },
+    "myAgents": "My AI Agents",
+    "manageAgents": "Manage your selling and buying agents",
+    "newSellingAgent": "New Selling Agent",
+    "noSellingAgents": "No selling agents",
+    "noSellingAgentsDesc": "Create a listing with an AI agent to automate pricing and responses",
+    "noBuyingAgents": "No buying agents",
+    "noBuyingAgentsDesc": "Set up a buying agent to automatically find deals matching your criteria",
+    "autoReply": "Auto-reply",
+    "autoPrice": "Auto-price",
+    "recentActivity": "Recent activity",
+    "viewListing": "View Listing",
+    "pause": "Pause",
+    "resume": "Resume",
+    "anyCategory": "Any category",
+    "budgetUpTo": "Budget: up to",
+    "recentMatches": "Recent matches"
   },
   "concierge": {
     "title": "AI konsjeržas",
@@ -230,7 +341,16 @@
       "Rask gerą pasiūlymą telefonui",
       "Kaip veikia AI agentas?",
       "Kokia vidutinė kaina už..."
-    ]
+    ],
+    "online": "Online",
+    "mode": "mode",
+    "intentSell": "Selling mode — I'll help you list your item",
+    "intentBuy": "Buying mode — I'll help you find what you need",
+    "intentSupport": "Support mode — Let me help with your issue",
+    "intentBrowse": "Browse mode — Exploring listings",
+    "quickSell": "Sell an item",
+    "quickBuy": "Find a deal",
+    "quickBrowse": "Browse"
   },
   "pricing": {
     "title": "Pasirinkite planą",
@@ -260,6 +380,8 @@
       "priority": "Prioritetinė pagalba",
       "api": "API prieiga"
     },
+    "monthly": "Mėnesinis",
+    "yearly": "Metinis",
     "cta": {
       "current": "Dabartinis planas",
       "upgrade": "Atnaujinti",
@@ -278,9 +400,21 @@
     "cookies": "Slapukų politika"
   },
   "errors": {
-    "notFound": { "title": "Puslapis nerastas", "description": "Puslapis, kurio ieškote, neegzistuoja arba buvo perkeltas.", "cta": "Į pagrindinį" },
-    "server": { "title": "Kažkas nutiko", "description": "Patirsime techninių sunkumų. Bandykite vėliau.", "cta": "Bandyti dar kartą" },
-    "boundary": { "title": "Netikėta klaida", "description": "Nutiko kažkas netikėto. Atnaujinkite puslapį.", "cta": "Atnaujinti puslapį" }
+    "notFound": {
+      "title": "Puslapis nerastas",
+      "description": "Puslapis, kurio ieškote, neegzistuoja arba buvo perkeltas.",
+      "cta": "Į pagrindinį"
+    },
+    "server": {
+      "title": "Kažkas nutiko",
+      "description": "Patirsime techninių sunkumų. Bandykite vėliau.",
+      "cta": "Bandyti dar kartą"
+    },
+    "boundary": {
+      "title": "Netikėta klaida",
+      "description": "Nutiko kažkas netikėto. Atnaujinkite puslapį.",
+      "cta": "Atnaujinti puslapį"
+    }
   },
   "cookie": {
     "title": "Mes naudojame slapukus",
@@ -297,24 +431,822 @@
     "save": "Išsaugoti nustatymus"
   },
   "legal": {
-    "cookies": { "title": "Slapukų politika", "lastUpdated": "Atnaujinta: 2026 m. vasaris", "intro": "Ši politika paaiškina, kaip Turgo naudoja slapukus.", "whatAreCookies": "Kas yra slapukai", "whatAreCookiesDesc": "Slapukai yra maži tekstiniai failai, saugomi jūsų įrenginyje.", "typesTitle": "Naudojamų slapukų tipai", "necessary": "Būtini slapukai", "necessaryDesc": "Šie slapukai būtini tinkamam svetainės veikimui.", "analytics": "Analitiniai slapukai", "analyticsDesc": "Šie slapukai padeda suprasti lankytojų elgseną.", "marketing": "Rinkodaros slapukai", "marketingDesc": "Šie slapukai naudojami aktualiai reklamai.", "manage": "Slapukų valdymas", "manageDesc": "Slapukus galite valdyti naršyklės nustatymuose.", "contact": "Susisiekite su mumis", "contactDesc": "Klausimai? Rašykite: privacy@turgo.io" },
-    "terms": { "title": "Naudojimo sąlygos", "lastUpdated": "Atnaujinta: 2026 m. vasaris" },
-    "privacy": { "title": "Privatumo politika", "lastUpdated": "Atnaujinta: 2026 m. vasaris" }
+    "cookies": {
+      "title": "Slapukų politika",
+      "lastUpdated": "Atnaujinta: 2026 m. vasaris",
+      "intro": "Ši politika paaiškina, kaip Turgo naudoja slapukus.",
+      "whatAreCookies": "Kas yra slapukai",
+      "whatAreCookiesDesc": "Slapukai yra maži tekstiniai failai, saugomi jūsų įrenginyje.",
+      "typesTitle": "Naudojamų slapukų tipai",
+      "necessary": "Būtini slapukai",
+      "necessaryDesc": "Šie slapukai būtini tinkamam svetainės veikimui.",
+      "analytics": "Analitiniai slapukai",
+      "analyticsDesc": "Šie slapukai padeda suprasti lankytojų elgseną.",
+      "marketing": "Rinkodaros slapukai",
+      "marketingDesc": "Šie slapukai naudojami aktualiai reklamai.",
+      "manage": "Slapukų valdymas",
+      "manageDesc": "Slapukus galite valdyti naršyklės nustatymuose.",
+      "contact": "Susisiekite su mumis",
+      "contactDesc": "Klausimai? Rašykite: privacy@turgo.io"
+    },
+    "terms": {
+      "title": "Naudojimo sąlygos",
+      "lastUpdated": "Atnaujinta: 2026 m. vasaris",
+      "toc": "Turinys",
+      "sections": {
+        "acceptance": {
+          "title": "Sąlygų priėmimas"
+        },
+        "platform": {
+          "title": "Platformos aprašymas"
+        },
+        "accounts": {
+          "title": "Vartotojų paskyros ir pareigos"
+        },
+        "listings": {
+          "title": "Skelbimai ir turinys"
+        },
+        "agents": {
+          "title": "AI agentų paslaugos"
+        },
+        "payments": {
+          "title": "Mokėjimai ir prenumeratos"
+        },
+        "ip": {
+          "title": "Intelektinė nuosavybė"
+        },
+        "liability": {
+          "title": "Atsakomybės apribojimai"
+        },
+        "termination": {
+          "title": "Nutraukimas"
+        },
+        "governing": {
+          "title": "Taikytina teisė ir ginčai"
+        },
+        "gdpr": {
+          "title": "Duomenų apsauga (BDAR)"
+        },
+        "changes": {
+          "title": "Sąlygų pakeitimai"
+        },
+        "contact": {
+          "title": "Kontaktinė informacija"
+        }
+      }
+    },
+    "privacy": {
+      "title": "Privatumo politika",
+      "lastUpdated": "Atnaujinta: 2026 m. vasaris",
+      "sections": {
+        "controller": {
+          "title": "Duomenų valdytojas"
+        },
+        "dataCollected": {
+          "title": "Renkami duomenys"
+        },
+        "purposes": {
+          "title": "Apdorojimo tikslai"
+        },
+        "legalBases": {
+          "title": "Teisiniai pagrindai"
+        },
+        "retention": {
+          "title": "Duomenų saugojimo laikotarpiai"
+        },
+        "thirdParties": {
+          "title": "Duomenų dalijimasis su trečiosiomis šalimis"
+        },
+        "cookies": {
+          "title": "Slapukai ir stebėjimas"
+        },
+        "rights": {
+          "title": "Jūsų duomenų apsaugos teisės"
+        },
+        "children": {
+          "title": "Vaiku privatumas"
+        },
+        "international": {
+          "title": "Tarptautinis duomenų perdavimas"
+        },
+        "dpo": {
+          "title": "Duomenų apsaugos pareigūnas"
+        },
+        "complaint": {
+          "title": "Teisė pateikti skundą"
+        },
+        "changes": {
+          "title": "Politikos pakeitimai"
+        }
+      }
+    }
   },
   "settings": {
     "title": "Nustatymai",
     "subtitle": "Tvarkykite savo paskyros nustatymus",
-    "profile": { "title": "Profilis", "name": "Vardas", "email": "El. paštas", "phone": "Telefonas", "bio": "Apie save", "save": "Išsaugoti profilį", "saved": "Profilis išsaugotas" },
-    "locale": { "title": "Kalba ir regionas", "language": "Kalba", "country": "Šalis", "currency": "Valiuta", "timezone": "Laiko juosta" },
-    "notifications": { "title": "Pranešimai", "email": "El. pašto pranešimai", "emailDesc": "Gaukite pranešimus el. paštu", "push": "Push pranešimai", "pushDesc": "Gaukite push pranešimus naršyklėje", "agentUpdates": "Agentų atnaujinimai", "agentUpdatesDesc": "Pranešimai apie AI agentų veiksmus", "newMessages": "Nauji pranešimai", "newMessagesDesc": "Pranešimai apie naujus pranešimus", "priceAlerts": "Kainų pranešimai", "priceAlertsDesc": "Pranešimai apie kainų pokyčius", "marketing": "Rinkodara", "marketingDesc": "Produktų naujienos ir pasiūlymai" },
-    "appearance": { "title": "Išvaizda", "theme": "Tema", "light": "Šviesi", "dark": "Tamsi", "system": "Sistemos" },
-    "data": { "title": "Duomenys ir privatumas", "export": "Eksportuoti duomenis", "exportDesc": "Atsisiųskite savo duomenų kopiją JSON formatu", "exportBtn": "Eksportuoti", "exporting": "Eksportuojama...", "exported": "Eksportas pradėtas. Gausite el. laišką su nuoroda.", "delete": "Ištrinti paskyrą", "deleteDesc": "Negrįžtamai ištrinkite paskyrą ir visus duomenis.", "deleteBtn": "Ištrinti paskyrą", "deleteConfirm": "Ar tikrai? Visi duomenys bus negrįžtamai pašalinti.", "deleteConfirmBtn": "Taip, ištrinti" }
+    "profile": {
+      "title": "Profilis",
+      "name": "Vardas",
+      "email": "El. paštas",
+      "phone": "Telefonas",
+      "bio": "Apie save",
+      "save": "Išsaugoti profilį",
+      "saved": "Profilis išsaugotas",
+      "description": "Tvarkykite asmeninę informaciją ir viešąjį profilį",
+      "emailHint": "El. pašto keisti negalima. Susisiekite su palaikymu.",
+      "bioPlaceholder": "Papasakokite kitiems vartotojams apie save...",
+      "changeAvatar": "Keisti nuotrauką",
+      "avatarHint": "JPG, PNG arba GIF. Maks. 2MB.",
+      "avatarUpdated": "Avataras atnaujintas"
+    },
+    "locale": {
+      "title": "Kalba ir regionas",
+      "language": "Kalba",
+      "country": "Šalis",
+      "currency": "Valiuta",
+      "timezone": "Laiko juosta",
+      "description": "Nustatykite pageidaujamą kalbą, šalį ir valiutą"
+    },
+    "notifications": {
+      "title": "Pranešimai",
+      "email": "El. pašto pranešimai",
+      "emailDesc": "Gaukite pranešimus el. paštu",
+      "push": "Push pranešimai",
+      "pushDesc": "Gaukite push pranešimus naršyklėje",
+      "agentUpdates": "Agentų atnaujinimai",
+      "agentUpdatesDesc": "Pranešimai apie AI agentų veiksmus",
+      "newMessages": "Nauji pranešimai",
+      "newMessagesDesc": "Pranešimai apie naujus pranešimus",
+      "priceAlerts": "Kainų pranešimai",
+      "priceAlertsDesc": "Pranešimai apie kainų pokyčius",
+      "marketing": "Rinkodara",
+      "marketingDesc": "Produktų naujienos ir pasiūlymai",
+      "description": "Pasirinkite, kaip ir kada norite gauti pranešimus",
+      "saveBtn": "Išsaugoti nustatymus",
+      "saved": "Pranešimų nustatymai išsaugoti"
+    },
+    "appearance": {
+      "title": "Išvaizda",
+      "theme": "Tema",
+      "light": "Šviesi",
+      "dark": "Tamsi",
+      "system": "Sistemos"
+    },
+    "data": {
+      "title": "Duomenys ir privatumas",
+      "export": "Eksportuoti duomenis",
+      "exportDesc": "Atsisiųskite savo duomenų kopiją JSON formatu",
+      "exportBtn": "Eksportuoti",
+      "exporting": "Eksportuojama...",
+      "exported": "Eksportas pradėtas. Gausite el. laišką su nuoroda.",
+      "delete": "Ištrinti paskyrą",
+      "deleteDesc": "Negrįžtamai ištrinkite paskyrą ir visus duomenis.",
+      "deleteBtn": "Ištrinti paskyrą",
+      "deleteConfirm": "Ar tikrai? Visi duomenys bus negrįžtamai pašalinti.",
+      "deleteConfirmBtn": "Taip, ištrinti",
+      "privacy": "Privatumo nustatymai",
+      "privacyDesc": "Valdykite, kaip naudojami jūsų duomenys",
+      "marketingOptIn": "Rinkodaros pranešimai",
+      "marketingOptInDesc": "Gaukite laiškus apie naujas funkcijas, patarimus ir pasiūlymus",
+      "exportError": "Nepavyko eksportuoti duomenų. Bandykite dar kartą.",
+      "deleteTypeConfirm": "Įveskite DELETE patvirtinimui",
+      "deleteSuccess": "Paskyros trynimas pradėtas. Netrukus būsite atjungtas."
+    }
   },
-  "verifyEmail": { "title": "Patvirtinkite el. paštą", "sent": "Išsiuntėme patvirtinimo nuorodą", "check": "Patikrinkite pašto dėžutę ir spustelėkite nuorodą.", "resend": "Siųsti dar kartą", "resent": "Laiškas išsiųstas!", "expired": "Ši nuoroda nebegalioja.", "success": "El. paštas patvirtintas!", "successDesc": "Jūsų el. paštas patvirtintas. Dabar galite naudotis visomis funkcijomis.", "continue": "Tęsti" },
-  "forgotPassword": { "title": "Atkurti slaptažodį", "description": "Įveskite el. pašto adresą ir mes atsiųsime nuorodą.", "email": "El. paštas", "submit": "Siųsti nuorodą", "sent": "Nuoroda išsiųsta!", "sentDesc": "Jei paskyra egzistuoja, gausite nuorodą.", "backToSignIn": "Grįžti prie prisijungimo", "newPassword": "Naujas slaptažodis", "confirmPassword": "Patvirtinti slaptažodį", "resetSubmit": "Atkurti slaptažodį", "resetSuccess": "Slaptažodis atkurtas!", "resetSuccessDesc": "Slaptažodis atnaujintas. Prisijunkite su nauju slaptažodžiu.", "invalidToken": "Nuoroda negalioja arba pasibaigė.", "requestNew": "Prašyti naujos nuorodos" },
-  "onboarding": { "welcome": { "title": "Sveiki atvykę į Turgo!", "subtitle": "Nustatykite paskyrą per kelis žingsnius" }, "step1": { "title": "Pasirinkite šalį", "subtitle": "Nurodykite savo buvimo vietą" }, "step2": { "title": "Jūsų interesai", "subtitle": "Pasirinkite dominančias kategorijas" }, "step3": { "title": "Kaip naudosite Turgo?", "subtitle": "Tai padės pritaikyti jūsų patirtį", "buying": "Noriu pirkti", "selling": "Noriu parduoti", "both": "Ir pirkti, ir parduoti" }, "step4": { "title": "Viskas paruošta!", "subtitle": "Jūsų paskyra paruošta. Pradėkite naršyti!", "exploreCta": "Naršyti skelbimus", "sellCta": "Sukurti pirmą skelbimą" }, "skip": "Praleisti", "continue": "Tęsti", "finish": "Pradėti" },
-  "region": { "title": "Pasirinkite regioną", "latvia": "Latvija", "lithuania": "Lietuva", "estonia": "Estija", "allBaltics": "Visa Baltija" },
-  "darkMode": { "light": "Šviesi", "dark": "Tamsi", "system": "Sistemos" },
-  "a11y": { "skipToContent": "Pereiti prie turinio", "openMenu": "Atidaryti meniu", "closeMenu": "Uždaryti meniu", "toggleTheme": "Pakeisti temą", "changeLanguage": "Keisti kalbą", "loading": "Kraunamas turinys", "searchResults": "Paieškos rezultatai" },
-  "empty": { "favorites": { "title": "Dar nėra mėgstamiausių", "description": "Pradėkite naršyti ir išsaugokite patikusius skelbimus", "cta": "Naršyti skelbimus" }, "messages": { "title": "Dar nėra žinučių", "description": "Kai susisieksite su pardavėju, žinutės bus čia", "cta": "Naršyti skelbimus" }, "listings": { "title": "Dar nėra skelbimų", "description": "Sukurkite pirmą skelbimą su AI pagalba", "cta": "Sukurti skelbimą" }, "agents": { "title": "Dar nėra agentų", "description": "Nustatykite AI agentus automatizavimui", "cta": "Sukurti agentą" }, "search": { "title": "Nieko nerasta", "description": "Pabandykite pakeisti filtrus", "cta": "Valyti filtrus" }, "notifications": { "title": "Nėra pranešimų", "description": "Viskas peržiūrėta! Nauji pranešimai bus čia.", "cta": "Naršyti skelbimus" } }
+  "verifyEmail": {
+    "title": "Patvirtinkite el. paštą",
+    "sent": "Išsiuntėme patvirtinimo nuorodą",
+    "check": "Patikrinkite pašto dėžutę ir spustelėkite nuorodą.",
+    "resend": "Siųsti dar kartą",
+    "resent": "Laiškas išsiųstas!",
+    "expired": "Ši nuoroda nebegalioja.",
+    "success": "El. paštas patvirtintas!",
+    "successDesc": "Jūsų el. paštas patvirtintas. Dabar galite naudotis visomis funkcijomis.",
+    "continue": "Tęsti"
+  },
+  "forgotPassword": {
+    "title": "Atkurti slaptažodį",
+    "description": "Įveskite el. pašto adresą ir mes atsiųsime nuorodą.",
+    "email": "El. paštas",
+    "submit": "Siųsti nuorodą",
+    "sent": "Nuoroda išsiųsta!",
+    "sentDesc": "Jei paskyra egzistuoja, gausite nuorodą.",
+    "backToSignIn": "Grįžti prie prisijungimo",
+    "newPassword": "Naujas slaptažodis",
+    "confirmPassword": "Patvirtinti slaptažodį",
+    "resetSubmit": "Atkurti slaptažodį",
+    "resetSuccess": "Slaptažodis atkurtas!",
+    "resetSuccessDesc": "Slaptažodis atnaujintas. Prisijunkite su nauju slaptažodžiu.",
+    "invalidToken": "Nuoroda negalioja arba pasibaigė.",
+    "requestNew": "Prašyti naujos nuorodos"
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Sveiki atvykę į Turgo!",
+      "subtitle": "Nustatykite paskyrą per kelis žingsnius"
+    },
+    "step1": {
+      "title": "Pasirinkite šalį",
+      "subtitle": "Nurodykite savo buvimo vietą"
+    },
+    "step2": {
+      "title": "Jūsų interesai",
+      "subtitle": "Pasirinkite dominančias kategorijas"
+    },
+    "step3": {
+      "title": "Kaip naudosite Turgo?",
+      "subtitle": "Tai padės pritaikyti jūsų patirtį",
+      "buying": "Noriu pirkti",
+      "selling": "Noriu parduoti",
+      "both": "Ir pirkti, ir parduoti"
+    },
+    "step4": {
+      "title": "Viskas paruošta!",
+      "subtitle": "Jūsų paskyra paruošta. Pradėkite naršyti!",
+      "exploreCta": "Naršyti skelbimus",
+      "sellCta": "Sukurti pirmą skelbimą"
+    },
+    "skip": "Praleisti",
+    "continue": "Tęsti",
+    "finish": "Pradėti"
+  },
+  "region": {
+    "title": "Pasirinkite regioną",
+    "latvia": "Latvija",
+    "lithuania": "Lietuva",
+    "estonia": "Estija",
+    "allBaltics": "Visa Baltija"
+  },
+  "darkMode": {
+    "light": "Šviesi",
+    "dark": "Tamsi",
+    "system": "Sistemos"
+  },
+  "a11y": {
+    "skipToContent": "Pereiti prie turinio",
+    "openMenu": "Atidaryti meniu",
+    "closeMenu": "Uždaryti meniu",
+    "toggleTheme": "Pakeisti temą",
+    "changeLanguage": "Keisti kalbą",
+    "loading": "Kraunamas turinys",
+    "searchResults": "Paieškos rezultatai"
+  },
+  "empty": {
+    "favorites": {
+      "title": "Dar nėra mėgstamiausių",
+      "description": "Pradėkite naršyti ir išsaugokite patikusius skelbimus",
+      "cta": "Naršyti skelbimus"
+    },
+    "messages": {
+      "title": "Dar nėra žinučių",
+      "description": "Kai susisieksite su pardavėju, žinutės bus čia",
+      "cta": "Naršyti skelbimus"
+    },
+    "listings": {
+      "title": "Dar nėra skelbimų",
+      "description": "Sukurkite pirmą skelbimą su AI pagalba",
+      "cta": "Sukurti skelbimą"
+    },
+    "agents": {
+      "title": "Dar nėra agentų",
+      "description": "Nustatykite AI agentus automatizavimui",
+      "cta": "Sukurti agentą"
+    },
+    "search": {
+      "title": "Nieko nerasta",
+      "description": "Pabandykite pakeisti filtrus",
+      "cta": "Valyti filtrus"
+    },
+    "notifications": {
+      "title": "Nėra pranešimų",
+      "description": "Viskas peržiūrėta! Nauji pranešimai bus čia.",
+      "cta": "Naršyti skelbimus"
+    }
+  },
+  "review": {
+    "title": "Atsiliepimai",
+    "writeReview": "Parašyti atsiliepimą",
+    "rating": "Įvertinimas",
+    "comment": "Komentaras",
+    "commentPlaceholder": "Pasidalinkite patirtimi su šiuo vartotoju...",
+    "submit": "Pateikti atsiliepimą",
+    "submitting": "Pateikiama...",
+    "success": "Atsiliepimas sėkmingai pateiktas!",
+    "noReviews": "Kol kas nėra atsiliepimų",
+    "noReviewsDesc": "Būkite pirmas, palikęs atsiliepimą.",
+    "averageRating": "Vidutinis įvertinimas",
+    "totalReviews": "{count} atsiliepimų",
+    "alreadyReviewed": "Jūs jau vertinote šį vartotoją",
+    "noInteraction": "Galite vertinti tik vartotojus, su kuriais bendravote",
+    "cannotReviewSelf": "Negalite vertinti savęs",
+    "stars": {
+      "1": "Blogai",
+      "2": "Patenkinamai",
+      "3": "Gerai",
+      "4": "Labai gerai",
+      "5": "Puikiai"
+    }
+  },
+  "publicProfile": {
+    "memberSince": "Narys nuo {date}",
+    "listings": "Skelbimai",
+    "reviews": "Atsiliepimai",
+    "viewListings": "Žiūrėti skelbimus",
+    "noUser": "Vartotojas nerastas"
+  },
+  "dashboard": {
+    "title": "Valdymo skydelis",
+    "subtitle": "Jūsų AI agentai vienu žvilgsniu",
+    "stats": {
+      "activeSelling": "Aktyvūs pardavimo agentai",
+      "activeBuying": "Aktyvūs pirkimo agentai",
+      "actionsTaken": "Agentų atlikti veiksmai",
+      "dealsFound": "Rasta sandorių"
+    },
+    "myAgents": "Mano agentai",
+    "viewAll": "Žiūrėti viską",
+    "noAgents": "Kol kas nėra agentų",
+    "noAgentsDesc": "Sukurkite pirmąjį AI agentą automatizavimui",
+    "recentActivity": "Naujausia veikla",
+    "noActivity": "Kol kas nėra veiklos",
+    "agents": {
+      "title": "Visi agentai",
+      "selling": "Pardavimo agentai",
+      "buying": "Pirkimo agentai",
+      "backToDashboard": "Grįžti į valdymo skydelį",
+      "noSelling": "Nėra pardavimo agentų. Sukurkite skelbimą su AI agentu.",
+      "noBuying": "Nėra pirkimo agentų. Nustatykite agentą automatiniam sandorių paieškai."
+    },
+    "detail": {
+      "backToAgents": "Grįžti prie agentų",
+      "agentStats": "Agento statistika",
+      "totalActions": "Iš viso veiksmų",
+      "views": "Peržiūros",
+      "autoRespond": "Automatinis atsakymas",
+      "autoNegotiate": "Automatinės derybos",
+      "urgency": "Skubumas",
+      "priceFloor": "Minimali kaina",
+      "matchesFound": "Rasta atitikmenų",
+      "maxBudget": "Maks. biudžetas",
+      "timeline": "Agento chronologija",
+      "noActions": "Veiksmų dar neužfiksuota",
+      "noActionsDesc": "Veiksmai atsiras čia agentui pradėjus dirbti",
+      "pause": "Pristabdyti",
+      "resume": "Tęsti",
+      "stop": "Sustabdyti",
+      "viewListing": "Žiūrėti skelbimą",
+      "recentMatches": "Naujausi atitikmenys"
+    },
+    "sell": "Sell",
+    "buy": "Buy",
+    "subscription": "Subscription",
+    "createSellingAgent": "Create Selling Agent",
+    "actions": "actions",
+    "buyingAgent": "Buying Agent",
+    "budget": "Budget:",
+    "matches": "matches"
+  },
+  "dealScore": {
+    "title": "Sandorio įvertinimas",
+    "exceptional": "Išskirtinis sandoris",
+    "great": "Puikus sandoris",
+    "good": "Geras sandoris",
+    "fair": "Vidutinis sandoris",
+    "belowAverage": "Žemiau vidurkio",
+    "factors": {
+      "priceVsMarket": "Kaina vs rinka",
+      "timeOnMarket": "Laikas rinkoje",
+      "sellerUrgency": "Pardavėjo skubumas",
+      "listingQuality": "Skelbimo kokybė",
+      "sellerReputation": "Pardavėjo reputacija",
+      "location": "Vieta",
+      "conditionVsPrice": "Būklė vs kaina"
+    },
+    "recommendation": {
+      "buy": "Rekomenduojama — tai geras sandoris.",
+      "watch": "Neblogai — verta stebėti, apsvarstykite derybas.",
+      "pass": "Praleisti — tikėtina, yra geresnių variantų."
+    }
+  },
+  "priceCurve": {
+    "title": "Kainos strategija",
+    "start": "Pradžia",
+    "current": "Dabartinė",
+    "floor": "Minimali",
+    "urgency": {
+      "ONE_DAY": "Parduoti šiandien",
+      "THREE_DAYS": "3 dienų planas",
+      "ONE_WEEK": "Savaitės planas",
+      "TWO_WEEKS": "2 savaičių planas",
+      "ONE_MONTH": "Mėnesio planas",
+      "NO_RUSH": "Neskubu"
+    }
+  },
+  "browse": {
+    "title": "Naršyti skelbimus",
+    "searchPlaceholder": "Ieškoti bet ko...",
+    "filters": "Filtrai",
+    "categories": "Kategorijos",
+    "priceRange": "Kainų diapazonas",
+    "condition": "Būklė",
+    "location": "Vieta",
+    "country": "Šalis",
+    "specifications": "Specifikacijos",
+    "results": "rezultatų",
+    "result": "rezultatas",
+    "for": "pagal",
+    "noResults": "Nieko nerasta",
+    "noResultsDesc": "Pabandykite pakeisti paieškos arba filtrų kriterijus",
+    "clearFilters": "Valyti filtrus",
+    "sort": {
+      "newest": "Naujausi pirmi",
+      "oldest": "Seniausi pirmi",
+      "priceAsc": "Kaina: nuo žemiausios",
+      "priceDesc": "Kaina: nuo aukščiausios",
+      "views": "Daugiausiai peržiūrų"
+    },
+    "view": {
+      "grid": "Tinklelis",
+      "list": "Sąrašas",
+      "map": "Žemėlapis"
+    },
+    "savedSearch": {
+      "save": "Išsaugoti paiešką",
+      "title": "Išsaugoti šią paiešką",
+      "description": "Gaukite pranešimą, kai nauji skelbimai atitiks jūsų kriterijus.",
+      "name": "Paieškos pavadinimas",
+      "namePlaceholder": "pvz., BMW X5 iki 25 tūkst. € Vilniuje",
+      "emailNotify": "Pranešti el. paštu apie naujus atitikmenis",
+      "criteria": "Jūsų paieškos kriterijai:",
+      "allListings": "Visi skelbimai",
+      "saved": "Išsaugota!",
+      "saving": "Saugoma..."
+    },
+    "agentPrompt": {
+      "title": "Leiskite AI agentui rasti geriausius pasiūlymus jums",
+      "titleWithQuery": "Leiskite AI agentui rasti \"{query}\" jums",
+      "description": "Nustatykite kriterijus, ir mūsų pirkimo agentas stebės 24/7, informuos apie gerus sandorius ir net derėsis jūsų vardu.",
+      "cta": "Sukurti pirkimo agentą"
+    },
+    "mapNoData": "Žemėlapio duomenų nėra",
+    "mapNoDataDesc": "Šie skelbimai neturi vietos koordinačių. Pabandykite perjungti į tinklelio arba sąrašo rodinį.",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "min": "Min",
+    "max": "Max",
+    "go": "Go",
+    "new": "New",
+    "used": "Used",
+    "refurbished": "Refurbished"
+  },
+  "liquidation": {
+    "title": "Masinė likvidacija",
+    "uploadDesc": "Įkelkite nuotraukas visų daiktų, kuriuos norite parduoti. Mūsų AI identifikuos kiekvieną daiktą ir pasiūlys kainas.",
+    "dropPhotos": "Paspauskite arba vilkite nuotraukas čia",
+    "analyzeItems": "Analizuoti daiktus",
+    "analyzingTitle": "Identifikuojami daiktai…",
+    "analyzingDesc": "Mūsų AI analizuoja nuotraukas, kad identifikuotų atskirus daiktus",
+    "identifiedItems": "Identifikuoti daiktai",
+    "selected": "pasirinkta",
+    "itemTitle": "Daikto pavadinimas",
+    "suggestedPrice": "AI rekomenduoja",
+    "deadline": "Pardavimo terminas visiems daiktams",
+    "urgency": {
+      "oneDay": "Parduoti šiandien",
+      "threeDays": "Per 3 dienas",
+      "oneWeek": "Šią savaitę",
+      "twoWeeks": "Per 2 savaites",
+      "oneMonth": "Šį mėnesį"
+    },
+    "back": "Atgal",
+    "publishAll": "Publikuoti visus",
+    "publishingTitle": "Publikuojami skelbimai…",
+    "publishingDesc": "Kuriami skelbimai ir aktyvuojami AI pardavimo agentai",
+    "doneTitle": "Viskas paruošta!",
+    "doneDesc": "{count} skelbimų su AI pardavimo agentais sukurta",
+    "createMore": "Parduoti daugiau"
+  },
+  "myListings": {
+    "title": "Mano skelbimai",
+    "subtitle": "Tvarkykite skelbimus, stebėkite rezultatus ir imkitės veiksmų",
+    "createNew": "Naujas skelbimas",
+    "filterByStatus": "Filtruoti pagal būseną",
+    "listingsCount": "skelbimų",
+    "empty": "Kol kas nėra skelbimų",
+    "emptyDesc": "Sukurkite pirmą skelbimą ir pradėkite pardavinėti",
+    "createFirst": "Sukurti pirmą skelbimą",
+    "edit": "Redaguoti",
+    "boost": "Iškelti",
+    "views": "peržiūros",
+    "messages": "žinutės",
+    "prev": "Ankstesnis",
+    "next": "Kitas",
+    "deleteTitle": "Ištrinti skelbimą",
+    "deleteDesc": "Ar tikrai norite ištrinti šį skelbimą? Šio veiksmo negalima atšaukti.",
+    "cancel": "Atšaukti",
+    "confirmDelete": "Ištrinti"
+  },
+  "analytics": {
+    "title": "Analitika",
+    "subtitle": "Stebėkite skelbimų rezultatus ir rinkos įžvalgas",
+    "totalViews": "Iš viso peržiūrų",
+    "totalInquiries": "Iš viso užklausų",
+    "conversionRate": "Užklausų rodiklis",
+    "activeListings": "Aktyvūs skelbimai",
+    "viewsOverTime": "Peržiūros per laikotarpį",
+    "last7Days": "Paskutinės 7 dienos",
+    "conversionTitle": "Užklausų konversija",
+    "conversionDesc": "Nuo peržiūrų iki užklausų",
+    "topPerforming": "Geriausiai sekasi",
+    "topPerformingDesc": "Daugiausia peržiūrų surinkę skelbimai pagal įsitraukimą",
+    "noListings": "Kol kas nėra skelbimų analizei",
+    "priceImpact": "Kainos pokyčių poveikis",
+    "priceImpactDesc": "Kaip kainodara veikia skelbimo matomumą",
+    "moreViews": "Populiarėja",
+    "lessViews": "Reikia dėmesio",
+    "noActiveListings": "Nėra aktyvių skelbimų analizei"
+  },
+  "savedSearches": {
+    "title": "Išsaugotos paieškos",
+    "subtitle": "Tvarkykite išsaugotas paieškas ir pranešimų nustatymus",
+    "newSearch": "Nauja paieška",
+    "empty": "Nėra išsaugotų paieškų",
+    "emptyDesc": "Išsaugokite paiešką paieškos puslapyje, kad gautumėte pranešimus apie naujus atitikmenis",
+    "goSearch": "Eiti į paiešką",
+    "notifyOn": "Pranešimai įjungti",
+    "notifyOff": "Pranešimai išjungti",
+    "noFilters": "Filtrai nepritaikyti",
+    "categoryFilter": "Kategorijos filtras",
+    "locationFilter": "Vietos filtras",
+    "allListings": "Visi skelbimai",
+    "lastNotified": "Paskutinis pranešimas",
+    "neverNotified": "Pranešimų nebuvo",
+    "run": "Vykdyti",
+    "deleteTitle": "Ištrinti išsaugotą paiešką",
+    "deleteDesc": "Ar tikrai norite ištrinti šią paiešką? Nebegausite pranešimų.",
+    "cancel": "Atšaukti",
+    "confirmDelete": "Ištrinti",
+    "editTitle": "Pervadinti paiešką",
+    "editDesc": "Įveskite naują pavadinimą šiai išsaugotai paieškai",
+    "searchName": "Paieškos pavadinimas",
+    "save": "Išsaugoti"
+  },
+  "editListing": {
+    "title": "Redaguoti skelbimą",
+    "subtitle": "Atnaujinkite skelbimo duomenis",
+    "backToListing": "Grįžti į skelbimą",
+    "currentPhotos": "Dabartinės nuotraukos",
+    "details": "Duomenys",
+    "titleLabel": "Pavadinimas",
+    "descriptionLabel": "Aprašymas",
+    "category": "Kategorija",
+    "categoryLabel": "Kategorija",
+    "selectCategory": "Pasirinkti kategoriją",
+    "subcategory": "Subkategorija",
+    "selectSubcategory": "Pasirinkti subkategoriją",
+    "conditionLabel": "Būklė",
+    "price": "Kaina",
+    "priceLabel": "Kaina",
+    "negotiable": "Kaina derinama",
+    "location": "Vieta",
+    "region": "Šalis / regionas",
+    "selectLocation": "Pasirinkite vietą",
+    "area": "Miestas / rajonas",
+    "selectArea": "Pasirinkite rajoną",
+    "contact": "Kontaktinė informacija",
+    "phone": "Telefonas (neprivaloma)",
+    "email": "El. paštas (neprivaloma)",
+    "cancel": "Atšaukti",
+    "saveChanges": "Išsaugoti pakeitimus",
+    "updated": "Skelbimas atnaujintas!",
+    "updatedDesc": "Pakeitimai išsaugoti. Peradresuojama...",
+    "errorTitleMin": "Pavadinimas turi būti bent 5 simbolių",
+    "errorDescMin": "Aprašymas turi būti bent 20 simbolių",
+    "errorPrice": "Įveskite tinkamą kainą",
+    "errorCategory": "Pasirinkite kategoriją"
+  },
+  "about": {
+    "title": "Apie Turgo",
+    "subtitle": "Agentais paremta skelbimų platforma, sukurta Baltijos regionui. Jungiame dirbtinį intelektą su gilia vietinės rinkos patirtimi.",
+    "mission": {
+      "title": "Mūsų misija",
+      "desc": "Mes iš naujo kuriame būdą, kaip žmonės perka ir parduoda internete. Sujungę pažangiausius AI agentus su giliu Baltijos rinkų supratimu, sukūrėme platformą, kur agentai dirba visą parą."
+    },
+    "story": {
+      "title": "Mūsų istorija",
+      "p1": "Turgo gimė iš paprasto nusivylimo: skelbimų platformos Baltijoje nebuvo pasikeitusios dešimtmečiais.",
+      "p2": "Paklausėme savęs: o jei AI agentai galėtų visa tai valdyti?",
+      "p3": "Ši vizija tapo Turgo — pirmąja agentais paremta skelbimų platforma Latvijai, Lietuvai ir Estijai."
+    },
+    "values": {
+      "title": "Pagrindinės vertybės",
+      "agentFirst": {
+        "title": "Agentas pirmiausiai",
+        "desc": "AI agentai yra visų mūsų produktų pagrindas."
+      },
+      "balticFocus": {
+        "title": "Baltijos fokusas",
+        "desc": "Sukurta Latvijai, Lietuvai ir Estijai."
+      },
+      "trustSafety": {
+        "title": "Pasitikėjimas ir saugumas",
+        "desc": "AI moderacija ir patvirtinti profiliai užtikrina saugią prekyvietę."
+      },
+      "innovation": {
+        "title": "Inovacijos",
+        "desc": "Mes stumiam ribas to, ką gali skelbimų platformos."
+      }
+    },
+    "market": {
+      "title": "Baltijos rinkos fokusas",
+      "desc": "Turgo veikia visose trijose Baltijos šalyse.",
+      "latvia": {
+        "flag": "🇱🇻",
+        "name": "Latvija",
+        "desc": "Rygos rinka su latvių ir rusų kalbos palaikymu"
+      },
+      "lithuania": {
+        "flag": "🇱🇹",
+        "name": "Lietuva",
+        "desc": "Vilnius, Kaunas ir toliau su pilnu lietuvių kalbos palaikymu"
+      },
+      "estonia": {
+        "flag": "🇪🇪",
+        "name": "Estija",
+        "desc": "Talinas ir Estijos regionai su estų kalbos palaikymu"
+      }
+    },
+    "tech": {
+      "title": "Technologijų akcentai",
+      "ai": {
+        "title": "AI agentai",
+        "desc": "Intelektualūs pardavimo ir pirkimo agentai."
+      },
+      "pricing": {
+        "title": "Išmani kainodara",
+        "desc": "Rinkos analizė realiuoju laiku."
+      },
+      "realtime": {
+        "title": "Momentiniai pranešimai",
+        "desc": "WebSocket pokalbiai su AI pagalba."
+      },
+      "i18n": {
+        "title": "5 kalbų palaikymas",
+        "desc": "Pilna lokalizacija anglų, latvių, lietuvių, estų ir rusų kalbomis."
+      }
+    },
+    "team": {
+      "title": "Mūsų komanda",
+      "desc": "Maža, bet stipri inžinierių, dizainerių ir Baltijos rinkos specialistų komanda."
+    },
+    "contact": {
+      "title": "Susisiekite su mumis",
+      "emailLabel": "Bendri klausimai",
+      "officeLabel": "Biuras",
+      "address": "Ryga, Latvija (nuotolinė komanda Baltijoje)",
+      "careersLabel": "Karjera",
+      "supportLabel": "Palaikymas"
+    }
+  },
+  "contact": {
+    "title": "Susisiekite su mumis",
+    "subtitle": "Turite klausimų, atsiliepimų ar bendradarbiavimo pasiūlymų? Mielai išklausysime.",
+    "form": {
+      "title": "Parašykite mums",
+      "name": "Jūsų vardas",
+      "namePlaceholder": "Jonas Jonaitis",
+      "email": "El. paštas",
+      "emailPlaceholder": "jonas@pavyzdys.lt",
+      "subject": "Tema",
+      "subjectPlaceholder": "Pasirinkite temą",
+      "subjects": {
+        "general": "Bendras klausimas",
+        "support": "Techninė pagalba",
+        "billing": "Mokėjimai ir sąskaitos",
+        "partnership": "Bendradarbiavimas",
+        "press": "Spauda ir medija",
+        "feedback": "Atsiliepimai ir pasiūlymai"
+      },
+      "message": "Žinutė",
+      "messagePlaceholder": "Papasakokite, kaip galime padėti...",
+      "send": "Siųsti žinutę",
+      "sending": "Siunčiama...",
+      "success": "Žinutė sėkmingai išsiųsta!",
+      "error": "Nepavyko išsiųsti. Bandykite dar kartą.",
+      "successTitle": "Žinutė išsiųsta!",
+      "successDesc": "Gavome jūsų žinutę ir atsakysime per 24 valandas.",
+      "sendAnother": "Siųsti dar vieną"
+    },
+    "info": {
+      "email": {
+        "title": "El. paštas"
+      },
+      "office": {
+        "title": "Biuras",
+        "address": "Ryga, Latvija"
+      },
+      "hours": {
+        "title": "Palaikymo valandos",
+        "value": "Pr.–Pn., 9:00–18:00 EET"
+      },
+      "languages": {
+        "title": "Kalbos",
+        "value": "EN, LV, LT, ET, RU"
+      }
+    },
+    "social": {
+      "title": "Sekite mus"
+    }
+  },
+  "help": {
+    "title": "Pagalbos centras",
+    "subtitle": "Raskite atsakymus į dažniausiai užduodamus klausimus apie Turgo.",
+    "cta": {
+      "title": "Vis dar reikia pagalbos?",
+      "desc": "Mūsų palaikymo komanda pasiruošusi jums padėti.",
+      "button": "Susisiekti su palaikymu"
+    },
+    "sections": {
+      "gettingStarted": {
+        "title": "Pradžia",
+        "q1": {
+          "q": "Kaip sukurti skelbimą?",
+          "a": "Paspauskite '+ Parduoti' navigacijoje. Mūsų AI pardavimo agentas padės jums žingsnis po žingsnio."
+        },
+        "q2": {
+          "q": "Kaip veikia AI agentai?",
+          "a": "Turgo AI agentai automatizuoja pirkimą ir pardavimą. Pardavimo agentai optimizuoja kainas ir atsako pirkėjams."
+        },
+        "q3": {
+          "q": "Kokie regionai ir kalbos palaikomi?",
+          "a": "Turgo apima Latviją, Lietuvą ir Estiją. Platforma pilnai lokalizuota 5 kalbomis."
+        }
+      },
+      "sellingAgents": {
+        "title": "Pardavimas su agentais",
+        "q1": {
+          "q": "Kaip AI agentas nustato kainas?",
+          "a": "Mūsų kainų variklis analizuoja panašius skelbimus visoje Baltijoje."
+        },
+        "q2": {
+          "q": "Ar galiu kontroliuoti agento veiksmus?",
+          "a": "Taip! Jūs nustatote taisykles — automatiniai atsakymai, derybos, minimali kaina."
+        },
+        "q3": {
+          "q": "Kas yra skelbimų padidinimas?",
+          "a": "Padidinimas padidina matomumą: paryškinimas, iškėlimas ir prismeildinimas viršuje."
+        }
+      },
+      "buyingAgents": {
+        "title": "Pirkimas su agentais",
+        "q1": {
+          "q": "Kaip nustatyti pirkimo agentą?",
+          "a": "Ieškokite norimo daikto ir paspauskite 'Sukurti pirkimo agentą'."
+        },
+        "q2": {
+          "q": "Kas yra sandorio įvertinimas?",
+          "a": "Sandorio įvertinimas (0–100) rodo, kaip geras pasiūlymas palyginti su rinka."
+        },
+        "q3": {
+          "q": "Ar agentas gali derėtis už mane?",
+          "a": "Taip, jei įjungsite automatines derybas."
+        }
+      },
+      "payments": {
+        "title": "Mokėjimai ir prenumeratos",
+        "q1": {
+          "q": "Ar Turgo nemokamas?",
+          "a": "Taip! Nemokamas planas apima iki 5 skelbimų ir 1 AI agentą."
+        },
+        "q2": {
+          "q": "Kaip valdyti prenumeratą?",
+          "a": "Eikite į Nustatymai arba Kainų puslapį."
+        },
+        "q3": {
+          "q": "Kokie mokėjimo būdai priimami?",
+          "a": "Priimame visas pagrindines kredito ir debeto korteles per Stripe."
+        }
+      },
+      "accountPrivacy": {
+        "title": "Paskyra ir privatumas",
+        "q1": {
+          "q": "Kaip saugomi mano duomenys?",
+          "a": "Turgo pilnai atitinka BDAR. Visi duomenys šifruojami."
+        },
+        "q2": {
+          "q": "Ar galiu eksportuoti savo duomenis?",
+          "a": "Taip. Eikite į Nustatymai > Duomenys ir privatumas."
+        },
+        "q3": {
+          "q": "Kaip ištrinti paskyrą?",
+          "a": "Eikite į Nustatymai > Duomenys ir privatumas ir paspauskite 'Ištrinti paskyrą'."
+        }
+      }
+    }
+  },
+  "messages": {
+    "title": "Messages",
+    "selectConversation": "Select a conversation",
+    "selectConversationDesc": "Choose a conversation from the list to start chatting"
+  }
 }

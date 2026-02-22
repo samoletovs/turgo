@@ -47,14 +47,25 @@
     "signIn": "Sign In",
     "signUp": "Sign Up",
     "signOut": "Sign Out",
-    "pricing": "Pricing"
+    "pricing": "Pricing",
+    "search": "Search",
+    "mobileNav": "Mobile navigation",
+    "searchPlaceholder": "What are you looking for?"
   },
   "home": {
     "hero": {
       "title": "Buy & Sell Smarter with AI Agents",
       "subtitle": "The first platform where intelligent agents work 24/7 to get you the best deal",
       "searchPlaceholder": "What are you looking for?",
-      "cta": "Start Selling with AI"
+      "cta": "Start Selling with AI",
+      "browseBelow": "or browse categories below ↓",
+      "agentName": "Turgo AI Agent",
+      "demoOnline": "● Online",
+      "demoUserMessage": "Sell my iPhone 15 Pro",
+      "demoSimilar": "23 similar listings",
+      "demoSuggestedPrice": "Suggested price: €849",
+      "demoAgentReply": "I'll handle everything!",
+      "demoListingCreated": "Listing created"
     },
     "featured": "Featured Listings",
     "recentlyAdded": "Recently Added",
@@ -96,6 +107,14 @@
         "title": "Close the Deal",
         "description": "Get notified when your agent finds the perfect buyer at the best price"
       }
+    },
+    "stats": {
+      "aiValue": "24/7",
+      "aiDesc": "AI agents working for you",
+      "smartValue": "Smart",
+      "smartDesc": "Dynamic pricing optimization",
+      "fastValue": "Fast",
+      "fastDesc": "Auto-respond to buyers instantly"
     }
   },
   "auth": {
@@ -178,7 +197,24 @@
         "PROHIBITED_ITEM": "Prohibited item",
         "OTHER": "Other"
       }
-    }
+    },
+    "featured": "Featured",
+    "photos": "photos",
+    "negotiable": "Price negotiable",
+    "seller": "Seller",
+    "memberSince": "Member since",
+    "aiAgent": "AI Selling Agent",
+    "status": "Status",
+    "active": "Active",
+    "autoResponding": "Auto-responding to inquiries",
+    "dynamicPricing": "Dynamic pricing enabled",
+    "safetyTips": "Safety tips",
+    "safetyTip1": "Meet in a safe, public place",
+    "safetyTip2": "Don't pay in advance",
+    "safetyTip3": "Inspect the item before paying",
+    "similarListings": "Similar Listings",
+    "noImage": "No image",
+    "favorites": "favorites"
   },
   "review": {
     "title": "Reviews",
@@ -309,7 +345,23 @@
       "inquiries": "Inquiries",
       "offers": "Offers",
       "priceChanges": "Price Changes"
-    }
+    },
+    "myAgents": "My AI Agents",
+    "manageAgents": "Manage your selling and buying agents",
+    "newSellingAgent": "New Selling Agent",
+    "noSellingAgents": "No selling agents",
+    "noSellingAgentsDesc": "Create a listing with an AI agent to automate pricing and responses",
+    "noBuyingAgents": "No buying agents",
+    "noBuyingAgentsDesc": "Set up a buying agent to automatically find deals matching your criteria",
+    "autoReply": "Auto-reply",
+    "autoPrice": "Auto-price",
+    "recentActivity": "Recent activity",
+    "viewListing": "View Listing",
+    "pause": "Pause",
+    "resume": "Resume",
+    "anyCategory": "Any category",
+    "budgetUpTo": "Budget: up to",
+    "recentMatches": "Recent matches"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -353,7 +405,15 @@
       "stop": "Stop",
       "viewListing": "View listing",
       "recentMatches": "Recent Matches"
-    }
+    },
+    "sell": "Sell",
+    "buy": "Buy",
+    "subscription": "Subscription",
+    "createSellingAgent": "Create Selling Agent",
+    "actions": "actions",
+    "buyingAgent": "Buying Agent",
+    "budget": "Budget:",
+    "matches": "matches"
   },
   "dealScore": {
     "title": "Deal Score",
@@ -438,7 +498,15 @@
       "cta": "Create Buying Agent"
     },
     "mapNoData": "No map data available",
-    "mapNoDataDesc": "These listings don't have location coordinates. Try switching to grid or list view."
+    "mapNoDataDesc": "These listings don't have location coordinates. Try switching to grid or list view.",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "min": "Min",
+    "max": "Max",
+    "go": "Go",
+    "new": "New",
+    "used": "Used",
+    "refurbished": "Refurbished"
   },
   "concierge": {
     "title": "AI Concierge",
@@ -449,7 +517,16 @@
       "Find me a good deal on a phone",
       "How does the AI agent work?",
       "What's the average price for..."
-    ]
+    ],
+    "online": "Online",
+    "mode": "mode",
+    "intentSell": "Selling mode — I'll help you list your item",
+    "intentBuy": "Buying mode — I'll help you find what you need",
+    "intentSupport": "Support mode — Let me help with your issue",
+    "intentBrowse": "Browse mode — Exploring listings",
+    "quickSell": "Sell an item",
+    "quickBuy": "Find a deal",
+    "quickBrowse": "Browse"
   },
   "pricing": {
     "title": "Choose Your Plan",
@@ -580,38 +657,90 @@
       "lastUpdated": "Last updated: February 2026",
       "toc": "Table of Contents",
       "sections": {
-        "acceptance": { "title": "Acceptance of Terms" },
-        "platform": { "title": "Platform Description" },
-        "accounts": { "title": "User Accounts & Obligations" },
-        "listings": { "title": "Listings & Content" },
-        "agents": { "title": "AI Agent Services" },
-        "payments": { "title": "Payments & Subscriptions" },
-        "ip": { "title": "Intellectual Property" },
-        "liability": { "title": "Limitation of Liability" },
-        "termination": { "title": "Termination" },
-        "governing": { "title": "Governing Law & Disputes" },
-        "gdpr": { "title": "Data Protection (GDPR)" },
-        "changes": { "title": "Changes to Terms" },
-        "contact": { "title": "Contact Information" }
+        "acceptance": {
+          "title": "Acceptance of Terms"
+        },
+        "platform": {
+          "title": "Platform Description"
+        },
+        "accounts": {
+          "title": "User Accounts & Obligations"
+        },
+        "listings": {
+          "title": "Listings & Content"
+        },
+        "agents": {
+          "title": "AI Agent Services"
+        },
+        "payments": {
+          "title": "Payments & Subscriptions"
+        },
+        "ip": {
+          "title": "Intellectual Property"
+        },
+        "liability": {
+          "title": "Limitation of Liability"
+        },
+        "termination": {
+          "title": "Termination"
+        },
+        "governing": {
+          "title": "Governing Law & Disputes"
+        },
+        "gdpr": {
+          "title": "Data Protection (GDPR)"
+        },
+        "changes": {
+          "title": "Changes to Terms"
+        },
+        "contact": {
+          "title": "Contact Information"
+        }
       }
     },
     "privacy": {
       "title": "Privacy Policy",
       "lastUpdated": "Last updated: February 2026",
       "sections": {
-        "controller": { "title": "Data Controller" },
-        "dataCollected": { "title": "Data We Collect" },
-        "purposes": { "title": "Purposes of Processing" },
-        "legalBases": { "title": "Legal Bases for Processing" },
-        "retention": { "title": "Data Retention Periods" },
-        "thirdParties": { "title": "Third-Party Data Sharing" },
-        "cookies": { "title": "Cookies & Tracking" },
-        "rights": { "title": "Your Data Protection Rights" },
-        "children": { "title": "Children's Privacy" },
-        "international": { "title": "International Data Transfers" },
-        "dpo": { "title": "Data Protection Officer" },
-        "complaint": { "title": "Right to Complain" },
-        "changes": { "title": "Changes to This Policy" }
+        "controller": {
+          "title": "Data Controller"
+        },
+        "dataCollected": {
+          "title": "Data We Collect"
+        },
+        "purposes": {
+          "title": "Purposes of Processing"
+        },
+        "legalBases": {
+          "title": "Legal Bases for Processing"
+        },
+        "retention": {
+          "title": "Data Retention Periods"
+        },
+        "thirdParties": {
+          "title": "Third-Party Data Sharing"
+        },
+        "cookies": {
+          "title": "Cookies & Tracking"
+        },
+        "rights": {
+          "title": "Your Data Protection Rights"
+        },
+        "children": {
+          "title": "Children's Privacy"
+        },
+        "international": {
+          "title": "International Data Transfers"
+        },
+        "dpo": {
+          "title": "Data Protection Officer"
+        },
+        "complaint": {
+          "title": "Right to Complain"
+        },
+        "changes": {
+          "title": "Changes to This Policy"
+        }
       }
     }
   },
@@ -620,15 +749,22 @@
     "subtitle": "Manage your account preferences",
     "profile": {
       "title": "Profile",
+      "description": "Manage your personal information and public profile",
       "name": "Display Name",
       "email": "Email Address",
+      "emailHint": "Email cannot be changed. Contact support if needed.",
       "phone": "Phone Number",
       "bio": "Bio",
+      "bioPlaceholder": "Tell other users a bit about yourself...",
+      "changeAvatar": "Change Photo",
+      "avatarHint": "JPG, PNG or GIF. Max 2MB.",
+      "avatarUpdated": "Avatar updated",
       "save": "Save Profile",
       "saved": "Profile saved successfully"
     },
     "locale": {
       "title": "Language & Region",
+      "description": "Set your preferred language, country, and currency",
       "language": "Language",
       "country": "Country",
       "currency": "Currency",
@@ -636,6 +772,7 @@
     },
     "notifications": {
       "title": "Notifications",
+      "description": "Choose how and when you want to be notified",
       "email": "Email Notifications",
       "emailDesc": "Receive email notifications for important updates",
       "push": "Push Notifications",
@@ -647,7 +784,9 @@
       "priceAlerts": "Price Alerts",
       "priceAlertsDesc": "Get notified about price changes on watched items",
       "marketing": "Marketing",
-      "marketingDesc": "Receive product updates and special offers"
+      "marketingDesc": "Receive product updates and special offers",
+      "saveBtn": "Save Preferences",
+      "saved": "Notification preferences saved"
     },
     "appearance": {
       "title": "Appearance",
@@ -658,16 +797,23 @@
     },
     "data": {
       "title": "Data & Privacy",
+      "privacy": "Privacy Preferences",
+      "privacyDesc": "Control how your data is used",
+      "marketingOptIn": "Marketing Communications",
+      "marketingOptInDesc": "Receive emails about new features, tips, and special offers",
       "export": "Export Your Data",
-      "exportDesc": "Download a copy of all your data in JSON format",
+      "exportDesc": "Download a copy of all your data in JSON format, including your profile, listings, messages, and agent history.",
       "exportBtn": "Export Data",
       "exporting": "Exporting...",
-      "exported": "Data export started. You'll receive an email with the download link.",
+      "exported": "Data exported successfully! Check your downloads.",
+      "exportError": "Failed to export data. Please try again.",
       "delete": "Delete Account",
-      "deleteDesc": "Permanently delete your account and all associated data. This action cannot be undone.",
+      "deleteDesc": "Permanently delete your account and all associated data. This will remove all your listings, agents, messages, and personal information. This action cannot be undone.",
       "deleteBtn": "Delete My Account",
-      "deleteConfirm": "Are you sure you want to delete your account? This will permanently remove all your data, listings, agents, and messages.",
-      "deleteConfirmBtn": "Yes, Delete My Account"
+      "deleteConfirm": "Are you sure? This will permanently remove all your data, listings, agents, and messages. This action is irreversible.",
+      "deleteTypeConfirm": "Type DELETE to confirm",
+      "deleteConfirmBtn": "Yes, Delete My Account",
+      "deleteSuccess": "Account deletion initiated. You will be signed out shortly."
     }
   },
   "verifyEmail": {
@@ -878,5 +1024,229 @@
     "errorDescMin": "Description must be at least 20 characters",
     "errorPrice": "Enter a valid price",
     "errorCategory": "Select a category"
+  },
+  "about": {
+    "title": "About Turgo",
+    "subtitle": "The agent-first classifieds platform built for the Baltic region. We combine AI intelligence with deep local market expertise.",
+    "mission": {
+      "title": "Our Mission",
+      "desc": "We're reimagining how people buy and sell online. By combining cutting-edge AI agents with a deep understanding of Baltic markets, we've built a platform where intelligent agents work 24/7 — optimizing pricing, matching buyers with sellers, and streamlining every transaction. Our goal is to make classifieds effortless, fair, and transparent for everyone."
+    },
+    "story": {
+      "title": "Our Story",
+      "p1": "Turgo was born from a simple frustration: classifieds platforms in the Baltics hadn't evolved in decades. Listings sat unoptimized, pricing was guesswork, and buyers had to manually sift through thousands of posts.",
+      "p2": "We asked ourselves: what if AI agents could handle all of that? What if a selling agent could dynamically price your items, respond to inquiries, and negotiate on your behalf — while a buying agent continuously searched for the best deals matching your criteria?",
+      "p3": "That vision became Turgo — the first agent-first classifieds platform purpose-built for Latvia, Lithuania, and Estonia. Today, our AI agents have helped thousands of users across the Baltics buy and sell smarter."
+    },
+    "values": {
+      "title": "Core Values",
+      "agentFirst": {
+        "title": "Agent-First",
+        "desc": "AI agents are at the core of everything we build. They work tirelessly so you don't have to."
+      },
+      "balticFocus": {
+        "title": "Baltic Focus",
+        "desc": "We're built for Latvia, Lithuania, and Estonia — with local languages, market data, and cultural nuances."
+      },
+      "trustSafety": {
+        "title": "Trust & Safety",
+        "desc": "AI-powered moderation, verified profiles, and transparent pricing keep the marketplace safe for everyone."
+      },
+      "innovation": {
+        "title": "Innovation",
+        "desc": "We push the boundaries of what classifieds can be, leveraging the latest advances in AI and real-time technology."
+      }
+    },
+    "market": {
+      "title": "Baltic Market Focus",
+      "desc": "Turgo operates across all three Baltic states, providing a unified marketplace with localized content, pricing intelligence, and language support for each country.",
+      "latvia": {
+        "flag": "🇱🇻",
+        "name": "Latvia",
+        "desc": "Riga-centered marketplace with Latvian and Russian language support"
+      },
+      "lithuania": {
+        "flag": "🇱🇹",
+        "name": "Lithuania",
+        "desc": "Vilnius, Kaunas, and beyond with full Lithuanian language support"
+      },
+      "estonia": {
+        "flag": "🇪🇪",
+        "name": "Estonia",
+        "desc": "Tallinn and Estonian regions with Estonian language support"
+      }
+    },
+    "tech": {
+      "title": "Technology Highlights",
+      "ai": {
+        "title": "AI-Powered Agents",
+        "desc": "Intelligent selling and buying agents that negotiate, optimize pricing, and match users 24/7."
+      },
+      "pricing": {
+        "title": "Smart Pricing Engine",
+        "desc": "Real-time market analysis with dynamic price curves adapting to urgency, demand, and competition."
+      },
+      "realtime": {
+        "title": "Real-Time Messaging",
+        "desc": "WebSocket-powered instant messaging with AI-assisted responses and offer management."
+      },
+      "i18n": {
+        "title": "5-Language Support",
+        "desc": "Full localization in English, Latvian, Lithuanian, Estonian, and Russian with auto-translation."
+      }
+    },
+    "team": {
+      "title": "Our Team",
+      "desc": "We're a small but mighty team of engineers, designers, and Baltic market specialists passionate about making buying and selling smarter. Based across the Baltics, we combine deep technical expertise with intimate knowledge of local markets."
+    },
+    "contact": {
+      "title": "Get in Touch",
+      "emailLabel": "General Inquiries",
+      "officeLabel": "Office",
+      "address": "Riga, Latvia (Remote-first team across the Baltics)",
+      "careersLabel": "Careers",
+      "supportLabel": "Support"
+    }
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Have questions, feedback, or partnership inquiries? We'd love to hear from you.",
+    "form": {
+      "title": "Send us a message",
+      "name": "Your Name",
+      "namePlaceholder": "John Smith",
+      "email": "Email Address",
+      "emailPlaceholder": "john@example.com",
+      "subject": "Subject",
+      "subjectPlaceholder": "Select a topic",
+      "subjects": {
+        "general": "General Inquiry",
+        "support": "Technical Support",
+        "billing": "Billing & Payments",
+        "partnership": "Partnership",
+        "press": "Press & Media",
+        "feedback": "Feedback & Suggestions"
+      },
+      "message": "Message",
+      "messagePlaceholder": "Tell us how we can help...",
+      "send": "Send Message",
+      "sending": "Sending...",
+      "success": "Message sent successfully!",
+      "error": "Failed to send message. Please try again.",
+      "successTitle": "Message Sent!",
+      "successDesc": "We've received your message and will get back to you within 24 hours.",
+      "sendAnother": "Send Another Message"
+    },
+    "info": {
+      "email": {
+        "title": "Email"
+      },
+      "office": {
+        "title": "Office",
+        "address": "Riga, Latvia (Remote-first across Baltics)"
+      },
+      "hours": {
+        "title": "Support Hours",
+        "value": "Mon–Fri, 9:00–18:00 EET"
+      },
+      "languages": {
+        "title": "Languages",
+        "value": "EN, LV, LT, ET, RU"
+      }
+    },
+    "social": {
+      "title": "Follow Us"
+    }
+  },
+  "help": {
+    "title": "Help Center",
+    "subtitle": "Find answers to common questions about using Turgo.",
+    "cta": {
+      "title": "Still need help?",
+      "desc": "Our support team is ready to assist you with any questions not covered here.",
+      "button": "Contact Support"
+    },
+    "sections": {
+      "gettingStarted": {
+        "title": "Getting Started",
+        "q1": {
+          "q": "How do I create a listing?",
+          "a": "Click the '+ Sell' button in the navigation bar. Our AI selling agent will guide you step-by-step: describe your item, set a price (with AI-suggested pricing), upload photos, and choose your selling strategy. You can also create listings manually if you prefer."
+        },
+        "q2": {
+          "q": "How do AI agents work?",
+          "a": "Turgo's AI agents work behind the scenes to automate buying and selling. Selling agents optimize your listing pricing, auto-respond to buyer inquiries, and can negotiate on your behalf 24/7. Buying agents continuously scan for items matching your criteria and alert you when great deals appear."
+        },
+        "q3": {
+          "q": "What regions and languages are supported?",
+          "a": "Turgo covers Latvia, Lithuania, and Estonia. The platform is fully localized in English, Latvian (Latviešu), Lithuanian (Lietuvių), Estonian (Eesti), and Russian (Русский). AI agents can auto-translate listings between languages."
+        }
+      },
+      "sellingAgents": {
+        "title": "Selling with Agents",
+        "q1": {
+          "q": "How does the AI selling agent price my items?",
+          "a": "Our pricing engine analyzes comparable listings across Baltic classifieds, factors in item condition, category trends, and market demand to suggest an optimal starting price. Once active, the agent can dynamically adjust pricing based on your urgency setting and buyer interest."
+        },
+        "q2": {
+          "q": "Can I control what the selling agent does?",
+          "a": "Yes! You set the rules. Choose whether the agent can auto-respond to inquiries, enable or disable auto-negotiation, set a minimum acceptable price, and control the urgency level (from 'sell today' to 'no rush'). You can pause or stop the agent at any time."
+        },
+        "q3": {
+          "q": "What are listing boosts?",
+          "a": "Boosts increase your listing's visibility. 'Highlighted' adds a colored border in search results, 'Featured' places your listing on the homepage, and 'Top Placement' pins it to the top of search results. Pro and Business plans include boost credits."
+        }
+      },
+      "buyingAgents": {
+        "title": "Buying with Agents",
+        "q1": {
+          "q": "How do I set up a buying agent?",
+          "a": "Search for what you want, then click 'Create Buying Agent' in the search results. Define your criteria — category, price range, condition, location — and set your maximum budget. The agent will monitor listings 24/7 and notify you of matches."
+        },
+        "q2": {
+          "q": "What is the Deal Score?",
+          "a": "The Deal Score (0–100) rates how good a deal is compared to the market. It considers price vs. market average, time on market, seller urgency, listing quality, and seller reputation. Scores above 75 are considered great deals."
+        },
+        "q3": {
+          "q": "Can the buying agent negotiate for me?",
+          "a": "Yes, if you enable auto-negotiate. Set your target price and maximum offer, and the agent will automatically send offers and counter-offers on your behalf. You'll be notified of any accepted deals."
+        }
+      },
+      "payments": {
+        "title": "Payments & Subscriptions",
+        "q1": {
+          "q": "Is Turgo free to use?",
+          "a": "Yes! The Free plan includes up to 5 listings, 1 AI agent, and 5 photos per listing. Upgrade to Pro (€9.99/month) for 50 listings and unlimited agents, or Business (€29.99/month) for unlimited everything plus API access and priority support."
+        },
+        "q2": {
+          "q": "How do I manage my subscription?",
+          "a": "Go to Settings > Data & Privacy or visit the Pricing page. You can upgrade, downgrade, or cancel your plan at any time. Billing is handled securely through Stripe. Yearly subscriptions include a 20% discount."
+        },
+        "q3": {
+          "q": "What payment methods are accepted?",
+          "a": "We accept all major credit and debit cards (Visa, Mastercard, Amex) via Stripe. Payments between buyers and sellers are handled directly between parties — Turgo facilitates the connection but does not process purchase payments."
+        }
+      },
+      "accountPrivacy": {
+        "title": "Account & Privacy",
+        "q1": {
+          "q": "How is my data protected?",
+          "a": "Turgo is fully GDPR-compliant. We encrypt all data in transit and at rest, never sell your personal information, and give you full control over your data. You can export or delete your data at any time from Settings."
+        },
+        "q2": {
+          "q": "Can I export my data?",
+          "a": "Yes. Go to Settings > Data & Privacy and click 'Export Data'. You'll receive a JSON file containing all your account information, listings, messages, and agent history."
+        },
+        "q3": {
+          "q": "How do I delete my account?",
+          "a": "Go to Settings > Data & Privacy and click 'Delete My Account'. You'll need to type 'DELETE' to confirm. This permanently removes all your data, listings, agents, and messages. This action cannot be undone."
+        }
+      }
+    }
+  },
+  "messages": {
+    "title": "Messages",
+    "selectConversation": "Select a conversation",
+    "selectConversationDesc": "Choose a conversation from the list to start chatting"
   }
 }

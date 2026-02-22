@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { searchSuggestions } from "@/server/services/search";
 import { db } from "@/server/db";
+import { rateLimit } from "@/lib/rate-limit";
 
 /**
  * GET /api/search/suggest?q=...
@@ -9,6 +10,27 @@ import { db } from "@/server/db";
  * or database fallback.
  */
 export async function GET(request: NextRequest) {
+  // Rate limit: 30 requests per minute per IP
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "anonymous";
+  const rl = await rateLimit({
+    key: `suggest:${ip}`,
+    limit: 30,
+    windowMs: 60_000,
+  });
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rl.reset - Date.now()) / 1000)),
+        },
+      },
+    );
+  }
+
   const q = request.nextUrl.searchParams.get("q")?.trim();
 
   if (!q || q.length < 2) {
@@ -50,7 +72,10 @@ export async function GET(request: NextRequest) {
     const results = [
       ...listings.map((l) => ({ text: l.title, type: "listing" as const })),
       ...categories.map((c) => ({
-        text: typeof c.name === "object" ? (c.name as Record<string, string>).en || c.slug : String(c.name),
+        text:
+          typeof c.name === "object"
+            ? (c.name as Record<string, string>).en || c.slug
+            : String(c.name),
         type: "category" as const,
         slug: c.slug,
       })),

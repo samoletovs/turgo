@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   Search,
@@ -107,9 +107,9 @@ export function SearchPageClient({
         if (value) params.set(key, value);
         else params.delete(key);
       }
-      return `/${locale}/search?${params.toString()}`;
+      return `/search?${params.toString()}`;
     },
-    [locale, searchParams],
+    [searchParams],
   );
 
   // Sort handler
@@ -393,7 +393,7 @@ function ListView({
       {listings.map((listing) => (
         <Link
           key={listing.id}
-          href={`/${locale}/listing/${listing.slug}`}
+          href={`/listing/${listing.slug}`}
           className="group flex gap-4 rounded-xl border bg-card p-3 transition-all hover:shadow-md"
         >
           {/* Image */}
@@ -512,7 +512,7 @@ function MapView({
           <div className="mt-4 flex gap-2">
             <Button variant="outline" size="sm" asChild>
               <Link
-                href={`/${locale}/search?${new URLSearchParams({ ...Object.fromEntries(Object.entries({}).filter(([, v]) => v)), view: "grid" }).toString()}`}
+                href={`/search?${new URLSearchParams({ ...Object.fromEntries(Object.entries({}).filter(([, v]) => v)), view: "grid" }).toString()}`}
               >
                 <Grid3X3 className="h-3.5 w-3.5 mr-1" /> Grid View
               </Link>
@@ -588,10 +588,7 @@ function LeafletMap({
               >
                 <X className="h-3 w-3" />
               </button>
-              <Link
-                href={`/${locale}/listing/${selected.slug}`}
-                className="flex gap-3"
-              >
+              <Link href={`/listing/${selected.slug}`} className="flex gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={selected.imageUrl}
@@ -863,12 +860,12 @@ function EmptyState({ query, locale }: { query?: string; locale: string }) {
       </p>
       <div className="flex flex-col items-center gap-3 sm:flex-row">
         <Button variant="outline" asChild>
-          <Link href={`/${locale}/search`}>
+          <Link href="/search">
             <RotateCcw className="mr-1 h-4 w-4" /> Clear Filters
           </Link>
         </Button>
         <Button asChild>
-          <Link href={`/${locale}/sell`}>
+          <Link href="/sell">
             <Sparkles className="mr-1 h-4 w-4" /> Sell Something
           </Link>
         </Button>
@@ -907,7 +904,7 @@ function AgentPromptBanner({
         </div>
         <Button size="sm" className="shrink-0 gap-1.5" asChild>
           <Link
-            href={`/${locale}/dashboard/agents?action=create-buying${
+            href={`/dashboard/agents?action=create-buying${
               query ? `&keywords=${encodeURIComponent(query)}` : ""
             }${filters.category ? `&category=${filters.category}` : ""}${
               filters.maxPrice ? `&maxPrice=${filters.maxPrice}` : ""

@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Bot, CheckCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const container = {
   hidden: {},
@@ -36,6 +37,8 @@ const soldBadge = {
 };
 
 export function HeroAnimation() {
+  const t = useTranslations("home");
+
   return (
     <div className="relative mx-auto w-full max-w-sm lg:max-w-md">
       {/* Phone frame */}
@@ -46,8 +49,8 @@ export function HeroAnimation() {
             <Bot className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <p className="text-sm font-semibold">Turgo AI Agent</p>
-            <p className="text-xs text-green-500">● Online</p>
+            <p className="text-sm font-semibold">{t("hero.agentName")}</p>
+            <p className="text-xs text-green-500">{t("hero.demoOnline")}</p>
           </div>
         </div>
 
@@ -62,7 +65,7 @@ export function HeroAnimation() {
           {/* User bubble */}
           <motion.div variants={bubble} className="flex justify-end">
             <div className="max-w-[75%] rounded-2xl rounded-br-sm bg-primary px-4 py-2.5 text-sm text-primary-foreground shadow-sm">
-              Sell my iPhone 15 Pro
+              {t("hero.demoUserMessage")}
             </div>
           </motion.div>
 
@@ -70,14 +73,13 @@ export function HeroAnimation() {
           <motion.div variants={bubble} className="flex justify-start">
             <div className="max-w-[80%] rounded-2xl rounded-bl-sm bg-muted px-4 py-2.5 text-sm text-foreground shadow-sm">
               <p>
-                I found{" "}
-                <span className="font-semibold text-primary">
-                  23 similar listings
+                {t("hero.demoSimilar")}{" "}
+                <span className="font-semibold">
+                  {t("hero.demoSuggestedPrice")}
                 </span>
-                . Suggested price: <span className="font-semibold">€849</span>.
               </p>
               <p className="mt-1 text-muted-foreground">
-                I&apos;ll handle everything!
+                {t("hero.demoAgentReply")}
               </p>
             </div>
           </motion.div>
@@ -97,7 +99,7 @@ export function HeroAnimation() {
               />
             </div>
             <span className="text-xs text-muted-foreground">
-              Listing created
+              {t("hero.demoListingCreated")}
             </span>
           </motion.div>
         </motion.div>

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { db } from "@/server/db";
 import { ListingCard } from "@/components/listing-card";
@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { getLocalizedName } from "@/lib/utils";
+import { BreadcrumbJsonLd } from "@/components/json-ld";
+import { APP_URL } from "@/lib/constants";
 
 /* ── Fallback category catalogue (matches seed data) ── */
 const FALLBACK_CATEGORIES: {
@@ -1027,18 +1029,34 @@ export default async function CategoryPage({
 
   const totalPages = Math.ceil(totalCount / perPage);
 
+  // Build breadcrumb items for JSON-LD
+  const breadcrumbItems = [{ name: "Home", url: `${APP_URL}/${locale}` }];
+  if (category.parent) {
+    breadcrumbItems.push({
+      name: getLocalizedName(category.parent.name, locale),
+      url: `${APP_URL}/${locale}/category/${category.parent.slug}`,
+    });
+  }
+  breadcrumbItems.push({
+    name: getLocalizedName(category.name, locale),
+    url: `${APP_URL}/${locale}/category/${slug}`,
+  });
+
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Structured data */}
+      <BreadcrumbJsonLd items={breadcrumbItems} />
+
       {/* Breadcrumb */}
       <nav className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href={`/${locale}`} className="hover:text-foreground">
+        <Link href="/" className="hover:text-foreground">
           Home
         </Link>
         <ChevronRight className="h-3 w-3" />
         {category.parent && (
           <>
             <Link
-              href={`/${locale}/category/${category.parent.slug}`}
+              href={`/category/${category.parent.slug}`}
               className="hover:text-foreground"
             >
               {getLocalizedName(category.parent.name, locale)}
@@ -1062,7 +1080,7 @@ export default async function CategoryPage({
       {category.children.length > 0 && (
         <div className="mb-8 flex flex-wrap gap-2">
           {category.children.map((sub) => (
-            <Link key={sub.id} href={`/${locale}/category/${sub.slug}`}>
+            <Link key={sub.id} href={`/category/${sub.slug}`}>
               <Badge
                 variant="outline"
                 className="cursor-pointer px-3 py-1.5 text-sm hover:bg-muted"
@@ -1084,7 +1102,7 @@ export default async function CategoryPage({
           <p className="text-muted-foreground">
             Be the first to post in this category
           </p>
-          <Link href={`/${locale}/sell`}>
+          <Link href="/sell">
             <Button className="mt-4">Post a listing</Button>
           </Link>
         </div>
@@ -1098,7 +1116,9 @@ export default async function CategoryPage({
                 title: listing.title,
                 price: listing.price,
                 currency: listing.currency,
-                location: String(listing.location?.name || ""),
+                location: listing.location
+                  ? getLocalizedName(listing.location.name, locale)
+                  : "",
                 imageUrl: listing.images[0]?.url || "/placeholder.jpg",
                 imageCount: listing.images.length,
                 createdAt: listing.createdAt,
@@ -1116,7 +1136,7 @@ export default async function CategoryPage({
       {totalPages > 1 && (
         <div className="mt-8 flex items-center justify-center gap-2">
           {page > 1 && (
-            <Link href={`/${locale}/category/${slug}?page=${page - 1}`}>
+            <Link href={`/category/${slug}?page=${page - 1}`}>
               <Button variant="outline" size="sm">
                 Previous
               </Button>
@@ -1126,7 +1146,7 @@ export default async function CategoryPage({
             Page {page} of {totalPages}
           </span>
           {page < totalPages && (
-            <Link href={`/${locale}/category/${slug}?page=${page + 1}`}>
+            <Link href={`/category/${slug}?page=${page + 1}`}>
               <Button variant="outline" size="sm">
                 Next
               </Button>

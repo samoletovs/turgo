@@ -77,7 +77,22 @@ export const mockDb = {
   review: createMockPrismaModel(),
   marketSnapshot: createMockPrismaModel(),
   agentMatch: createMockPrismaModel(),
-  $transaction: vi.fn((fn: (tx: unknown) => unknown) => fn(mockDb)),
+  savedSearch: createMockPrismaModel(),
+  plan: createMockPrismaModel(),
+  listingBoost: createMockPrismaModel(),
+  moderationLog: createMockPrismaModel(),
+  report: createMockPrismaModel(),
+  userWarning: createMockPrismaModel(),
+  userBan: createMockPrismaModel(),
+  escalationItem: createMockPrismaModel(),
+  searchLog: createMockPrismaModel(),
+  agentMetrics: createMockPrismaModel(),
+  $transaction: vi.fn((fnOrArray: unknown) => {
+    if (typeof fnOrArray === "function") return fnOrArray(mockDb);
+    if (Array.isArray(fnOrArray)) return Promise.all(fnOrArray);
+    return fnOrArray;
+  }),
+  $queryRaw: vi.fn().mockResolvedValue([]),
   $connect: vi.fn(),
   $disconnect: vi.fn(),
 };

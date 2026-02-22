@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Heart } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/server/db";
@@ -43,7 +43,7 @@ export default async function FavoritesPage({ params }: FavoritesPageProps) {
             Browse listings and tap the heart icon to save your favorites
           </p>
           <Link
-            href={`/${locale}/search`}
+            href="/search"
             className="mt-4 inline-block text-primary underline"
           >
             Browse listings
@@ -51,7 +51,7 @@ export default async function FavoritesPage({ params }: FavoritesPageProps) {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {favorites.map((fav: typeof favorites[number]) => (
+          {favorites.map((fav: (typeof favorites)[number]) => (
             <ListingCard
               key={fav.id}
               listing={{
@@ -63,7 +63,10 @@ export default async function FavoritesPage({ params }: FavoritesPageProps) {
                 imageUrl: fav.listing.images[0]?.url || "/placeholder.jpg",
                 imageCount: fav.listing.images.length,
                 createdAt: fav.listing.createdAt,
-                isFeatured: fav.listing.boosts.some((b: typeof fav.listing.boosts[number]) => b.type === "FEATURED"),
+                isFeatured: fav.listing.boosts.some(
+                  (b: (typeof fav.listing.boosts)[number]) =>
+                    b.type === "FEATURED",
+                ),
                 hasAgent: false,
                 slug: fav.listing.slug,
               }}

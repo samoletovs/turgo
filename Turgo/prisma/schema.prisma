@@ -316,6 +316,7 @@ model Listing {
   @@index([status])
   @@index([createdAt])
   @@index([price])
+  @@index([status, createdAt])
 }
 
 model ListingImage {
@@ -553,6 +554,7 @@ model Subscription {
   status               SubscriptionStatus @default(ACTIVE)
   stripeSubscriptionId String?
   stripeCustomerId     String?
+  stripeEventId        String?            @unique
   currentPeriodStart   DateTime?
   currentPeriodEnd     DateTime?
   cancelAtPeriodEnd    Boolean            @default(false)
@@ -573,6 +575,7 @@ model ListingBoost {
   startAt         DateTime  @default(now())
   endAt           DateTime
   stripePaymentId String?
+  stripeEventId   String?   @unique
 
   listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 

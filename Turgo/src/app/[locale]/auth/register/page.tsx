@@ -2,7 +2,7 @@
 
 import { use, useState } from "react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -192,10 +192,7 @@ export default function RegisterPage({
                 className="text-sm font-normal leading-snug"
               >
                 {t("gdprConsent")}{" "}
-                <Link
-                  href={`/${locale}/privacy`}
-                  className="text-primary underline"
-                >
+                <Link href="/privacy" className="text-primary underline">
                   {t("privacyPolicy")}
                 </Link>
               </Label>
@@ -279,10 +276,7 @@ export default function RegisterPage({
 
           <p className="text-center text-sm text-muted-foreground">
             {t("alreadyHaveAccount")}{" "}
-            <Link
-              href={`/${locale}/auth/signin`}
-              className="text-primary underline"
-            >
+            <Link href="/auth/signin" className="text-primary underline">
               {t("signIn")}
             </Link>
           </p>

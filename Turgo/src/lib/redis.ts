@@ -17,11 +17,32 @@ export const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 // ── Singleton state ──────────────────────────────────────────
 let redis: IORedis | null = null;
 let redisUnavailable = false;
+let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** How long to wait before retrying a failed Redis connection (ms). */
+const RETRY_INTERVAL_MS = 60_000;
+
+/**
+ * Schedule a one-shot retry that clears the `redisUnavailable` flag so the
+ * next `getRedis()` call will attempt to reconnect.
+ */
+function scheduleRetry() {
+  if (retryTimer) return; // already scheduled
+  retryTimer = setTimeout(() => {
+    retryTimer = null;
+    redisUnavailable = false;
+    redis = null;
+    console.info(
+      "[redis] Retry window opened — next call will attempt reconnect.",
+    );
+  }, RETRY_INTERVAL_MS);
+}
 
 /**
  * Return the shared IORedis instance, or `null` when Redis is not
  * configured / not reachable.  The connection is created lazily on the
- * first call and reused afterwards.
+ * first call and reused afterwards.  On failure the connection is retried
+ * after RETRY_INTERVAL_MS instead of being permanently disabled.
  */
 export async function getRedis(): Promise<IORedis | null> {
   if (redisUnavailable) return null;
@@ -37,8 +58,12 @@ export async function getRedis(): Promise<IORedis | null> {
     await redis.connect();
     return redis;
   } catch (err) {
-    console.warn("[redis] Connection failed — Redis features disabled:", err);
+    console.warn(
+      "[redis] Connection failed — Redis features disabled for 60 s:",
+      err,
+    );
     redisUnavailable = true;
+    scheduleRetry();
     return null;
   }
 }

@@ -1,10 +1,16 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { Check, Zap, Crown, Building2, X } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/server/db";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
 import { PricingCheckoutButton } from "./pricing-client";
@@ -14,7 +20,10 @@ interface PricingPageProps {
   searchParams: Promise<{ checkout?: string; interval?: string }>;
 }
 
-export default async function PricingPage({ params, searchParams }: PricingPageProps) {
+export default async function PricingPage({
+  params,
+  searchParams,
+}: PricingPageProps) {
   const { locale } = await params;
   const { checkout, interval } = await searchParams;
   const t = await getTranslations("pricing");
@@ -27,9 +36,9 @@ export default async function PricingPage({ params, searchParams }: PricingPageP
 
   const showYearly = interval === "yearly";
   const displayPlans = plans.filter(
-    (p: typeof plans[number]) =>
+    (p: (typeof plans)[number]) =>
       p.name === "FREE" ||
-      (showYearly ? p.interval === "YEARLY" : p.interval === "MONTHLY")
+      (showYearly ? p.interval === "YEARLY" : p.interval === "MONTHLY"),
   );
 
   let currentPlanName: string | null = null;
@@ -41,7 +50,10 @@ export default async function PricingPage({ params, searchParams }: PricingPageP
     currentPlanName = sub?.plan.name || null;
   }
 
-  const planFeatures: Record<string, { included: string[]; excluded?: string[] }> = {
+  const planFeatures: Record<
+    string,
+    { included: string[]; excluded?: string[] }
+  > = {
     FREE: {
       included: [
         "5 active listings",
@@ -119,27 +131,33 @@ export default async function PricingPage({ params, searchParams }: PricingPageP
 
         <div className="mt-6 inline-flex items-center gap-3 rounded-lg border p-1">
           <Link
-            href={`/${locale}/pricing`}
+            href="/pricing"
             className={`rounded-md px-4 py-2 text-sm font-medium transition ${
-              !showYearly ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              !showYearly
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             Monthly
           </Link>
           <Link
-            href={`/${locale}/pricing?interval=yearly`}
+            href="/pricing?interval=yearly"
             className={`rounded-md px-4 py-2 text-sm font-medium transition ${
-              showYearly ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              showYearly
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             Yearly
-            <Badge variant="secondary" className="ml-2 text-xs">Save 20%</Badge>
+            <Badge variant="secondary" className="ml-2 text-xs">
+              Save 20%
+            </Badge>
           </Link>
         </div>
       </div>
 
       <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-        {displayPlans.map((plan: typeof displayPlans[number]) => {
+        {displayPlans.map((plan: (typeof displayPlans)[number]) => {
           const isCurrent = currentPlanName === plan.name;
           const isPro = plan.name === "PRO";
           const features = planFeatures[plan.name];
@@ -177,13 +195,19 @@ export default async function PricingPage({ params, searchParams }: PricingPageP
               <CardContent className="flex flex-1 flex-col">
                 <ul className="flex-1 space-y-3">
                   {features?.included.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2 text-sm">
+                    <li
+                      key={feature}
+                      className="flex items-start gap-2 text-sm"
+                    >
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
                       {feature}
                     </li>
                   ))}
                   {features?.excluded?.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <li
+                      key={feature}
+                      className="flex items-start gap-2 text-sm text-muted-foreground"
+                    >
                       <X className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/50" />
                       {feature}
                     </li>
@@ -199,10 +223,17 @@ export default async function PricingPage({ params, searchParams }: PricingPageP
                       Free forever
                     </Button>
                   ) : session?.user ? (
-                    <PricingCheckoutButton planId={plan.id} planName={plan.name} isPro={isPro} />
+                    <PricingCheckoutButton
+                      planId={plan.id}
+                      planName={plan.name}
+                      isPro={isPro}
+                    />
                   ) : (
-                    <Link href={`/${locale}/auth/register`}>
-                      <Button className="w-full" variant={isPro ? "default" : "outline"}>
+                    <Link href="/auth/register">
+                      <Button
+                        className="w-full"
+                        variant={isPro ? "default" : "outline"}
+                      >
                         Get Started
                       </Button>
                     </Link>
@@ -216,7 +247,9 @@ export default async function PricingPage({ params, searchParams }: PricingPageP
 
       {/* FAQ Section */}
       <div className="mx-auto mt-20 max-w-2xl">
-        <h2 className="mb-8 text-center text-2xl font-bold">Frequently Asked Questions</h2>
+        <h2 className="mb-8 text-center text-2xl font-bold">
+          Frequently Asked Questions
+        </h2>
         <div className="space-y-6">
           {[
             {

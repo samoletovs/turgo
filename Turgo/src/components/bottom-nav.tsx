@@ -1,6 +1,8 @@
 "use client";
 
 import { House, Search, Plus, MessageSquare, User } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useSession } from "next-auth/react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
@@ -16,27 +18,30 @@ interface Tab {
   fab?: boolean;
 }
 
-const tabs: Tab[] = [
-  { href: "/", label: "Home", icon: House },
-  { href: "/search", label: "Search", icon: Search },
-  { href: "/sell", label: "Sell", icon: Plus, fab: true },
-  { href: "/messages", label: "Messages", icon: MessageSquare },
-  { href: "/profile", label: "Profile", icon: User },
-];
-
 export function BottomNav({ locale: _locale }: BottomNavProps) {
   const pathname = usePathname();
+  const t = useTranslations("nav");
+  const { data: session } = useSession();
+
+  const tabs: Tab[] = [
+    { href: "/", label: t("home"), icon: House },
+    { href: "/search", label: t("search"), icon: Search },
+    { href: "/sell", label: t("sell"), icon: Plus, fab: true },
+    { href: "/messages", label: t("messages"), icon: MessageSquare },
+    { href: "/profile", label: t("profile"), icon: User },
+  ];
 
   // Lightweight tRPC query for unread message count
   const { data: unreadCount } = trpc.message.unreadCount.useQuery(undefined, {
     refetchInterval: 30_000,
     retry: false,
+    enabled: !!session,
   });
 
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-[env(safe-area-inset-bottom)] md:hidden"
-      aria-label="Mobile navigation"
+      aria-label={t("mobileNav")}
     >
       <ul className="mx-auto flex h-16 max-w-lg items-end justify-around px-2">
         {tabs.map((tab) => {
@@ -71,7 +76,7 @@ export function BottomNav({ locale: _locale }: BottomNavProps) {
                     <Icon className="h-5 w-5" />
 
                     {/* Unread badge on Messages tab */}
-                    {tab.label === "Messages" &&
+                    {tab.href === "/messages" &&
                       typeof unreadCount === "number" &&
                       unreadCount > 0 && (
                         <span className="absolute -right-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground">

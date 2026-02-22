@@ -16,13 +16,27 @@ export async function POST(req: NextRequest) {
     console.error("[STRIPE_WEBHOOK] Signature verification failed:", err);
     return NextResponse.json(
       { error: "Webhook signature verification failed" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   try {
     switch (event.type) {
       case "checkout.session.completed": {
+        // Idempotency check: skip if event already processed
+        const existingBoost = await db.listingBoost.findUnique({
+          where: { stripeEventId: event.id },
+        });
+        const existingSub = await db.subscription.findUnique({
+          where: { stripeEventId: event.id },
+        });
+        if (existingBoost || existingSub) {
+          console.log(
+            `[STRIPE_WEBHOOK] Event ${event.id} already processed, skipping`,
+          );
+          return NextResponse.json({ received: true });
+        }
+
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.metadata?.userId || session.client_reference_id;
         const planId = session.metadata?.planId;
@@ -30,8 +44,11 @@ export async function POST(req: NextRequest) {
 
         if (boostType && session.metadata?.listingId) {
           // Handle boost payment
-          const boostConfig = BOOST_PRICES[boostType as keyof typeof BOOST_PRICES];
-          const durationDays = boostConfig?.durationDays || parseInt(session.metadata?.durationDays || "7", 10);
+          const boostConfig =
+            BOOST_PRICES[boostType as keyof typeof BOOST_PRICES];
+          const durationDays =
+            boostConfig?.durationDays ||
+            parseInt(session.metadata?.durationDays || "7", 10);
 
           await db.listingBoost.create({
             data: {
@@ -40,10 +57,13 @@ export async function POST(req: NextRequest) {
               startAt: new Date(),
               endAt: new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000),
               stripePaymentId: session.payment_intent as string,
+              stripeEventId: event.id,
             },
           });
 
-          console.log(`[STRIPE_WEBHOOK] Boost ${boostType} created for listing ${session.metadata.listingId}`);
+          console.log(
+            `[STRIPE_WEBHOOK] Boost ${boostType} created for listing ${session.metadata.listingId}`,
+          );
         } else if (userId && planId) {
           // Handle subscription checkout
           const stripeCustomerId = session.customer as string;
@@ -55,10 +75,9 @@ export async function POST(req: NextRequest) {
               status: "ACTIVE",
               stripeSubscriptionId: session.subscription as string,
               stripeCustomerId,
+              stripeEventId: event.id,
               currentPeriodStart: new Date(),
-              currentPeriodEnd: new Date(
-                Date.now() + 30 * 24 * 60 * 60 * 1000
-              ),
+              currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
               cancelAtPeriodEnd: false,
             },
             create: {
@@ -67,14 +86,15 @@ export async function POST(req: NextRequest) {
               status: "ACTIVE",
               stripeSubscriptionId: session.subscription as string,
               stripeCustomerId,
+              stripeEventId: event.id,
               currentPeriodStart: new Date(),
-              currentPeriodEnd: new Date(
-                Date.now() + 30 * 24 * 60 * 60 * 1000
-              ),
+              currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
             },
           });
 
-          console.log(`[STRIPE_WEBHOOK] Subscription created/updated for user ${userId}, plan ${planId}`);
+          console.log(
+            `[STRIPE_WEBHOOK] Subscription created/updated for user ${userId}, plan ${planId}`,
+          );
         }
         break;
       }
@@ -86,8 +106,11 @@ export async function POST(req: NextRequest) {
         });
 
         if (existingSub) {
-          const periodStart = (subscription as unknown as Record<string, number>).current_period_start;
-          const periodEnd = (subscription as unknown as Record<string, number>).current_period_end;
+          const periodStart = (
+            subscription as unknown as Record<string, number>
+          ).current_period_start;
+          const periodEnd = (subscription as unknown as Record<string, number>)
+            .current_period_end;
           await db.subscription.update({
             where: { id: existingSub.id },
             data: {
@@ -95,10 +118,14 @@ export async function POST(req: NextRequest) {
                 subscription.status === "active"
                   ? "ACTIVE"
                   : subscription.status === "past_due"
-                  ? "PAST_DUE"
-                  : "CANCELLED",
-              currentPeriodStart: periodStart ? new Date(periodStart * 1000) : undefined,
-              currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : undefined,
+                    ? "PAST_DUE"
+                    : "CANCELLED",
+              currentPeriodStart: periodStart
+                ? new Date(periodStart * 1000)
+                : undefined,
+              currentPeriodEnd: periodEnd
+                ? new Date(periodEnd * 1000)
+                : undefined,
             },
           });
         }
@@ -126,7 +153,7 @@ export async function POST(req: NextRequest) {
                 stripeSubscriptionId: null,
                 currentPeriodStart: new Date(),
                 currentPeriodEnd: new Date(
-                  Date.now() + 100 * 365 * 24 * 60 * 60 * 1000
+                  Date.now() + 100 * 365 * 24 * 60 * 60 * 1000,
                 ),
               },
             });
@@ -137,7 +164,8 @@ export async function POST(req: NextRequest) {
 
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = (invoice as unknown as Record<string, unknown>).subscription as string | undefined;
+        const subscriptionId = (invoice as unknown as Record<string, unknown>)
+          .subscription as string | undefined;
         if (subscriptionId) {
           const existingSub = await db.subscription.findFirst({
             where: { stripeSubscriptionId: subscriptionId },
@@ -162,7 +190,7 @@ export async function POST(req: NextRequest) {
     console.error("[STRIPE_WEBHOOK] Error processing event:", error);
     return NextResponse.json(
       { error: "Webhook handler failed" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

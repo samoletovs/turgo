@@ -28,7 +28,11 @@
     "showLess": "Rādīt mazāk",
     "noResults": "Nav atrasts neviens rezultāts",
     "currency": "€",
-    "perMonth": "/mēnesī"
+    "perMonth": "/mēnesī",
+    "grid": "Režģis",
+    "list": "Saraksts",
+    "map": "Karte",
+    "location": "Atrašanās vieta"
   },
   "nav": {
     "home": "Sākums",
@@ -43,14 +47,25 @@
     "signIn": "Ieiet",
     "signUp": "Reģistrēties",
     "signOut": "Iziet",
-    "pricing": "Cenas"
+    "pricing": "Cenas",
+    "search": "Search",
+    "mobileNav": "Mobile navigation",
+    "searchPlaceholder": "What are you looking for?"
   },
   "home": {
     "hero": {
       "title": "Pērc un pārdod gudrāk ar AI aģentiem",
       "subtitle": "Pirmais tirgus, kur inteliģenti aģenti strādā 24/7, lai jums piedāvātu labāko darījumu",
       "searchPlaceholder": "Ko jūs meklējat?",
-      "cta": "Sāc pārdot ar AI"
+      "cta": "Sāc pārdot ar AI",
+      "browseBelow": "or browse categories below ↓",
+      "agentName": "Turgo AI Agent",
+      "demoOnline": "● Online",
+      "demoUserMessage": "Sell my iPhone 15 Pro",
+      "demoSimilar": "23 similar listings",
+      "demoSuggestedPrice": "Suggested price: €849",
+      "demoAgentReply": "I'll handle everything!",
+      "demoListingCreated": "Listing created"
     },
     "featured": "Izceltie sludinājumi",
     "recentlyAdded": "Nesen pievienoti",
@@ -92,6 +107,14 @@
         "title": "Noslēdz darījumu",
         "description": "Saņem paziņojumu, kad aģents atrod ideālo pircēju par labāko cenu"
       }
+    },
+    "stats": {
+      "aiValue": "24/7",
+      "aiDesc": "AI agents working for you",
+      "smartValue": "Smart",
+      "smartDesc": "Dynamic pricing optimization",
+      "fastValue": "Fast",
+      "fastDesc": "Auto-respond to buyers instantly"
     }
   },
   "auth": {
@@ -149,11 +172,55 @@
       "EXPIRED": "Beidzies",
       "MODERATION": "Pārbaudē",
       "REJECTED": "Noraidīts"
-    }
+    },
+    "createManually": "Izveidot sludinājumu manuāli",
+    "createManuallyDesc": "Aizpildiet visas detaļas pats",
+    "reportDialog": {
+      "title": "Ziņot par sludinājumu",
+      "description": "Palīdziet mums saglabāt tirgus drošību, ziņojot par sludinājumiem, kas pārkāpj noteikumus.",
+      "reason": "Iemesls",
+      "reasonPlaceholder": "Izvēlieties iemeslu",
+      "details": "Papildu informācija",
+      "detailsPlaceholder": "Aprakstiet problēmu detalizētāk (vismaz 10 rakstzīmes)...",
+      "submit": "Iesniegt ziņojumu",
+      "submitting": "Iesniedz...",
+      "success": "Ziņojums veiksmīgi iesniegts. Mēs to drīz izskatīsim.",
+      "alreadyReported": "Jūs jau esat ziņojis par šo sludinājumu",
+      "cannotReportOwn": "Jūs nevarat ziņot par savu sludinājumu",
+      "reasons": {
+        "SPAM": "Mēstule",
+        "FRAUD": "Krāpšana",
+        "INAPPROPRIATE": "Nepiemērots saturs",
+        "DUPLICATE": "Dublikāts",
+        "WRONG_CATEGORY": "Nepareiza kategorija",
+        "MISLEADING_PRICE": "Maldinoša cena",
+        "PROHIBITED_ITEM": "Aizliegta prece",
+        "OTHER": "Cits"
+      }
+    },
+    "featured": "Featured",
+    "photos": "photos",
+    "negotiable": "Price negotiable",
+    "seller": "Seller",
+    "memberSince": "Member since",
+    "aiAgent": "AI Selling Agent",
+    "status": "Status",
+    "active": "Active",
+    "autoResponding": "Auto-responding to inquiries",
+    "dynamicPricing": "Dynamic pricing enabled",
+    "safetyTips": "Safety tips",
+    "safetyTip1": "Meet in a safe, public place",
+    "safetyTip2": "Don't pay in advance",
+    "safetyTip3": "Inspect the item before paying",
+    "similarListings": "Similar Listings",
+    "noImage": "No image",
+    "favorites": "favorites"
   },
   "sell": {
     "title": "Pārdod ar AI aģentu",
     "subtitle": "Ļauj mūsu AI palīdzēt izveidot perfektu sludinājumu un pārdot ātrāk",
+    "orCreateManually": "Vēlaties to darīt pats?",
+    "createManuallyLink": "Izveidot sludinājumu manuāli",
     "wizard": {
       "step1": {
         "title": "Ko jūs pārdodat?",
@@ -219,7 +286,51 @@
       "TWO_WEEKS": "2 nedēļu laikā",
       "ONE_MONTH": "Šomēnes",
       "NO_RUSH": "Nav steigas"
-    }
+    },
+    "negotiate": {
+      "accept": "Piedāvājums pieņemts",
+      "counter": "Pretpiedāvājums nosūtīts",
+      "reject": "Piedāvājums noraidīts",
+      "escalate": "Nosūtīts pārdevējam izskatīšanai"
+    },
+    "boost": {
+      "title": "Izcelt sludinājumu",
+      "subtitle": "Palieliniet sava sludinājuma redzamību",
+      "recommended": "Ieteicams izcelt",
+      "active": "Pašlaik izcelts",
+      "notNeeded": "Izcelšana nav nepieciešama",
+      "boost": "Izcelt",
+      "days": "dienas",
+      "highlighted": "Izcelts",
+      "highlightedDesc": "Izcelieties ar krāsainu rāmi meklēšanas rezultātos",
+      "featured": "Ieteicamais",
+      "featuredDesc": "Parādieties sadaļā Ieteicamie sākumlapā",
+      "top": "Augšpozīcija",
+      "topDesc": "Piespraudiet meklēšanas rezultātu augšā maksimālai redzamībai"
+    },
+    "summary": {
+      "title": "Dienas kopsavilkums",
+      "views": "Skatījumi",
+      "inquiries": "Pieprasījumi",
+      "offers": "Piedāvājumi",
+      "priceChanges": "Cenu izmaiņas"
+    },
+    "myAgents": "My AI Agents",
+    "manageAgents": "Manage your selling and buying agents",
+    "newSellingAgent": "New Selling Agent",
+    "noSellingAgents": "No selling agents",
+    "noSellingAgentsDesc": "Create a listing with an AI agent to automate pricing and responses",
+    "noBuyingAgents": "No buying agents",
+    "noBuyingAgentsDesc": "Set up a buying agent to automatically find deals matching your criteria",
+    "autoReply": "Auto-reply",
+    "autoPrice": "Auto-price",
+    "recentActivity": "Recent activity",
+    "viewListing": "View Listing",
+    "pause": "Pause",
+    "resume": "Resume",
+    "anyCategory": "Any category",
+    "budgetUpTo": "Budget: up to",
+    "recentMatches": "Recent matches"
   },
   "concierge": {
     "title": "AI konsjeržs",
@@ -230,7 +341,16 @@
       "Atrodi man labu piedāvājumu telefonam",
       "Kā darbojas AI aģents?",
       "Kāda ir vidējā cena par..."
-    ]
+    ],
+    "online": "Online",
+    "mode": "mode",
+    "intentSell": "Selling mode — I'll help you list your item",
+    "intentBuy": "Buying mode — I'll help you find what you need",
+    "intentSupport": "Support mode — Let me help with your issue",
+    "intentBrowse": "Browse mode — Exploring listings",
+    "quickSell": "Sell an item",
+    "quickBuy": "Find a deal",
+    "quickBrowse": "Browse"
   },
   "pricing": {
     "title": "Izvēlieties plānu",
@@ -260,6 +380,8 @@
       "priority": "Prioritāra atbalsta",
       "api": "API piekļuve"
     },
+    "monthly": "Mēnesī",
+    "yearly": "Gadā",
     "cta": {
       "current": "Pašreizējais plāns",
       "upgrade": "Jaunināt",
@@ -329,11 +451,94 @@
     },
     "terms": {
       "title": "Lietošanas noteikumi",
-      "lastUpdated": "Pēdējoreiz atjaunināts: 2026. gada februāris"
+      "lastUpdated": "Pēdējoreiz atjaunināts: 2026. gada februāris",
+      "toc": "Satura rādītājs",
+      "sections": {
+        "acceptance": {
+          "title": "Noteikumu pieņemšana"
+        },
+        "platform": {
+          "title": "Platformas apraksts"
+        },
+        "accounts": {
+          "title": "Lietotāju konti un pienākumi"
+        },
+        "listings": {
+          "title": "Sludinājumi un saturs"
+        },
+        "agents": {
+          "title": "AI aģentu pakalpojumi"
+        },
+        "payments": {
+          "title": "Maksājumi un abonementi"
+        },
+        "ip": {
+          "title": "Intelektuālais īpašums"
+        },
+        "liability": {
+          "title": "Atbildības ierobežojumi"
+        },
+        "termination": {
+          "title": "Izbeigšana"
+        },
+        "governing": {
+          "title": "Piemērojamie tiesību akti un strīdi"
+        },
+        "gdpr": {
+          "title": "Datu aizsardzība (GDPR)"
+        },
+        "changes": {
+          "title": "Noteikumu izmaiņas"
+        },
+        "contact": {
+          "title": "Kontaktinformācija"
+        }
+      }
     },
     "privacy": {
       "title": "Privātuma politika",
-      "lastUpdated": "Pēdējoreiz atjaunināts: 2026. gada februāris"
+      "lastUpdated": "Pēdējoreiz atjaunināts: 2026. gada februāris",
+      "sections": {
+        "controller": {
+          "title": "Datu pārzinis"
+        },
+        "dataCollected": {
+          "title": "Mūsu apkopotie dati"
+        },
+        "purposes": {
+          "title": "Apstrādes mērķi"
+        },
+        "legalBases": {
+          "title": "Apstrādes tiesiskais pamats"
+        },
+        "retention": {
+          "title": "Datu saglabāšanas periodi"
+        },
+        "thirdParties": {
+          "title": "Datu kopīgošana ar trešajām pusēm"
+        },
+        "cookies": {
+          "title": "Sīkdatnes un izsekošana"
+        },
+        "rights": {
+          "title": "Jūsu datu aizsardzības tiesības"
+        },
+        "children": {
+          "title": "Bērnu privātums"
+        },
+        "international": {
+          "title": "Starptautiskā datu nosūtīšana"
+        },
+        "dpo": {
+          "title": "Datu aizsardzības speciālists"
+        },
+        "complaint": {
+          "title": "Tiesības iesniegt sūdzību"
+        },
+        "changes": {
+          "title": "Izmaiņas šajā politikā"
+        }
+      }
     }
   },
   "settings": {
@@ -341,15 +546,22 @@
     "subtitle": "Pārvaldiet sava konta iestatījumus",
     "profile": {
       "title": "Profils",
+      "description": "Pārvaldiet savu personīgo informāciju un publisko profilu",
       "name": "Vārds",
       "email": "E-pasta adrese",
+      "emailHint": "E-pastu nevar mainīt. Sazinieties ar atbalstu, ja nepieciešams.",
       "phone": "Tālruņa numurs",
       "bio": "Par sevi",
+      "bioPlaceholder": "Pastāstiet citiem lietotājiem nedaudz par sevi...",
+      "changeAvatar": "Mainīt fotoattēlu",
+      "avatarHint": "JPG, PNG vai GIF. Maks. 2MB.",
+      "avatarUpdated": "Avatārs atjaunināts",
       "save": "Saglabāt profilu",
       "saved": "Profils veiksmīgi saglabāts"
     },
     "locale": {
       "title": "Valoda un reģions",
+      "description": "Iestatiet vēlamo valodu, valsti un valūtu",
       "language": "Valoda",
       "country": "Valsts",
       "currency": "Valūta",
@@ -357,6 +569,7 @@
     },
     "notifications": {
       "title": "Paziņojumi",
+      "description": "Izvēlieties, kā un kad vēlaties saņemt paziņojumus",
       "email": "E-pasta paziņojumi",
       "emailDesc": "Saņemiet e-pasta paziņojumus par svarīgiem atjauninājumiem",
       "push": "Push paziņojumi",
@@ -368,7 +581,9 @@
       "priceAlerts": "Cenu brīdinājumi",
       "priceAlertsDesc": "Saņemiet paziņojumu par cenu izmaiņām",
       "marketing": "Mārketings",
-      "marketingDesc": "Saņemiet produktu jaunumus un īpašos piedāvājumus"
+      "marketingDesc": "Saņemiet produktu jaunumus un īpašos piedāvājumus",
+      "saveBtn": "Saglabāt iestatījumus",
+      "saved": "Paziņojumu iestatījumi saglabāti"
     },
     "appearance": {
       "title": "Izskats",
@@ -379,16 +594,23 @@
     },
     "data": {
       "title": "Dati un privātums",
+      "privacy": "Privātuma iestatījumi",
+      "privacyDesc": "Kontrolējiet, kā tiek izmantoti jūsu dati",
+      "marketingOptIn": "Mārketinga saziņa",
+      "marketingOptInDesc": "Saņemiet e-pastus par jaunām funkcijām un īpašiem piedāvājumiem",
       "export": "Eksportēt jūsu datus",
-      "exportDesc": "Lejupielādējiet savu datu kopiju JSON formātā",
+      "exportDesc": "Lejupielādējiet savu datu kopiju JSON formātā, ieskaitot profilu, sludinājumus, ziņojumus un aģentu vēsturi.",
       "exportBtn": "Eksportēt datus",
       "exporting": "Eksportē...",
-      "exported": "Datu eksports sākts. Jūs saņemsiet e-pastu ar lejupielādes saiti.",
+      "exported": "Dati veiksmīgi eksportēti! Pārbaudiet lejupielādes.",
+      "exportError": "Neizdevās eksportēt datus. Lūdzu, mēģiniet vēlreiz.",
       "delete": "Dzēst kontu",
-      "deleteDesc": "Neatgriezeniski dzēst savu kontu un visus saistītos datus.",
+      "deleteDesc": "Neatgriezeniski dzēst savu kontu un visus saistītos datus. Tiks noņemti visi sludinājumi, aģenti, ziņojumi un personiskā informācija.",
       "deleteBtn": "Dzēst manu kontu",
-      "deleteConfirm": "Vai tiešām vēlaties dzēst savu kontu? Tiks neatgriezeniski noņemti visi jūsu dati.",
-      "deleteConfirmBtn": "Jā, dzēst manu kontu"
+      "deleteConfirm": "Vai tiešām? Tiks neatgriezeniski noņemti visi jūsu dati, sludinājumi, aģenti un ziņojumi.",
+      "deleteTypeConfirm": "Ievadiet DELETE, lai apstiprinātu",
+      "deleteConfirmBtn": "Jā, dzēst manu kontu",
+      "deleteSuccess": "Konta dzēšana uzsākta. Jūs drīz tiksiet izrakstīts."
     }
   },
   "verifyEmail": {
@@ -500,5 +722,531 @@
       "description": "Viss ir aktuāli! Jauni paziņojumi parādīsies šeit.",
       "cta": "Pārlūkot sludinājumus"
     }
+  },
+  "review": {
+    "title": "Atsauksmes",
+    "writeReview": "Rakstīt atsauksmi",
+    "rating": "Vērtējums",
+    "comment": "Komentārs",
+    "commentPlaceholder": "Dalieties pieredzē ar šo lietotāju...",
+    "submit": "Iesniegt atsauksmi",
+    "submitting": "Iesniedz...",
+    "success": "Atsauksme veiksmīgi iesniegta!",
+    "noReviews": "Vēl nav atsauksmju",
+    "noReviewsDesc": "Esi pirmais, kurš atstāj atsauksmi.",
+    "averageRating": "Vidējais vērtējums",
+    "totalReviews": "{count} atsauksmes",
+    "alreadyReviewed": "Jūs jau esat novērtējis šo lietotāju",
+    "noInteraction": "Jūs varat novērtēt tikai lietotājus, ar kuriem esat sazinājies",
+    "cannotReviewSelf": "Jūs nevarat novērtēt sevi",
+    "stars": {
+      "1": "Slikti",
+      "2": "Viduvēji",
+      "3": "Labi",
+      "4": "Ļoti labi",
+      "5": "Izcili"
+    }
+  },
+  "publicProfile": {
+    "memberSince": "Dalībnieks kopš {date}",
+    "listings": "Sludinājumi",
+    "reviews": "Atsauksmes",
+    "viewListings": "Skatīt sludinājumus",
+    "noUser": "Lietotājs nav atrasts"
+  },
+  "dashboard": {
+    "title": "Panelis",
+    "subtitle": "Jūsu AI aģenti vienā skatījumā",
+    "stats": {
+      "activeSelling": "Aktīvie pārdošanas aģenti",
+      "activeBuying": "Aktīvie pirkšanas aģenti",
+      "actionsTaken": "Aģentu veiktās darbības",
+      "dealsFound": "Atrastie darījumi"
+    },
+    "myAgents": "Mani aģenti",
+    "viewAll": "Skatīt visu",
+    "noAgents": "Vēl nav aģentu",
+    "noAgentsDesc": "Izveidojiet pirmo AI aģentu, lai sāktu automatizēt",
+    "recentActivity": "Nesenā aktivitāte",
+    "noActivity": "Vēl nav aktivitāšu",
+    "agents": {
+      "title": "Visi aģenti",
+      "selling": "Pārdošanas aģenti",
+      "buying": "Pirkšanas aģenti",
+      "backToDashboard": "Atpakaļ uz paneli",
+      "noSelling": "Nav pārdošanas aģentu. Izveidojiet sludinājumu ar AI aģentu, lai sāktu.",
+      "noBuying": "Nav pirkšanas aģentu. Iestatiet vienu, lai automātiski atrastu darījumus."
+    },
+    "detail": {
+      "backToAgents": "Atpakaļ uz aģentiem",
+      "agentStats": "Aģenta statistika",
+      "totalActions": "Kopā darbības",
+      "views": "Skatījumi",
+      "autoRespond": "Automātiskā atbilde",
+      "autoNegotiate": "Automātiskā sarunu vešana",
+      "urgency": "Steidzamība",
+      "priceFloor": "Minimālā cena",
+      "matchesFound": "Atrasti piedāvājumi",
+      "maxBudget": "Maksimālais budžets",
+      "timeline": "Aģenta laika līnija",
+      "noActions": "Darbības vēl nav reģistrētas",
+      "noActionsDesc": "Darbības parādīsies šeit, kad aģents sāks strādāt",
+      "pause": "Apturēt",
+      "resume": "Atsākt",
+      "stop": "Apstādināt",
+      "viewListing": "Skatīt sludinājumu",
+      "recentMatches": "Nesenie piedāvājumi"
+    },
+    "sell": "Sell",
+    "buy": "Buy",
+    "subscription": "Subscription",
+    "createSellingAgent": "Create Selling Agent",
+    "actions": "actions",
+    "buyingAgent": "Buying Agent",
+    "budget": "Budget:",
+    "matches": "matches"
+  },
+  "dealScore": {
+    "title": "Darījuma vērtējums",
+    "exceptional": "Izņēmuma darījums",
+    "great": "Lielisks darījums",
+    "good": "Labs darījums",
+    "fair": "Taisnīgs darījums",
+    "belowAverage": "Zem vidējā",
+    "factors": {
+      "priceVsMarket": "Cena pret tirgu",
+      "timeOnMarket": "Laiks tirgū",
+      "sellerUrgency": "Pārdevēja steidzamība",
+      "listingQuality": "Sludinājuma kvalitāte",
+      "sellerReputation": "Pārdevēja reputācija",
+      "location": "Atrašanās vieta",
+      "conditionVsPrice": "Stāvoklis pret cenu"
+    },
+    "recommendation": {
+      "buy": "Ieteicams — šis ir labs darījums.",
+      "watch": "Pieņemami — vērts sekot līdzi, apsveriet sarunas.",
+      "pass": "Neiesaku — iespējams, ir labāki piedāvājumi."
+    }
+  },
+  "priceCurve": {
+    "title": "Cenu stratēģija",
+    "start": "Sākums",
+    "current": "Pašreizējā",
+    "floor": "Minimālā",
+    "urgency": {
+      "ONE_DAY": "Pārdot šodien",
+      "THREE_DAYS": "3 dienu plāns",
+      "ONE_WEEK": "1 nedēļas plāns",
+      "TWO_WEEKS": "2 nedēļu plāns",
+      "ONE_MONTH": "1 mēneša plāns",
+      "NO_RUSH": "Nav steigas"
+    }
+  },
+  "browse": {
+    "title": "Pārlūkot sludinājumus",
+    "searchPlaceholder": "Meklēt jebko...",
+    "filters": "Filtri",
+    "categories": "Kategorijas",
+    "priceRange": "Cenu diapazons",
+    "condition": "Stāvoklis",
+    "location": "Atrašanās vieta",
+    "country": "Valsts",
+    "specifications": "Specifikācijas",
+    "results": "rezultāti",
+    "result": "rezultāts",
+    "for": "priekš",
+    "noResults": "Nav atrasts neviens rezultāts",
+    "noResultsDesc": "Pamēģiniet mainīt meklēšanas vai filtra kritērijus",
+    "clearFilters": "Notīrīt filtrus",
+    "sort": {
+      "newest": "Jaunākie vispirms",
+      "oldest": "Vecākie vispirms",
+      "priceAsc": "Cena: no zemākās",
+      "priceDesc": "Cena: no augstākās",
+      "views": "Visvairāk skatītie"
+    },
+    "view": {
+      "grid": "Režģis",
+      "list": "Saraksts",
+      "map": "Karte"
+    },
+    "savedSearch": {
+      "save": "Saglabāt meklējumu",
+      "title": "Saglabāt šo meklējumu",
+      "description": "Saņemiet paziņojumu, kad jauni sludinājumi atbilst jūsu kritērijiem.",
+      "name": "Meklējuma nosaukums",
+      "namePlaceholder": "piem., BMW X5 zem 25K€ Rīgā",
+      "emailNotify": "Paziņot e-pastā par jauniem rezultātiem",
+      "criteria": "Jūsu meklēšanas kritēriji:",
+      "allListings": "Visi sludinājumi",
+      "saved": "Saglabāts!",
+      "saving": "Saglabā..."
+    },
+    "agentPrompt": {
+      "title": "Ļaujiet AI aģentam atrast labākos piedāvājumus jums",
+      "titleWithQuery": "Ļaujiet AI aģentam atrast \"{query}\" jums",
+      "description": "Iestatiet kritērijus, un mūsu pirkšanas aģents uzraudzīs 24/7, brīdinās par labiem darījumiem un pat vedīs sarunas jūsu vārdā.",
+      "cta": "Izveidot pirkšanas aģentu"
+    },
+    "mapNoData": "Nav pieejamu kartes datu",
+    "mapNoDataDesc": "Šiem sludinājumiem nav atrašanās vietas koordinātu. Mēģiniet pārslēgties uz režģa vai saraksta skatu.",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "min": "Min",
+    "max": "Max",
+    "go": "Go",
+    "new": "New",
+    "used": "Used",
+    "refurbished": "Refurbished"
+  },
+  "liquidation": {
+    "title": "Vairumlikvidācija",
+    "uploadDesc": "Augšupielādējiet fotoattēlus visiem priekšmetiem, ko vēlaties pārdot. Mūsu AI identificēs katru priekšmetu un ieteiks cenas.",
+    "dropPhotos": "Noklikšķiniet vai velciet fotoattēlus šeit",
+    "analyzeItems": "Analizēt priekšmetus",
+    "analyzingTitle": "Identificē priekšmetus…",
+    "analyzingDesc": "Mūsu AI analizē jūsu fotoattēlus, lai identificētu atsevišķus priekšmetus",
+    "identifiedItems": "Identificētie priekšmeti",
+    "selected": "izvēlēti",
+    "itemTitle": "Priekšmeta nosaukums",
+    "suggestedPrice": "AI ieteiktā cena",
+    "deadline": "Pārdošanas termiņš visiem priekšmetiem",
+    "urgency": {
+      "oneDay": "Pārdot šodien",
+      "threeDays": "3 dienu laikā",
+      "oneWeek": "Šonedēļ",
+      "twoWeeks": "2 nedēļu laikā",
+      "oneMonth": "Šomēnes"
+    },
+    "back": "Atpakaļ",
+    "publishAll": "Publicēt visus",
+    "publishingTitle": "Publicē sludinājumus…",
+    "publishingDesc": "Veido sludinājumus un aktivizē AI pārdošanas aģentus",
+    "doneTitle": "Viss gatavs!",
+    "doneDesc": "{count} sludinājumi izveidoti ar AI pārdošanas aģentiem",
+    "createMore": "Pārdot vēl priekšmetus"
+  },
+  "myListings": {
+    "title": "Mani sludinājumi",
+    "subtitle": "Pārvaldiet savus sludinājumus, sekojiet veiktspējai un rīkojieties",
+    "createNew": "Jauns sludinājums",
+    "filterByStatus": "Filtrēt pēc statusa",
+    "listingsCount": "sludinājumi",
+    "empty": "Vēl nav sludinājumu",
+    "emptyDesc": "Izveidojiet pirmo sludinājumu, lai sāktu pārdot",
+    "createFirst": "Izveidot pirmo sludinājumu",
+    "edit": "Rediģēt",
+    "boost": "Izcelt",
+    "views": "skatījumi",
+    "messages": "ziņojumi",
+    "prev": "Iepriekšējais",
+    "next": "Nākamais",
+    "deleteTitle": "Dzēst sludinājumu",
+    "deleteDesc": "Vai tiešām vēlaties dzēst šo sludinājumu? Šo darbību nevar atsaukt.",
+    "cancel": "Atcelt",
+    "confirmDelete": "Dzēst"
+  },
+  "analytics": {
+    "title": "Analītika",
+    "subtitle": "Sekojiet savu sludinājumu veiktspējai un tirgus ieskatiem",
+    "totalViews": "Kopā skatījumi",
+    "totalInquiries": "Kopā pieprasījumi",
+    "conversionRate": "Pieprasījumu īpatsvars",
+    "activeListings": "Aktīvie sludinājumi",
+    "viewsOverTime": "Skatījumi laika gaitā",
+    "last7Days": "Pēdējās 7 dienas",
+    "conversionTitle": "Pieprasījumu konversija",
+    "conversionDesc": "No skatījumiem līdz pieprasījumiem",
+    "topPerforming": "Labākie sludinājumi",
+    "topPerformingDesc": "Jūsu visvairāk skatītie sludinājumi pēc iesaistes",
+    "noListings": "Vēl nav sludinājumu analīzei",
+    "priceImpact": "Cenu izmaiņu ietekme",
+    "priceImpactDesc": "Kā cenu noteikšana ietekmē jūsu sludinājuma redzamību",
+    "moreViews": "Pieaug popularitāte",
+    "lessViews": "Nepieciešama uzmanība",
+    "noActiveListings": "Nav aktīvu sludinājumu analīzei"
+  },
+  "savedSearches": {
+    "title": "Saglabātie meklējumi",
+    "subtitle": "Pārvaldiet saglabātos meklējumus un paziņojumu iestatījumus",
+    "newSearch": "Jauns meklējums",
+    "empty": "Nav saglabātu meklējumu",
+    "emptyDesc": "Saglabājiet meklējumu no meklēšanas lapas, lai saņemtu paziņojumus par jauniem rezultātiem",
+    "goSearch": "Doties uz meklēšanu",
+    "notifyOn": "Paziņojumi ieslēgti",
+    "notifyOff": "Paziņojumi izslēgti",
+    "noFilters": "Nav piemērotu filtru",
+    "categoryFilter": "Kategorijas filtrs",
+    "locationFilter": "Atrašanās vietas filtrs",
+    "allListings": "Visi sludinājumi",
+    "lastNotified": "Pēdējo reizi paziņots",
+    "neverNotified": "Nekad nav paziņots",
+    "run": "Palaist",
+    "deleteTitle": "Dzēst saglabāto meklējumu",
+    "deleteDesc": "Vai tiešām vēlaties dzēst šo saglabāto meklējumu? Jūs vairs nesaņemsiet paziņojumus.",
+    "cancel": "Atcelt",
+    "confirmDelete": "Dzēst",
+    "editTitle": "Pārdēvēt meklējumu",
+    "editDesc": "Ievadiet jaunu nosaukumu šim saglabātajam meklējumam",
+    "searchName": "Meklējuma nosaukums",
+    "save": "Saglabāt"
+  },
+  "editListing": {
+    "title": "Rediģēt sludinājumu",
+    "subtitle": "Atjauniniet sava sludinājuma detaļas",
+    "backToListing": "Atpakaļ uz sludinājumu",
+    "currentPhotos": "Pašreizējie fotoattēli",
+    "details": "Detaļas",
+    "titleLabel": "Nosaukums",
+    "descriptionLabel": "Apraksts",
+    "category": "Kategorija",
+    "categoryLabel": "Kategorija",
+    "selectCategory": "Izvēlieties kategoriju",
+    "subcategory": "Apakškategorija",
+    "selectSubcategory": "Izvēlieties apakškategoriju",
+    "conditionLabel": "Stāvoklis",
+    "price": "Cena",
+    "priceLabel": "Cena",
+    "negotiable": "Cena ir apspriežama",
+    "location": "Atrašanās vieta",
+    "region": "Valsts / reģions",
+    "selectLocation": "Izvēlieties atrašanās vietu",
+    "area": "Pilsēta / rajons",
+    "selectArea": "Izvēlieties apgabalu",
+    "contact": "Kontaktinformācija",
+    "phone": "Tālrunis (neobligāts)",
+    "email": "E-pasts (neobligāts)",
+    "cancel": "Atcelt",
+    "saveChanges": "Saglabāt izmaiņas",
+    "updated": "Sludinājums atjaunināts!",
+    "updatedDesc": "Jūsu izmaiņas ir saglabātas. Pāradresē...",
+    "errorTitleMin": "Nosaukumam jābūt vismaz 5 rakstzīmēm",
+    "errorDescMin": "Aprakstam jābūt vismaz 20 rakstzīmēm",
+    "errorPrice": "Ievadiet derīgu cenu",
+    "errorCategory": "Izvēlieties kategoriju"
+  },
+  "about": {
+    "title": "Par Turgo",
+    "subtitle": "Aģentu vadīta sludinājumu platforma, kas veidota Baltijas reģionam. Mēs apvienojam mākslīgā intelekta izlūkošanu ar dziļām vietējā tirgus zināšanām.",
+    "mission": {
+      "title": "Mūsu misija",
+      "desc": "Mēs no jauna iedomājam, kā cilvēki pērk un pārdod tiešsaistē. Apvienojot modernākos AI aģentus ar dziļu izpratni par Baltijas tirgu, mēs esam izveidojuši platformu, kurā inteliģenti aģenti strādā visu diennakti."
+    },
+    "story": {
+      "title": "Mūsu stāsts",
+      "p1": "Turgo radās no vienkāršas neapmierinātības: sludinājumu platformas Baltijā nebija attīstījušās gadu desmitiem.",
+      "p2": "Mēs jautājām sev: ko darītu, ja AI aģenti varētu to visu pārvaldīt?",
+      "p3": "Šī vīzija kļuva par Turgo — pirmo aģentu vadīto sludinājumu platformu Latvijai, Lietuvai un Igaunijai."
+    },
+    "values": {
+      "title": "Pamatvērtības",
+      "agentFirst": {
+        "title": "Aģents pirmajā vietā",
+        "desc": "AI aģenti ir visu mūsu izstrādājumu pamatā."
+      },
+      "balticFocus": {
+        "title": "Baltijas fokuss",
+        "desc": "Veidots Latvijai, Lietuvai un Igaunijai."
+      },
+      "trustSafety": {
+        "title": "Uzticēšanās un drošība",
+        "desc": "AI moderācija un verificēti profili nodrošina drošu tirgu."
+      },
+      "innovation": {
+        "title": "Inovācija",
+        "desc": "Mēs pārbīdām robežas tam, ko var sludinājumu platformas."
+      }
+    },
+    "market": {
+      "title": "Baltijas tirgus fokuss",
+      "desc": "Turgo darbojas visās trijās Baltijas valstīs.",
+      "latvia": {
+        "flag": "🇱🇻",
+        "name": "Latvija",
+        "desc": "Rīgas tirgus ar latviešu un krievu valodas atbalstu"
+      },
+      "lithuania": {
+        "flag": "🇱🇹",
+        "name": "Lietuva",
+        "desc": "Viļņa, Kauņa un plašāk ar lietuviešu valodas atbalstu"
+      },
+      "estonia": {
+        "flag": "🇪🇪",
+        "name": "Igaunija",
+        "desc": "Tallina un Igaunijas reģioni ar igauņu valodas atbalstu"
+      }
+    },
+    "tech": {
+      "title": "Tehnoloģiju izcēlumi",
+      "ai": {
+        "title": "AI aģenti",
+        "desc": "Inteliģenti pārdošanas un pirkšanas aģenti."
+      },
+      "pricing": {
+        "title": "Viedā cenu noteikšana",
+        "desc": "Reāllaika tirgus analīze ar dinamisku cenu līknēm."
+      },
+      "realtime": {
+        "title": "Reāllaika ziņapmaiņa",
+        "desc": "WebSocket tērzēšana ar AI atbalstu."
+      },
+      "i18n": {
+        "title": "5 valodu atbalsts",
+        "desc": "Pilna lokalizācija angļu, latviešu, lietuviešu, igauņu un krievu valodā."
+      }
+    },
+    "team": {
+      "title": "Mūsu komanda",
+      "desc": "Mēs esam neliela, bet spēcīga inženieru, dizaineru un Baltijas tirgus speciālistu komanda."
+    },
+    "contact": {
+      "title": "Sazinies ar mums",
+      "emailLabel": "Vispārīgi jautājumi",
+      "officeLabel": "Birojs",
+      "address": "Rīga, Latvija (attālinātā komanda Baltijā)",
+      "careersLabel": "Karjera",
+      "supportLabel": "Atbalsts"
+    }
+  },
+  "contact": {
+    "title": "Sazinies ar mums",
+    "subtitle": "Ir jautājumi, atsauksmes vai sadarbības pieprasījumi? Mēs labprāt dzirdēsim no jums.",
+    "form": {
+      "title": "Nosūtiet mums ziņu",
+      "name": "Jūsu vārds",
+      "namePlaceholder": "Jānis Bērziņš",
+      "email": "E-pasta adrese",
+      "emailPlaceholder": "janis@piemers.lv",
+      "subject": "Temats",
+      "subjectPlaceholder": "Izvēlieties tematu",
+      "subjects": {
+        "general": "Vispārīgs jautājums",
+        "support": "Tehniskais atbalsts",
+        "billing": "Norēķini un maksājumi",
+        "partnership": "Sadarbība",
+        "press": "Prese un mediji",
+        "feedback": "Atsauksmes un ieteikumi"
+      },
+      "message": "Ziņojums",
+      "messagePlaceholder": "Pastāstiet, kā mēs varam palīdzēt...",
+      "send": "Nosūtīt ziņu",
+      "sending": "Nosūta...",
+      "success": "Ziņojums veiksmīgi nosūtīts!",
+      "error": "Neizdevās nosūtīt ziņojumu. Lūdzu, mēģiniet vēlreiz.",
+      "successTitle": "Ziņojums nosūtīts!",
+      "successDesc": "Mēs esam saņēmuši jūsu ziņojumu un atbildēsim 24 stundu laikā.",
+      "sendAnother": "Nosūtīt vēl vienu ziņu"
+    },
+    "info": {
+      "email": {
+        "title": "E-pasts"
+      },
+      "office": {
+        "title": "Birojs",
+        "address": "Rīga, Latvija"
+      },
+      "hours": {
+        "title": "Atbalsta laiks",
+        "value": "P.–Pk., 9:00–18:00 EET"
+      },
+      "languages": {
+        "title": "Valodas",
+        "value": "EN, LV, LT, ET, RU"
+      }
+    },
+    "social": {
+      "title": "Sekojiet mums"
+    }
+  },
+  "help": {
+    "title": "Palīdzības centrs",
+    "subtitle": "Atrodiet atbildes uz biežāk uzdotajiem jautājumiem par Turgo.",
+    "cta": {
+      "title": "Joprojām nepieciešama palīdzība?",
+      "desc": "Mūsu atbalsta komanda ir gatava jums palīdzēt.",
+      "button": "Sazināties ar atbalstu"
+    },
+    "sections": {
+      "gettingStarted": {
+        "title": "Darba sākšana",
+        "q1": {
+          "q": "Kā izveidot sludinājumu?",
+          "a": "Noklikšķiniet uz pogas '+ Pārdot' navigācijā. Mūsu AI pārdošanas aģents palīdzēs jums soli pa solim."
+        },
+        "q2": {
+          "q": "Kā darbojas AI aģenti?",
+          "a": "Turgo AI aģenti automatizē pirkšanu un pārdošanu. Pārdošanas aģenti optimizē cenas un atbild pircējiem."
+        },
+        "q3": {
+          "q": "Kādi reģioni un valodas tiek atbalstītas?",
+          "a": "Turgo aptver Latviju, Lietuvu un Igauniju. Platforma ir pilnībā lokalizēta 5 valodās."
+        }
+      },
+      "sellingAgents": {
+        "title": "Pārdošana ar aģentiem",
+        "q1": {
+          "q": "Kā AI pārdošanas aģents nosaka cenas?",
+          "a": "Mūsu cenu noteikšanas dzinējs analizē līdzīgus sludinājumus Baltijā."
+        },
+        "q2": {
+          "q": "Vai es varu kontrolēt aģenta darbības?",
+          "a": "Jā! Jūs nosakāt noteikumus — automātiskās atbildes, sarunu vešana, minimālā cena."
+        },
+        "q3": {
+          "q": "Kas ir sludinājumu pastiprinājumi?",
+          "a": "Pastiprinājumi palielina jūsu sludinājuma redzamību: izcēlums, izcelts un augšējā vieta."
+        }
+      },
+      "buyingAgents": {
+        "title": "Pirkšana ar aģentiem",
+        "q1": {
+          "q": "Kā iestatīt pirkšanas aģentu?",
+          "a": "Meklējiet vēlamo un noklikšķiniet 'Izveidot pirkšanas aģentu'."
+        },
+        "q2": {
+          "q": "Kas ir darījuma rezultāts?",
+          "a": "Darījuma rezultāts (0–100) novērtē, cik labs ir piedāvājums salīdzinājumā ar tirgu."
+        },
+        "q3": {
+          "q": "Vai pirkšanas aģents var sarunāties manā vietā?",
+          "a": "Jā, ja iespējojat automātiskās sarunas."
+        }
+      },
+      "payments": {
+        "title": "Maksājumi un abonementi",
+        "q1": {
+          "q": "Vai Turgo ir bezmaksas?",
+          "a": "Jā! Bezmaksas plāns ietver līdz 5 sludinājumiem un 1 AI aģentu."
+        },
+        "q2": {
+          "q": "Kā pārvaldīt abonementu?",
+          "a": "Dodieties uz Iestatījumi vai Cenu lapu."
+        },
+        "q3": {
+          "q": "Kādas maksāšanas metodes tiek pieņemtas?",
+          "a": "Mēs pieņemam visas galvenās kredītkartes un debetkartes caur Stripe."
+        }
+      },
+      "accountPrivacy": {
+        "title": "Konts un privātums",
+        "q1": {
+          "q": "Kā tiek aizsargāti mani dati?",
+          "a": "Turgo pilnībā atbilst GDPR. Mēs šifrējam visus datus."
+        },
+        "q2": {
+          "q": "Vai es varu eksportēt savus datus?",
+          "a": "Jā. Dodieties uz Iestatījumi > Dati un privātums un noklikšķiniet 'Eksportēt datus'."
+        },
+        "q3": {
+          "q": "Kā dzēst savu kontu?",
+          "a": "Dodieties uz Iestatījumi > Dati un privātums un noklikšķiniet 'Dzēst manu kontu'."
+        }
+      }
+    }
+  },
+  "messages": {
+    "title": "Messages",
+    "selectConversation": "Select a conversation",
+    "selectConversationDesc": "Choose a conversation from the list to start chatting"
   }
 }

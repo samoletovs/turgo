@@ -64,6 +64,7 @@ export const useUiStore = create<UiState & UiActions>()(
         isSidebarOpen: state.isSidebarOpen,
         conciergeMinimized: state.conciergeMinimized,
       }),
+      skipHydration: true,
     },
   ),
 );

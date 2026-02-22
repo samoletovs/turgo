@@ -3,7 +3,7 @@ import { db } from "@/server/db";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import {
   Users,
   ShoppingBag,
@@ -69,7 +69,7 @@ export default async function AdminOverviewPage({
       icon: Shield,
       color: "text-amber-600",
       bg: "bg-amber-50 dark:bg-amber-950",
-      href: `/${locale}/admin/moderation`,
+      href: "/admin/moderation",
     },
     {
       title: "Open Reports",
@@ -78,7 +78,7 @@ export default async function AdminOverviewPage({
       icon: Flag,
       color: "text-red-600",
       bg: "bg-red-50 dark:bg-red-950",
-      href: `/${locale}/admin/reports`,
+      href: "/admin/reports",
     },
     {
       title: "Escalations",
@@ -87,7 +87,7 @@ export default async function AdminOverviewPage({
       icon: AlertTriangle,
       color: "text-orange-600",
       bg: "bg-orange-50 dark:bg-orange-950",
-      href: `/${locale}/admin/escalations`,
+      href: "/admin/escalations",
     },
     {
       title: "Active Subscriptions",
@@ -96,7 +96,7 @@ export default async function AdminOverviewPage({
       icon: TrendingUp,
       color: "text-purple-600",
       bg: "bg-purple-50 dark:bg-purple-950",
-      href: `/${locale}/admin/revenue`,
+      href: "/admin/revenue",
     },
   ];
 
@@ -115,7 +115,11 @@ export default async function AdminOverviewPage({
           const content = (
             <Card
               key={stat.title}
-              className={stat.href ? "cursor-pointer hover:shadow-md transition-shadow" : ""}
+              className={
+                stat.href
+                  ? "cursor-pointer hover:shadow-md transition-shadow"
+                  : ""
+              }
             >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -124,7 +128,9 @@ export default async function AdminOverviewPage({
                       {stat.title}
                     </p>
                     <p className="text-3xl font-bold mt-1">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {stat.sub}
+                    </p>
                   </div>
                   <div className={`rounded-lg p-3 ${stat.bg}`}>
                     <stat.icon className={`h-6 w-6 ${stat.color}`} />
@@ -152,12 +158,16 @@ export default async function AdminOverviewPage({
           </CardHeader>
           <CardContent className="space-y-2">
             {[
-              { label: "Review Moderation Queue", href: `/${locale}/admin/moderation`, badge: pendingModeration },
-              { label: "Manage Categories", href: `/${locale}/admin/categories` },
-              { label: "User Management", href: `/${locale}/admin/users` },
-              { label: "Revenue Dashboard", href: `/${locale}/admin/revenue` },
-              { label: "Analytics", href: `/${locale}/admin/analytics` },
-              { label: "Agent Monitoring", href: `/${locale}/admin/agents` },
+              {
+                label: "Review Moderation Queue",
+                href: "/admin/moderation",
+                badge: pendingModeration,
+              },
+              { label: "Manage Categories", href: "/admin/categories" },
+              { label: "User Management", href: "/admin/users" },
+              { label: "Revenue Dashboard", href: "/admin/revenue" },
+              { label: "Analytics", href: "/admin/analytics" },
+              { label: "Agent Monitoring", href: "/admin/agents" },
             ].map((action) => (
               <Link
                 key={action.href}
@@ -166,7 +176,9 @@ export default async function AdminOverviewPage({
               >
                 <span className="text-sm font-medium">{action.label}</span>
                 {action.badge ? (
-                  <Badge variant={action.badge > 0 ? "destructive" : "secondary"}>
+                  <Badge
+                    variant={action.badge > 0 ? "destructive" : "secondary"}
+                  >
                     {action.badge}
                   </Badge>
                 ) : null}
@@ -181,25 +193,59 @@ export default async function AdminOverviewPage({
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Moderation Queue</span>
-              <Badge variant={pendingModeration > 10 ? "destructive" : pendingModeration > 0 ? "default" : "success"}>
-                {pendingModeration === 0 ? "Clear" : `${pendingModeration} pending`}
+              <span className="text-sm text-muted-foreground">
+                Moderation Queue
+              </span>
+              <Badge
+                variant={
+                  pendingModeration > 10
+                    ? "destructive"
+                    : pendingModeration > 0
+                      ? "default"
+                      : "success"
+                }
+              >
+                {pendingModeration === 0
+                  ? "Clear"
+                  : `${pendingModeration} pending`}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Open Reports</span>
-              <Badge variant={openReports > 5 ? "destructive" : openReports > 0 ? "default" : "success"}>
+              <span className="text-sm text-muted-foreground">
+                Open Reports
+              </span>
+              <Badge
+                variant={
+                  openReports > 5
+                    ? "destructive"
+                    : openReports > 0
+                      ? "default"
+                      : "success"
+                }
+              >
                 {openReports === 0 ? "Clear" : `${openReports} open`}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Escalations</span>
-              <Badge variant={pendingEscalations > 3 ? "destructive" : pendingEscalations > 0 ? "default" : "success"}>
-                {pendingEscalations === 0 ? "Clear" : `${pendingEscalations} pending`}
+              <Badge
+                variant={
+                  pendingEscalations > 3
+                    ? "destructive"
+                    : pendingEscalations > 0
+                      ? "default"
+                      : "success"
+                }
+              >
+                {pendingEscalations === 0
+                  ? "Clear"
+                  : `${pendingEscalations} pending`}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">User Growth (30d)</span>
+              <span className="text-sm text-muted-foreground">
+                User Growth (30d)
+              </span>
               <Badge variant="secondary">+{newUsersLast30}</Badge>
             </div>
           </CardContent>

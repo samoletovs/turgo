@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Heart, MapPin, Clock, Bot } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { formatRelativeTime } from "@/lib/utils";
 import type { ListingCardData } from "@/types";
@@ -18,8 +19,9 @@ const BLUR_DATA_URL =
 function formatCardPrice(
   price: number,
   currency = "EUR",
+  locale = "en",
 ): { amount: string; suffix: string } {
-  const formatted = new Intl.NumberFormat("en", {
+  const formatted = new Intl.NumberFormat(locale, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
     useGrouping: true,
@@ -40,11 +42,12 @@ export function ListingCard({
   onFavoriteToggle,
   isFavorited = false,
 }: ListingCardProps) {
+  const t = useTranslations("listing");
   const [justFavorited, setJustFavorited] = useState(false);
   const imageUrl = listing.imageUrl || "/placeholder.svg";
   const linkHref = listing.slug
-    ? `/${locale}/listing/${listing.slug}`
-    : `/${locale}/listing/${listing.id}`;
+    ? `/listing/${listing.slug}`
+    : `/listing/${listing.id}`;
 
   const handleFavoriteToggle = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -78,7 +81,7 @@ export function ListingCard({
         <div className="absolute left-2 top-2 flex gap-1">
           {listing.isFeatured && (
             <Badge variant="default" className="text-[10px]">
-              Featured
+              {t("featured")}
             </Badge>
           )}
           {listing.hasAgent && (
@@ -93,9 +96,7 @@ export function ListingCard({
           <button
             onClick={handleFavoriteToggle}
             className="absolute right-2 top-2 rounded-full bg-white/80 p-1.5 backdrop-blur-sm transition-colors hover:bg-white"
-            aria-label={
-              isFavorited ? "Remove from favorites" : "Add to favorites"
-            }
+            aria-label={isFavorited ? t("unfavorite") : t("favorite")}
           >
             <Heart
               className={`h-4 w-4 transition-colors ${
@@ -117,7 +118,7 @@ export function ListingCard({
         {/* Image count */}
         {listing.imageCount && listing.imageCount > 1 && (
           <div className="absolute bottom-2 right-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white">
-            {listing.imageCount} photos
+            {listing.imageCount} {t("photos")}
           </div>
         )}
       </Link>
@@ -137,13 +138,16 @@ export function ListingCard({
               className="text-lg font-bold text-primary"
               style={{ fontFeatureSettings: '"tnum" 1' }}
             >
-              {formatCardPrice(listing.price, listing.currency).amount}
+              {formatCardPrice(listing.price, listing.currency, locale).amount}
               <span className="ml-1 text-xs font-medium text-muted-foreground">
-                {formatCardPrice(listing.price, listing.currency).suffix}
+                {
+                  formatCardPrice(listing.price, listing.currency, locale)
+                    .suffix
+                }
               </span>
             </p>
           ) : (
-            <p className="text-lg font-bold text-primary">Price negotiable</p>
+            <p className="text-lg font-bold text-primary">{t("negotiable")}</p>
           )}
 
           {/* Location + time */}

@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AgentStatusBadge } from "./AgentStatusBadge";
@@ -226,10 +226,7 @@ export function AgentCard({ agent, locale, className }: AgentCardProps) {
           </Button>
         )}
         {isSelling && (
-          <Link
-            href={`/${locale}/listing/${agent.listing.slug}`}
-            className="ml-auto"
-          >
+          <Link href={`/listing/${agent.listing.slug}`} className="ml-auto">
             <Button variant="ghost" size="sm">
               {t("viewListing")}
             </Button>

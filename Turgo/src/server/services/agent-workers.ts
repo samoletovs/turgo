@@ -27,6 +27,13 @@ import { runDailyQualityCheck } from "./agent-quality";
 import { runSeoOptimization } from "./agent-seo";
 import { runDailyEngagement } from "./agent-engagement";
 import { generateDailyReport, generateWeeklySummary } from "./agent-analytics";
+import {
+  adjustLiquidationBatchPricing,
+  getUserLiquidationBatches,
+} from "./agent-liquidation";
+import { checkForDuplicates, scanRecentMessages } from "./agent-watchdog";
+import { getOptimalTiming } from "./agent-timing";
+import { findSwapCandidates, runSwapMatching } from "./agent-swap";
 import { APP_URL } from "@/lib/constants";
 
 // ──────────────────────────────────────────────
@@ -691,5 +698,223 @@ export function registerAllWorkers(): void {
     }
   });
 
+  // Liquidation queue
+  registerWorker("liquidation", async (job: Job) => {
+    switch (job.name) {
+      case "liquidation-price-adjust": {
+        console.log(`[Worker] Processing liquidation-price-adjust`, job.data);
+        try {
+          // If specific batchId provided, adjust that batch only
+          const batchIds: string[] = job.data.batchId
+            ? [job.data.batchId]
+            : await getAllActiveLiquidationBatchIds();
+
+          for (const batchId of batchIds) {
+            try {
+              const result = await adjustLiquidationBatchPricing(batchId);
+              console.log(
+                `[Worker] Liquidation batch ${batchId}: adjusted ${result.adjusted}, skipped ${result.skipped}`,
+              );
+            } catch (error) {
+              console.error(
+                `[Worker] Liquidation pricing failed for batch ${batchId}:`,
+                error,
+              );
+            }
+          }
+        } catch (error) {
+          console.error(`[Worker] Liquidation price-adjust failed:`, error);
+        }
+        break;
+      }
+      case "liquidation-batch-check": {
+        console.log(`[Worker] Processing liquidation-batch-check`, job.data);
+        try {
+          // Check for expired liquidation agents and mark them completed
+          const expiredAgents = await db.sellingAgent.findMany({
+            where: {
+              status: "ACTIVE",
+              deadline: { lte: new Date() },
+              strategy: { path: ["type"], equals: "liquidation" },
+            },
+            select: {
+              id: true,
+              userId: true,
+              listing: { select: { id: true, title: true } },
+            },
+          });
+
+          for (const agent of expiredAgents) {
+            await db.sellingAgent.update({
+              where: { id: agent.id },
+              data: { status: "COMPLETED", completedAt: new Date() },
+            });
+
+            await db.agentAction.create({
+              data: {
+                sellingAgentId: agent.id,
+                agentType: "SELLING",
+                actionType: "ALERT",
+                description: `Liquidation deadline reached for "${agent.listing.title}". Agent completed.`,
+                metadata: { reason: "deadline_reached" },
+              },
+            });
+
+            await createNotification({
+              userId: agent.userId,
+              type: "AGENT_ACTION",
+              title: "Liquidation Deadline Reached",
+              body: `Your liquidation listing "${agent.listing.title}" has reached its deadline.`,
+              metadata: { agentId: agent.id },
+            });
+          }
+
+          console.log(
+            `[Worker] Liquidation batch check: ${expiredAgents.length} expired agents completed`,
+          );
+        } catch (error) {
+          console.error(`[Worker] Liquidation batch check failed:`, error);
+        }
+        break;
+      }
+      default:
+        console.warn(`[Worker] Unknown liquidation job: ${job.name}`);
+    }
+  });
+
+  // Watchdog queue
+  registerWorker("watchdog", async (job: Job) => {
+    switch (job.name) {
+      case "watchdog-duplicate-check": {
+        console.log(`[Worker] Processing watchdog-duplicate-check`, job.data);
+        const { listingId } = job.data as { listingId: string };
+        if (listingId) {
+          try {
+            const result = await checkForDuplicates(listingId);
+            console.log(
+              `[Worker] Watchdog duplicate check: ${result.similarListings.length} similar found, isDuplicate=${result.isDuplicate}`,
+            );
+          } catch (error) {
+            console.error(`[Worker] Watchdog duplicate check failed:`, error);
+          }
+        }
+        break;
+      }
+      case "watchdog-message-scan": {
+        console.log(`[Worker] Processing watchdog-message-scan`, job.data);
+        try {
+          const result = await scanRecentMessages();
+          console.log(
+            `[Worker] Watchdog message scan: ${result.scanned} scanned, ${result.flagged} flagged, ${result.blocked} blocked`,
+          );
+        } catch (error) {
+          console.error(`[Worker] Watchdog message scan failed:`, error);
+        }
+        break;
+      }
+      default:
+        console.warn(`[Worker] Unknown watchdog job: ${job.name}`);
+    }
+  });
+
+  // Timing queue
+  registerWorker("timing", async (job: Job) => {
+    switch (job.name) {
+      case "timing-snapshot": {
+        console.log(`[Worker] Processing timing-snapshot`, job.data);
+        try {
+          // Pre-compute timing data for popular categories
+          const categories = await db.category.findMany({
+            where: { parentId: { not: null }, isActive: true },
+            select: { id: true, slug: true },
+            take: 50,
+          });
+
+          let processed = 0;
+          for (const category of categories) {
+            try {
+              await getOptimalTiming(category.id);
+              processed++;
+            } catch {
+              // continue
+            }
+          }
+          console.log(
+            `[Worker] Timing snapshot: processed ${processed}/${categories.length} categories`,
+          );
+        } catch (error) {
+          console.error(`[Worker] Timing snapshot failed:`, error);
+        }
+        break;
+      }
+      default:
+        console.warn(`[Worker] Unknown timing job: ${job.name}`);
+    }
+  });
+
+  // Swap queue
+  registerWorker("swap", async (job: Job) => {
+    switch (job.name) {
+      case "swap-matching": {
+        console.log(`[Worker] Processing swap-matching`, job.data);
+        try {
+          // If specific userId provided, match for that user only
+          if (job.data.userId) {
+            const result = await runSwapMatching(job.data.userId as string);
+            console.log(
+              `[Worker] Swap matching for user ${job.data.userId}: ${result.listingsChecked} checked, ${result.swapsFound} found`,
+            );
+          } else {
+            // Find users with active listings and run matching
+            const activeUsers = await db.listing.findMany({
+              where: { status: "ACTIVE" },
+              select: { userId: true },
+              distinct: ["userId"],
+              take: 50,
+            });
+
+            let totalSwaps = 0;
+            for (const { userId } of activeUsers) {
+              try {
+                const result = await runSwapMatching(userId);
+                totalSwaps += result.swapsFound;
+              } catch {
+                // continue
+              }
+            }
+            console.log(
+              `[Worker] Swap matching: ${activeUsers.length} users, ${totalSwaps} swaps found`,
+            );
+          }
+        } catch (error) {
+          console.error(`[Worker] Swap matching failed:`, error);
+        }
+        break;
+      }
+      default:
+        console.warn(`[Worker] Unknown swap job: ${job.name}`);
+    }
+  });
+
   console.log("[Agent Workers] All workers registered successfully");
+}
+
+/** Helper: get all active liquidation batch IDs */
+async function getAllActiveLiquidationBatchIds(): Promise<string[]> {
+  const agents = await db.sellingAgent.findMany({
+    where: {
+      status: "ACTIVE",
+      strategy: { path: ["type"], equals: "liquidation" },
+    },
+    select: { strategy: true },
+  });
+
+  const batchIds = new Set<string>();
+  for (const agent of agents) {
+    const strat = agent.strategy as Record<string, unknown> | null;
+    if (strat?.batchId && typeof strat.batchId === "string") {
+      batchIds.add(strat.batchId);
+    }
+  }
+  return Array.from(batchIds);
 }

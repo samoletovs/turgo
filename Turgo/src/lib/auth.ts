@@ -81,7 +81,7 @@ export const authConfig: NextAuthConfig = {
     }),
     GitHubProvider({
       clientId: process.env.GITHUB_ID!,
-      clientSecret: process.env.GITHUB!,
+      clientSecret: process.env.GITHUB_SECRET!,
     }),
   ],
   callbacks: {

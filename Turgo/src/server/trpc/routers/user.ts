@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "@/server/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "@/server/trpc";
 
 export const userRouter = createTRPCRouter({
   /** Get current user profile */
@@ -30,7 +34,7 @@ export const userRouter = createTRPCRouter({
         locale: z.enum(["en", "lv", "ru", "lt", "et"]).optional(),
         defaultLocationId: z.string().cuid().optional(),
         marketingOptIn: z.boolean().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.db.user.update({
@@ -40,7 +44,7 @@ export const userRouter = createTRPCRouter({
     }),
 
   /** Get user public profile */
-  getPublicProfile: protectedProcedure
+  getPublicProfile: publicProcedure
     .input(z.object({ userId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       return ctx.db.user.findUnique({

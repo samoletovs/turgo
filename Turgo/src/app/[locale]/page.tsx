@@ -151,7 +151,7 @@ export default async function HomePage({
                   href="#categories"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  or browse categories below ↓
+                  {t("hero.browseBelow")}
                 </a>
               </div>
             </div>
@@ -288,23 +288,23 @@ export default async function HomePage({
           <div className="grid gap-8 text-center sm:grid-cols-3">
             <div>
               <TrendingUp className="mx-auto mb-2 h-8 w-8 text-primary" />
-              <p className="text-3xl font-bold">24/7</p>
+              <p className="text-3xl font-bold">{t("stats.aiValue")}</p>
               <p className="text-sm text-muted-foreground">
-                AI agents working for you
+                {t("stats.aiDesc")}
               </p>
             </div>
             <div>
               <Bot className="mx-auto mb-2 h-8 w-8 text-primary" />
-              <p className="text-3xl font-bold">Smart</p>
+              <p className="text-3xl font-bold">{t("stats.smartValue")}</p>
               <p className="text-sm text-muted-foreground">
-                Dynamic pricing optimization
+                {t("stats.smartDesc")}
               </p>
             </div>
             <div>
               <Zap className="mx-auto mb-2 h-8 w-8 text-primary" />
-              <p className="text-3xl font-bold">Fast</p>
+              <p className="text-3xl font-bold">{t("stats.fastValue")}</p>
               <p className="text-sm text-muted-foreground">
-                Auto-respond to buyers instantly
+                {t("stats.fastDesc")}
               </p>
             </div>
           </div>

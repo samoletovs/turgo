@@ -1,5 +1,5 @@
 import { redirect, notFound } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import {
   TrendingUp,
   TrendingDown,
@@ -29,7 +29,9 @@ interface AgentDetailPageProps {
   params: Promise<{ locale: string; id: string }>;
 }
 
-export default async function AgentDetailPage({ params }: AgentDetailPageProps) {
+export default async function AgentDetailPage({
+  params,
+}: AgentDetailPageProps) {
   const { locale, id } = await params;
   const session = await auth();
 
@@ -96,7 +98,8 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
   if (!agent) notFound();
 
   // Verify ownership
-  if (sellingAgent && sellingAgent.listing.userId !== session.user.id) notFound();
+  if (sellingAgent && sellingAgent.listing.userId !== session.user.id)
+    notFound();
   if (buyingAgent && buyingAgent.userId !== session.user.id) notFound();
 
   const isSelling = !!sellingAgent;
@@ -140,7 +143,7 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
     <div className="container mx-auto px-4 py-8">
       {/* Breadcrumb */}
       <Link
-        href={`/${locale}/dashboard/agents`}
+        href="/dashboard/agents"
         className="mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-3.5 w-3.5" /> Back to Agents
@@ -186,13 +189,16 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
             <p className="text-sm text-muted-foreground mt-0.5">
               {isSelling ? (
                 <>
-                  {formatPrice(sellingAgent!.listing.price, sellingAgent!.listing.currency)} ·
-                  Created {formatRelativeTime(agent.createdAt)}
+                  {formatPrice(
+                    sellingAgent!.listing.price,
+                    sellingAgent!.listing.currency,
+                  )}{" "}
+                  · Created {formatRelativeTime(agent.createdAt)}
                 </>
               ) : (
                 <>
-                  Budget: {formatPrice(buyingAgent!.maxBudget, "EUR")} ·
-                  Created {formatRelativeTime(agent.createdAt)}
+                  Budget: {formatPrice(buyingAgent!.maxBudget, "EUR")} · Created{" "}
+                  {formatRelativeTime(agent.createdAt)}
                 </>
               )}
             </p>
@@ -235,29 +241,48 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
                 <>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Views</span>
-                    <span className="font-semibold">{sellingAgent!.listing.viewCount ?? 0}</span>
+                    <span className="font-semibold">
+                      {sellingAgent!.listing.viewCount ?? 0}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Auto-Respond</span>
-                    <Badge variant={sellingAgent!.autoRespond ? "default" : "secondary"} className="text-xs">
+                    <Badge
+                      variant={
+                        sellingAgent!.autoRespond ? "default" : "secondary"
+                      }
+                      className="text-xs"
+                    >
                       {sellingAgent!.autoRespond ? "ON" : "OFF"}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Auto-Negotiate</span>
-                    <Badge variant={sellingAgent!.autoNegotiate ? "default" : "secondary"} className="text-xs">
+                    <span className="text-muted-foreground">
+                      Auto-Negotiate
+                    </span>
+                    <Badge
+                      variant={
+                        sellingAgent!.autoNegotiate ? "default" : "secondary"
+                      }
+                      className="text-xs"
+                    >
                       {sellingAgent!.autoNegotiate ? "ON" : "OFF"}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Urgency</span>
-                    <span className="font-medium text-xs">{sellingAgent!.urgency}</span>
+                    <span className="font-medium text-xs">
+                      {sellingAgent!.urgency}
+                    </span>
                   </div>
                   {sellingAgent!.minimumPrice && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Price Floor</span>
                       <span className="font-semibold text-red-500">
-                        {formatPrice(sellingAgent!.minimumPrice, sellingAgent!.listing.currency)}
+                        {formatPrice(
+                          sellingAgent!.minimumPrice,
+                          sellingAgent!.listing.currency,
+                        )}
                       </span>
                     </div>
                   )}
@@ -267,11 +292,15 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
                 <>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Matches Found</span>
-                    <span className="font-semibold">{buyingAgent._count.matches}</span>
+                    <span className="font-semibold">
+                      {buyingAgent._count.matches}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Max Budget</span>
-                    <span className="font-semibold">{formatPrice(buyingAgent.maxBudget, "EUR")}</span>
+                    <span className="font-semibold">
+                      {formatPrice(buyingAgent.maxBudget, "EUR")}
+                    </span>
                   </div>
                 </>
               )}
@@ -283,15 +312,24 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
             <Card>
               <CardContent className="p-3">
                 <div className="grid grid-cols-2 gap-2">
-                  {sellingAgent!.listing.images.map((img: { id: string; url: string }) => (
-                    <div key={img.id} className="aspect-square overflow-hidden rounded-lg bg-muted">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={img.url} alt="" className="h-full w-full object-cover" />
-                    </div>
-                  ))}
+                  {sellingAgent!.listing.images.map(
+                    (img: { id: string; url: string }) => (
+                      <div
+                        key={img.id}
+                        className="aspect-square overflow-hidden rounded-lg bg-muted"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={img.url}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    ),
+                  )}
                 </div>
                 <Link
-                  href={`/${locale}/listing/${sellingAgent!.listing.slug}`}
+                  href={`/listing/${sellingAgent!.listing.slug}`}
                   className="mt-2 block text-center text-xs text-primary hover:underline"
                 >
                   View listing →
@@ -307,33 +345,44 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
                 <CardTitle className="text-sm">Recent Matches</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {buyingAgent.matches.slice(0, 5).map((match: typeof buyingAgent.matches[number]) => (
-                  <Link
-                    key={match.id}
-                    href={`/${locale}/listing/${match.listing.slug}`}
-                    className="flex items-center gap-2 rounded-lg p-2 text-sm hover:bg-accent transition-colors"
-                  >
-                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded bg-muted">
-                      {match.listing.images?.[0] ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img src={match.listing.images[0].url} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-muted-foreground/30">
-                          <ShoppingBag className="h-4 w-4" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate">{match.listing.title}</p>
-                      <p className="text-xs text-primary font-semibold">
-                        {formatPrice(match.listing.price, match.listing.currency)}
-                      </p>
-                    </div>
-                    <Badge variant="outline" className="text-[10px] shrink-0">
-                      Score: {match.dealScore}
-                    </Badge>
-                  </Link>
-                ))}
+                {buyingAgent.matches
+                  .slice(0, 5)
+                  .map((match: (typeof buyingAgent.matches)[number]) => (
+                    <Link
+                      key={match.id}
+                      href={`/listing/${match.listing.slug}`}
+                      className="flex items-center gap-2 rounded-lg p-2 text-sm hover:bg-accent transition-colors"
+                    >
+                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded bg-muted">
+                        {match.listing.images?.[0] ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={match.listing.images[0].url}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-muted-foreground/30">
+                            <ShoppingBag className="h-4 w-4" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">
+                          {match.listing.title}
+                        </p>
+                        <p className="text-xs text-primary font-semibold">
+                          {formatPrice(
+                            match.listing.price,
+                            match.listing.currency,
+                          )}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] shrink-0">
+                        Score: {match.dealScore}
+                      </Badge>
+                    </Link>
+                  ))}
               </CardContent>
             </Card>
           )}
@@ -351,7 +400,9 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
               {agentActions.length === 0 ? (
                 <div className="py-12 text-center">
                   <Activity className="mx-auto mb-2 h-8 w-8 text-muted-foreground/30" />
-                  <p className="text-sm text-muted-foreground">No actions recorded yet</p>
+                  <p className="text-sm text-muted-foreground">
+                    No actions recorded yet
+                  </p>
                   <p className="text-xs text-muted-foreground/60 mt-1">
                     Actions will appear here as the agent works
                   </p>
@@ -363,36 +414,51 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
                       {/* Day header */}
                       <div className="mb-3 flex items-center gap-2">
                         <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-xs font-semibold text-muted-foreground">{day}</span>
+                        <span className="text-xs font-semibold text-muted-foreground">
+                          {day}
+                        </span>
                         <div className="flex-1 border-b" />
                       </div>
 
                       {/* Actions for this day */}
                       <div className="ml-4 space-y-0">
                         {(actions as typeof agentActions).map((action, i) => {
-                          const Icon = actionIconMap[action.actionType] || Activity;
-                          const colorClass = actionColorMap[action.actionType] || "text-gray-500 bg-gray-500/10";
+                          const Icon =
+                            actionIconMap[action.actionType] || Activity;
+                          const colorClass =
+                            actionColorMap[action.actionType] ||
+                            "text-gray-500 bg-gray-500/10";
                           const [textColor, bgColor] = colorClass.split(" ");
-                          const isLast = i === (actions as typeof agentActions).length - 1;
+                          const isLast =
+                            i === (actions as typeof agentActions).length - 1;
 
                           return (
-                            <div key={action.id} className="relative flex gap-3 pb-4">
+                            <div
+                              key={action.id}
+                              className="relative flex gap-3 pb-4"
+                            >
                               {/* Timeline line */}
                               {!isLast && (
                                 <div className="absolute left-[13px] top-7 h-full w-px bg-border" />
                               )}
 
                               {/* Icon */}
-                              <div className={`relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${bgColor}`}>
+                              <div
+                                className={`relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${bgColor}`}
+                              >
                                 <Icon className={`h-3.5 w-3.5 ${textColor}`} />
                               </div>
 
                               {/* Content */}
                               <div className="flex-1 min-w-0 pt-0.5">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-sm font-medium">{action.actionType}</span>
+                                  <span className="text-sm font-medium">
+                                    {action.actionType}
+                                  </span>
                                   <span className="text-[10px] text-muted-foreground">
-                                    {new Date(action.createdAt).toLocaleTimeString("en-US", {
+                                    {new Date(
+                                      action.createdAt,
+                                    ).toLocaleTimeString("en-US", {
                                       hour: "2-digit",
                                       minute: "2-digit",
                                     })}
@@ -405,10 +471,19 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
                                 )}
                                 {action.metadata && (
                                   <div className="mt-1 flex flex-wrap gap-1">
-                                    {Object.entries(action.metadata as Record<string, unknown>)
+                                    {Object.entries(
+                                      action.metadata as Record<
+                                        string,
+                                        unknown
+                                      >,
+                                    )
                                       .slice(0, 3)
                                       .map(([key, val]) => (
-                                        <Badge key={key} variant="outline" className="text-[10px]">
+                                        <Badge
+                                          key={key}
+                                          variant="outline"
+                                          className="text-[10px]"
+                                        >
                                           {key}: {String(val)}
                                         </Badge>
                                       ))}

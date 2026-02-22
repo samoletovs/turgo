@@ -75,6 +75,7 @@ export function FilterSidebar({
   className,
 }: FilterSidebarProps) {
   const t = useTranslations("common");
+  const tb = useTranslations("browse");
   const router = useRouter();
   const searchParams = useSearchParams();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
@@ -86,6 +87,11 @@ export function FilterSidebar({
 
   // Zustand filter store — sync URL filters into store
   const { viewMode, setViewMode, setFilter } = useFilterStore();
+
+  // Rehydrate Zustand persisted state on mount
+  useEffect(() => {
+    useFilterStore.persist.rehydrate();
+  }, []);
 
   // Keep store in sync with URL-driven currentFilters
   useEffect(() => {
@@ -166,7 +172,7 @@ export function FilterSidebar({
             size="icon"
             className="h-7 w-7"
             onClick={() => setViewMode("grid")}
-            aria-label="Grid view"
+            aria-label={tb("gridView")}
           >
             <LayoutGrid className="h-3.5 w-3.5" />
           </Button>
@@ -175,7 +181,7 @@ export function FilterSidebar({
             size="icon"
             className="h-7 w-7"
             onClick={() => setViewMode("list")}
-            aria-label="List view"
+            aria-label={tb("listView")}
           >
             <LayoutList className="h-3.5 w-3.5" />
           </Button>
@@ -195,7 +201,7 @@ export function FilterSidebar({
 
       {/* ── Categories ── */}
       <FilterSection
-        title="Categories"
+        title={tb("categories")}
         sectionKey="categories"
         expanded={expandedSections.has("categories")}
         onToggle={toggleSection}
@@ -272,7 +278,7 @@ export function FilterSidebar({
 
       {/* ── Price Range ── */}
       <FilterSection
-        title="Price Range"
+        title={tb("priceRange")}
         sectionKey="price"
         expanded={expandedSections.has("price")}
         onToggle={toggleSection}
@@ -303,7 +309,7 @@ export function FilterSidebar({
 
       {/* ── Condition ── */}
       <FilterSection
-        title="Condition"
+        title={tb("condition")}
         sectionKey="condition"
         expanded={expandedSections.has("condition")}
         onToggle={toggleSection}
@@ -324,7 +330,11 @@ export function FilterSidebar({
                   "bg-muted font-medium text-primary",
               )}
             >
-              {cond.charAt(0) + cond.slice(1).toLowerCase()}
+              {cond === "NEW"
+                ? tb("new")
+                : cond === "USED"
+                  ? tb("used")
+                  : tb("refurbished")}
             </button>
           ))}
         </div>
@@ -333,7 +343,7 @@ export function FilterSidebar({
       {/* ── Location ── */}
       {locations.length > 0 && (
         <FilterSection
-          title="Location"
+          title={tb("location")}
           sectionKey="location"
           expanded={expandedSections.has("location")}
           onToggle={toggleSection}
@@ -366,7 +376,7 @@ export function FilterSidebar({
 
       {/* ── Country ── */}
       <FilterSection
-        title="Country"
+        title={tb("country")}
         sectionKey="country"
         expanded={expandedSections.has("country")}
         onToggle={toggleSection}
@@ -402,7 +412,7 @@ export function FilterSidebar({
       {/* ── Category-specific dynamic filters ── */}
       {categoryAttributes.length > 0 && (
         <FilterSection
-          title="Specifications"
+          title={tb("specifications")}
           sectionKey="attributes"
           expanded={expandedSections.has("attributes")}
           onToggle={toggleSection}
@@ -465,6 +475,7 @@ function PriceRangeFilter({
   maxPrice?: string;
   onApply: (min: string, max: string) => void;
 }) {
+  const tb = useTranslations("browse");
   const [min, setMin] = useState(minPrice || "");
   const [max, setMax] = useState(maxPrice || "");
   const [prevMinPrice, setPrevMinPrice] = useState(minPrice);
@@ -483,7 +494,7 @@ function PriceRangeFilter({
     <div className="flex items-center gap-2">
       <Input
         type="number"
-        placeholder="Min"
+        placeholder={tb("min")}
         value={min}
         onChange={(e) => setMin(e.target.value)}
         className="h-8 text-sm"
@@ -492,7 +503,7 @@ function PriceRangeFilter({
       <span className="text-muted-foreground text-xs">–</span>
       <Input
         type="number"
-        placeholder="Max"
+        placeholder={tb("max")}
         value={max}
         onChange={(e) => setMax(e.target.value)}
         className="h-8 text-sm"
@@ -504,7 +515,7 @@ function PriceRangeFilter({
         className="h-8 shrink-0 px-2 text-xs"
         onClick={() => onApply(min, max)}
       >
-        Go
+        {tb("go")}
       </Button>
     </div>
   );
@@ -604,6 +615,7 @@ export function MobileFilterTrigger({
   activeCount: number;
   onClick: () => void;
 }) {
+  const tb = useTranslations("browse");
   return (
     <Button
       variant="outline"
@@ -612,7 +624,7 @@ export function MobileFilterTrigger({
       onClick={onClick}
     >
       <SlidersHorizontal className="h-3.5 w-3.5" />
-      Filters
+      {tb("filters")}
       {activeCount > 0 && (
         <Badge variant="default" className="text-[10px] px-1 ml-1">
           {activeCount}

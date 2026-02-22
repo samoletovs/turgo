@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import {
   Search,
@@ -50,6 +50,11 @@ export function Navbar({ locale, user }: NavbarProps) {
   } = useUiStore();
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Rehydrate Zustand persisted state on mount
+  useEffect(() => {
+    useUiStore.persist.rehydrate();
+  }, []);
+
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4">
@@ -74,7 +79,7 @@ export function Navbar({ locale, user }: NavbarProps) {
             }}
           >
             <Input
-              placeholder={t("home")}
+              placeholder={t("searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="rounded-r-none"
@@ -176,7 +181,7 @@ export function Navbar({ locale, user }: NavbarProps) {
             }}
           >
             <Input
-              placeholder={t("home")}
+              placeholder={t("searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="rounded-r-none"

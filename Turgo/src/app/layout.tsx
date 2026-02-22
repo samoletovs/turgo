@@ -26,7 +26,8 @@ export const metadata: Metadata = {
     default: "Turgo — AI-Powered Classifieds",
     template: "%s | Turgo",
   },
-  description: "Agent-first classifieds platform for the Baltics. Buy and sell smarter with AI agents.",
+  description:
+    "Agent-first classifieds platform for the Baltics. Buy and sell smarter with AI agents.",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon-192.png",
@@ -41,11 +42,7 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning>
-      <head>
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-      </head>
+      <head />
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >

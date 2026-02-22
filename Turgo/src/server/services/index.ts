@@ -67,6 +67,54 @@ export type {
   WeeklySummary,
 } from "./agent-analytics";
 
+// Liquidation Agent
+export {
+  createLiquidationBatch,
+  getLiquidationBatchStats,
+  getUserLiquidationBatches,
+  adjustLiquidationBatchPricing,
+} from "./agent-liquidation";
+export type {
+  LiquidationBatchConfig,
+  LiquidationBatchStats,
+  LiquidationItem,
+} from "./agent-liquidation";
+
+// Timing Agent
+export { getOptimalTiming, getTimingRecommendation } from "./agent-timing";
+export type {
+  OptimalTimingResult,
+  SeasonalPattern,
+  WeekdayPattern,
+  TimingRecommendation,
+} from "./agent-timing";
+
+// Watchdog Agent
+export {
+  checkForDuplicates,
+  scanMessage,
+  scanRecentMessages,
+} from "./agent-watchdog";
+export type {
+  DuplicateCheckResult,
+  MessageScanResult,
+  WatchdogAlert,
+  WatchdogAlertType,
+  WatchdogSeverity,
+} from "./agent-watchdog";
+
+// Swap/Barter Agent
+export {
+  findSwapCandidates,
+  generateSwapProposal,
+  runSwapMatching,
+} from "./agent-swap";
+export type {
+  SwapCandidate,
+  SwapProposal,
+  SwapSearchResult,
+} from "./agent-swap";
+
 // Orchestration
 export {
   scheduleJob,

@@ -76,6 +76,7 @@ export const useFilterStore = create<FilterState & FilterActions>()(
       name: "turgo-filter-store",
       // Only persist viewMode to localStorage
       partialize: (state) => ({ viewMode: state.viewMode }),
+      skipHydration: true,
     },
   ),
 );

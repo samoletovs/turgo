@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import {
   Search,
@@ -87,7 +87,7 @@ export function SavedSearchesClient({ locale }: SavedSearchesClientProps) {
 
   /** Build search URL from filters */
   const buildSearchUrl = (filters: unknown): string => {
-    if (!filters || typeof filters !== "object") return `/${locale}/search`;
+    if (!filters || typeof filters !== "object") return "/search";
     const f = filters as Record<string, string>;
     const params = new URLSearchParams();
     if (f.query) params.set("q", f.query);
@@ -97,7 +97,7 @@ export function SavedSearchesClient({ locale }: SavedSearchesClientProps) {
     if (f.categoryId) params.set("category", f.categoryId);
     if (f.locationId) params.set("location", f.locationId);
     const qs = params.toString();
-    return `/${locale}/search${qs ? `?${qs}` : ""}`;
+    return `/search${qs ? `?${qs}` : ""}`;
   };
 
   return (
@@ -108,7 +108,7 @@ export function SavedSearchesClient({ locale }: SavedSearchesClientProps) {
           <h1 className="text-2xl font-bold">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
-        <Link href={`/${locale}/search`}>
+        <Link href="/search">
           <Button size="sm" variant="outline" className="gap-1.5">
             <Search className="h-4 w-4" />
             {t("newSearch")}
@@ -132,7 +132,7 @@ export function SavedSearchesClient({ locale }: SavedSearchesClientProps) {
             <p className="mb-4 text-sm text-muted-foreground">
               {t("emptyDesc")}
             </p>
-            <Link href={`/${locale}/search`}>
+            <Link href="/search">
               <Button size="sm">
                 <Search className="mr-1 h-4 w-4" />
                 {t("goSearch")}

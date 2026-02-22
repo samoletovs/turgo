@@ -4,7 +4,7 @@ import { db } from "@/server/db";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { AlertTriangle, FileEdit, ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 export default async function SellPage({
   params,
@@ -21,8 +21,18 @@ export default async function SellPage({
 
   // Fetch categories + locations for the wizard
   type JsonName = string | Record<string, string>;
-  let categories: { id: string; name: JsonName; slug: string; children?: { id: string; name: JsonName; slug: string }[] }[] = [];
-  let locations: { id: string; name: JsonName; slug: string; children?: { id: string; name: JsonName; slug: string }[] }[] = [];
+  let categories: {
+    id: string;
+    name: JsonName;
+    slug: string;
+    children?: { id: string; name: JsonName; slug: string }[];
+  }[] = [];
+  let locations: {
+    id: string;
+    name: JsonName;
+    slug: string;
+    children?: { id: string; name: JsonName; slug: string }[];
+  }[] = [];
   let dbError = false;
 
   try {
@@ -73,7 +83,13 @@ export default async function SellPage({
     return <SellPageError locale={locale} />;
   }
 
-  return <SellPageClient locale={locale} categories={categories} locations={locations} />;
+  return (
+    <SellPageClient
+      locale={locale}
+      categories={categories}
+      locations={locations}
+    />
+  );
 }
 
 function SellPageError({ locale: _locale }: { locale: string }) {
@@ -97,8 +113,26 @@ function SellPageClient({
   locations,
 }: {
   locale: string;
-  categories: { id: string; name: string | Record<string, string>; slug: string; children?: { id: string; name: string | Record<string, string>; slug: string }[] }[];
-  locations: { id: string; name: string | Record<string, string>; slug: string; children?: { id: string; name: string | Record<string, string>; slug: string }[] }[];
+  categories: {
+    id: string;
+    name: string | Record<string, string>;
+    slug: string;
+    children?: {
+      id: string;
+      name: string | Record<string, string>;
+      slug: string;
+    }[];
+  }[];
+  locations: {
+    id: string;
+    name: string | Record<string, string>;
+    slug: string;
+    children?: {
+      id: string;
+      name: string | Record<string, string>;
+      slug: string;
+    }[];
+  }[];
 }) {
   const t = useTranslations("sell");
 
@@ -121,7 +155,7 @@ function SellPageClient({
           <p className="text-sm text-muted-foreground">
             Prefer to do it yourself?{" "}
             <Link
-              href={`/${locale}/listing/new`}
+              href="/listing/new"
               className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
             >
               <FileEdit className="h-3.5 w-3.5" />

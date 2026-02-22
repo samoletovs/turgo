@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MessageCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ConversationList } from "@/components/messaging/conversation-list";
 import { ChatWindow } from "@/components/messaging/chat-window";
 
@@ -12,6 +13,7 @@ interface MessagesPageClientProps {
 
 export function MessagesPageClient({ locale }: MessagesPageClientProps) {
   const router = useRouter();
+  const t = useTranslations("messages");
   const [selectedConversation, setSelectedConversation] = useState<
     string | null
   >(null);
@@ -26,7 +28,7 @@ export function MessagesPageClient({ locale }: MessagesPageClientProps) {
           } w-full md:w-80 lg:w-96 flex-col border-r`}
         >
           <div className="flex items-center gap-2 border-b px-4 py-3">
-            <h1 className="text-lg font-bold">Messages</h1>
+            <h1 className="text-lg font-bold">{t("title")}</h1>
           </div>
           <ConversationList
             locale={locale}
@@ -49,18 +51,15 @@ export function MessagesPageClient({ locale }: MessagesPageClientProps) {
           } flex-1 flex-col min-w-0`}
         >
           {selectedConversation ? (
-            <ChatWindow
-              conversationId={selectedConversation}
-              locale={locale}
-            />
+            <ChatWindow conversationId={selectedConversation} locale={locale} />
           ) : (
             <div className="flex flex-1 items-center justify-center text-center text-muted-foreground">
               <div>
                 <MessageCircle className="mx-auto mb-3 h-12 w-12" />
-                <h3 className="text-lg font-medium">Select a conversation</h3>
-                <p className="text-sm mt-1">
-                  Choose a conversation from the list to start chatting
-                </p>
+                <h3 className="text-lg font-medium">
+                  {t("selectConversation")}
+                </h3>
+                <p className="text-sm mt-1">{t("selectConversationDesc")}</p>
               </div>
             </div>
           )}

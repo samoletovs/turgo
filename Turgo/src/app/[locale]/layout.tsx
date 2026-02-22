@@ -1,7 +1,7 @@
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { LOCALES, APP_URL } from "@/lib/constants";
+import { LOCALES } from "@/lib/constants";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ConciergeChat } from "@/components/concierge-chat";
@@ -67,17 +67,6 @@ export default async function LocaleLayout({
     <NextIntlClientProvider messages={messages} locale={locale}>
       <Providers>
         <SkipToContent label={skipLabel} />
-
-        {/* Hreflang alternate links for SEO */}
-        {LOCALES.map((loc) => (
-          <link
-            key={loc}
-            rel="alternate"
-            hrefLang={loc}
-            href={`${APP_URL}/${loc}`}
-          />
-        ))}
-        <link rel="alternate" hrefLang="x-default" href={`${APP_URL}/en`} />
 
         {/* JSON-LD structured data */}
         <JsonLd data={websiteJsonLd(locale)} />

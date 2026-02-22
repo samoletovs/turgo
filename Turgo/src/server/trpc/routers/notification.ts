@@ -14,7 +14,7 @@ export const notificationRouter = createTRPCRouter({
         limit: z.number().int().min(1).max(100).default(20),
         cursor: z.string().optional(),
         unreadOnly: z.boolean().default(false),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const notifications = await ctx.db.notification.findMany({
@@ -48,7 +48,7 @@ export const notificationRouter = createTRPCRouter({
     .input(z.object({ id: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.notification.update({
-        where: { id: input.id },
+        where: { id: input.id, userId: ctx.session.user.id! },
         data: { isRead: true },
       });
       return { success: true };
@@ -68,7 +68,7 @@ export const notificationRouter = createTRPCRouter({
     .input(z.object({ id: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.notification.delete({
-        where: { id: input.id },
+        where: { id: input.id, userId: ctx.session.user.id! },
       });
       return { success: true };
     }),
@@ -80,7 +80,7 @@ export const notificationRouter = createTRPCRouter({
         endpoint: z.string().url(),
         p256dh: z.string(),
         auth: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       await registerPushSubscription({

@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { generatePageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({
@@ -401,7 +401,7 @@ export default async function TermsOfServicePage({
               detailed information about how we collect, use, and protect your
               personal data, please refer to our{" "}
               <Link
-                href={`/${locale}/legal/privacy`}
+                href="/legal/privacy"
                 className="text-primary hover:underline"
               >
                 Privacy Policy
