@@ -29,7 +29,6 @@ import {
   LOCALE_LABELS,
   LOCALE_FLAGS,
 } from "@/lib/constants";
-import { useState } from "react";
 import { Link, useRouter, usePathname } from "@/i18n/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { RegionSelector } from "@/components/region-selector";
