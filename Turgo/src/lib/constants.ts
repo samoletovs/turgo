@@ -95,6 +95,7 @@ export const RATE_LIMITS = {
   AGENT: { max: 50, windowMs: 60_000 },
   CONCIERGE: { max: 20, windowMs: 60_000 },
   REGISTER: { max: 5, windowMs: 3_600_000 },
+  PASSWORD_RESET: { max: 3, windowMs: 3_600_000 },
   LISTING_CREATE: { max: 30, windowMs: 3_600_000 },
   MESSAGE_SEND: { max: 60, windowMs: 60_000 },
   AGENT_CREATE: { max: 10, windowMs: 3_600_000 },

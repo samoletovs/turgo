@@ -3,12 +3,27 @@
  */
 
 // Core AI — unified router + provider-specific modules
-export { aiComplete, aiEmbed, aiAnalyzeImage, createMessages, getAiProviderInfo } from "./ai";
+export {
+  aiComplete,
+  aiEmbed,
+  aiAnalyzeImage,
+  createMessages,
+  getAiProviderInfo,
+} from "./ai";
 export type { AiProvider, UserTier } from "./ai";
 
 // AI Providers (for direct access if needed)
-export { githubModelsComplete, githubModelsEmbed, githubModelsAnalyzeImage } from "./ai-dev";
-export { azureOpenAiComplete, azureOpenAiEmbed, azureAnalyzeImage, azureVisionAnalyze } from "./ai-premium";
+export {
+  githubModelsComplete,
+  githubModelsEmbed,
+  githubModelsAnalyzeImage,
+} from "./ai-dev";
+export {
+  azureOpenAiComplete,
+  azureOpenAiEmbed,
+  azureAnalyzeImage,
+  azureVisionAnalyze,
+} from "./ai-premium";
 export { ollamaComplete, ollamaEmbed, freeAnalyzeImage } from "./ai-free";
 
 // Agent services
@@ -34,9 +49,15 @@ export {
   transitionAgent,
   initializeOrchestrator,
 } from "./agent-orchestrator";
+export { registerAllWorkers } from "./agent-workers";
 
 // External integrations
-export { fetchCategoryStats, runScraper, isScrapingEnabled, createScraperWorker } from "./scraper-sslv";
+export {
+  fetchCategoryStats,
+  runScraper,
+  isScrapingEnabled,
+  createScraperWorker,
+} from "./scraper-sslv";
 export {
   createCheckoutSession,
   createBoostPayment,
@@ -104,3 +125,10 @@ export {
   getVapidPublicKey,
   sendAgentSummaryEmail,
 } from "./notification";
+
+// View counter
+export {
+  incrementViewCount,
+  getViewCount,
+  flushViewCounts,
+} from "./view-counter";

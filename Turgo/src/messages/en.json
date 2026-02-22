@@ -154,7 +154,61 @@
       "EXPIRED": "Expired",
       "MODERATION": "In Review",
       "REJECTED": "Rejected"
+    },
+    "reportDialog": {
+      "title": "Report Listing",
+      "description": "Help us keep the marketplace safe by reporting listings that violate our guidelines.",
+      "reason": "Reason",
+      "reasonPlaceholder": "Select a reason",
+      "details": "Additional details",
+      "detailsPlaceholder": "Describe the issue in more detail (minimum 10 characters)...",
+      "submit": "Submit Report",
+      "submitting": "Submitting...",
+      "success": "Report submitted successfully. We'll review it shortly.",
+      "alreadyReported": "You have already reported this listing",
+      "cannotReportOwn": "You cannot report your own listing",
+      "reasons": {
+        "SPAM": "Spam",
+        "FRAUD": "Fraud / Scam",
+        "INAPPROPRIATE": "Inappropriate content",
+        "DUPLICATE": "Duplicate listing",
+        "WRONG_CATEGORY": "Wrong category",
+        "MISLEADING_PRICE": "Misleading price",
+        "PROHIBITED_ITEM": "Prohibited item",
+        "OTHER": "Other"
+      }
     }
+  },
+  "review": {
+    "title": "Reviews",
+    "writeReview": "Write a Review",
+    "rating": "Rating",
+    "comment": "Comment",
+    "commentPlaceholder": "Share your experience with this user...",
+    "submit": "Submit Review",
+    "submitting": "Submitting...",
+    "success": "Review submitted successfully!",
+    "noReviews": "No reviews yet",
+    "noReviewsDesc": "Be the first to leave a review.",
+    "averageRating": "Average rating",
+    "totalReviews": "{count} reviews",
+    "alreadyReviewed": "You have already reviewed this user",
+    "noInteraction": "You can only review users you have communicated with",
+    "cannotReviewSelf": "You cannot review yourself",
+    "stars": {
+      "1": "Poor",
+      "2": "Fair",
+      "3": "Good",
+      "4": "Very Good",
+      "5": "Excellent"
+    }
+  },
+  "publicProfile": {
+    "memberSince": "Member since {date}",
+    "listings": "Listings",
+    "reviews": "Reviews",
+    "viewListings": "View Listings",
+    "noUser": "User not found"
   },
   "sell": {
     "title": "Sell with AI Agent",

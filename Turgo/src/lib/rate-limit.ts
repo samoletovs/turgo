@@ -6,33 +6,7 @@
  * Falls back to an in-memory Map when Redis is unavailable.
  */
 
-import type IORedis from "ioredis";
-
-// ── Redis connection (lazy, shared) ──────────────────────────
-
-let redis: IORedis | null = null;
-let redisUnavailable = false;
-
-async function getRedis(): Promise<IORedis | null> {
-  if (redisUnavailable) return null;
-  if (redis) return redis;
-
-  try {
-    const { default: Redis } = await import("ioredis");
-    const url = process.env.REDIS_URL || "redis://localhost:6379";
-    redis = new Redis(url, {
-      maxRetriesPerRequest: 1,
-      connectTimeout: 3000,
-      lazyConnect: true,
-    });
-    await redis.connect();
-    return redis;
-  } catch {
-    console.warn("[rate-limit] Redis unavailable — using in-memory fallback");
-    redisUnavailable = true;
-    return null;
-  }
-}
+import { getRedis } from "@/lib/redis";
 
 // ── In-memory fallback ───────────────────────────────────────
 
@@ -180,8 +154,6 @@ export async function rateLimit({
     };
   } catch (err) {
     console.warn("[rate-limit] Redis error, falling back to memory:", err);
-    redisUnavailable = true;
-    redis = null;
     return memoryRateLimit(key, limit, windowMs);
   }
 }

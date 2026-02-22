@@ -5,6 +5,7 @@
  */
 
 import { db } from "@/server/db";
+import type { Prisma, NotificationType } from "@prisma/client";
 import { sendEmail } from "./email";
 import { emitNotification } from "@/server/socket";
 import { APP_URL, APP_NAME } from "@/lib/constants";
@@ -65,7 +66,7 @@ export async function sendPushNotification(params: {
           endpoint: sub.endpoint,
           keys: { p256dh: sub.p256dh, auth: sub.auth },
         },
-        payload
+        payload,
       );
     } catch (error) {
       console.error(`[Push] Failed for subscription ${sub.id}:`, error);
@@ -96,10 +97,10 @@ export async function createNotification(params: {
   const notification = await db.notification.create({
     data: {
       userId: params.userId,
-      type: params.type as never,
+      type: params.type as NotificationType,
       title: params.title,
       body: params.body,
-      metadata: params.metadata as never,
+      metadata: params.metadata as Prisma.InputJsonValue,
     },
   });
 
@@ -158,7 +159,11 @@ export async function notifyNewMessage(params: {
 /** Notify user of negotiation events */
 export async function notifyNegotiationEvent(params: {
   userId: string;
-  type: "OFFER_RECEIVED" | "OFFER_ACCEPTED" | "OFFER_REJECTED" | "COUNTER_OFFER";
+  type:
+    | "OFFER_RECEIVED"
+    | "OFFER_ACCEPTED"
+    | "OFFER_REJECTED"
+    | "COUNTER_OFFER";
   listingTitle: string;
   amount: number;
   counterAmount?: number;
@@ -212,9 +217,7 @@ export async function sendAgentSummaryEmail(params: {
     .map(([key, value]) => `<li><strong>${key}:</strong> ${value}</li>`)
     .join("");
 
-  const highlightList = params.highlights
-    .map((h) => `<li>${h}</li>`)
-    .join("");
+  const highlightList = params.highlights.map((h) => `<li>${h}</li>`).join("");
 
   const recommendationList = params.recommendations
     .map((r) => `<li>${r}</li>`)
@@ -274,7 +277,7 @@ export async function notifyPriceDrop(params: {
   });
 
   const discount = Math.round(
-    ((params.oldPrice - params.newPrice) / params.oldPrice) * 100
+    ((params.oldPrice - params.newPrice) / params.oldPrice) * 100,
   );
   const title = `📉 Price drop: ${params.listingTitle}`;
   const body = `Price reduced by ${discount}% — from €${params.oldPrice.toFixed(0)} to €${params.newPrice.toFixed(0)}`;
@@ -364,14 +367,15 @@ export async function checkAndNotifySavedSearchMatches(): Promise<void> {
     const since = search.lastNotifiedAt || search.createdAt;
 
     // Build listing query from saved search filters
-    const where: Record<string, unknown> = {
+    const where: Prisma.ListingWhereInput = {
       status: "ACTIVE",
       createdAt: { gt: since },
     };
 
-    if (filters.categoryId) where.categoryId = filters.categoryId;
-    if (filters.locationId) where.locationId = filters.locationId;
-    if (filters.condition) where.condition = filters.condition;
+    if (filters.categoryId) where.categoryId = filters.categoryId as string;
+    if (filters.locationId) where.locationId = filters.locationId as string;
+    if (filters.condition)
+      where.condition = filters.condition as Prisma.EnumListingConditionFilter;
     if (filters.minPrice || filters.maxPrice) {
       where.price = {
         ...(filters.minPrice ? { gte: filters.minPrice as number } : {}),
@@ -381,12 +385,17 @@ export async function checkAndNotifySavedSearchMatches(): Promise<void> {
     if (filters.query) {
       where.OR = [
         { title: { contains: filters.query as string, mode: "insensitive" } },
-        { description: { contains: filters.query as string, mode: "insensitive" } },
+        {
+          description: {
+            contains: filters.query as string,
+            mode: "insensitive",
+          },
+        },
       ];
     }
 
     const matchingListings = await db.listing.findMany({
-      where: where as never,
+      where,
       take: 10,
       orderBy: { createdAt: "desc" },
       select: {
@@ -476,7 +485,7 @@ export async function registerPushSubscription(params: {
 /** Remove a push subscription */
 export async function removePushSubscription(
   userId: string,
-  endpoint: string
+  endpoint: string,
 ): Promise<void> {
   await db.pushSubscription.deleteMany({
     where: { userId, endpoint },

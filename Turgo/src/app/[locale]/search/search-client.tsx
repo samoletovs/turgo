@@ -24,11 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ListingCard } from "@/components/listing-card";
@@ -192,11 +188,15 @@ export function SearchPageClient({
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">{totalCount}</span>{" "}
+                <span className="font-medium text-foreground">
+                  {totalCount}
+                </span>{" "}
                 {totalCount === 1 ? "result" : "results"}
                 {filters.q && (
                   <span>
-                    {" "}for &ldquo;<span className="font-medium">{filters.q}</span>&rdquo;
+                    {" "}
+                    for &ldquo;<span className="font-medium">{filters.q}</span>
+                    &rdquo;
                   </span>
                 )}
               </p>
@@ -231,11 +231,13 @@ export function SearchPageClient({
 
               {/* View toggle */}
               <div className="flex rounded-md border">
-                {([
-                  { mode: "grid" as ViewMode, icon: Grid3X3, label: "Grid" },
-                  { mode: "list" as ViewMode, icon: List, label: "List" },
-                  { mode: "map" as ViewMode, icon: Map, label: "Map" },
-                ] as const).map(({ mode, icon: Icon, label }) => (
+                {(
+                  [
+                    { mode: "grid" as ViewMode, icon: Grid3X3, label: "Grid" },
+                    { mode: "list" as ViewMode, icon: List, label: "List" },
+                    { mode: "map" as ViewMode, icon: Map, label: "Map" },
+                  ] as const
+                ).map(({ mode, icon: Icon, label }) => (
                   <button
                     key={mode}
                     onClick={() => handleViewChange(mode)}
@@ -263,37 +265,49 @@ export function SearchPageClient({
               {filters.category && (
                 <FilterChip
                   label={`Category: ${filters.category}`}
-                  onRemove={() => router.push(buildUrl({ category: undefined }))}
+                  onRemove={() =>
+                    router.push(buildUrl({ category: undefined }))
+                  }
                 />
               )}
               {filters.location && (
                 <FilterChip
                   label={`Location: ${filters.location}`}
-                  onRemove={() => router.push(buildUrl({ location: undefined }))}
+                  onRemove={() =>
+                    router.push(buildUrl({ location: undefined }))
+                  }
                 />
               )}
               {filters.condition && (
                 <FilterChip
                   label={`Condition: ${filters.condition}`}
-                  onRemove={() => router.push(buildUrl({ condition: undefined }))}
+                  onRemove={() =>
+                    router.push(buildUrl({ condition: undefined }))
+                  }
                 />
               )}
               {filters.minPrice && (
                 <FilterChip
                   label={`Min: €${filters.minPrice}`}
-                  onRemove={() => router.push(buildUrl({ minPrice: undefined }))}
+                  onRemove={() =>
+                    router.push(buildUrl({ minPrice: undefined }))
+                  }
                 />
               )}
               {filters.maxPrice && (
                 <FilterChip
                   label={`Max: €${filters.maxPrice}`}
-                  onRemove={() => router.push(buildUrl({ maxPrice: undefined }))}
+                  onRemove={() =>
+                    router.push(buildUrl({ maxPrice: undefined }))
+                  }
                 />
               )}
               {filters.countryCode && (
                 <FilterChip
                   label={`Country: ${filters.countryCode}`}
-                  onRemove={() => router.push(buildUrl({ countryCode: undefined }))}
+                  onRemove={() =>
+                    router.push(buildUrl({ countryCode: undefined }))
+                  }
                 />
               )}
             </div>
@@ -320,7 +334,11 @@ export function SearchPageClient({
           )}
 
           {/* ── Agent CTA ── */}
-          <AgentPromptBanner locale={locale} query={filters.q} filters={filters} />
+          <AgentPromptBanner
+            locale={locale}
+            query={filters.q}
+            filters={filters}
+          />
         </div>
       </div>
     </div>
@@ -329,7 +347,13 @@ export function SearchPageClient({
 
 // ─── Grid View ───────────────────────────────────────────
 
-function GridView({ listings, locale }: { listings: SerializedListing[]; locale: string }) {
+function GridView({
+  listings,
+  locale,
+}: {
+  listings: SerializedListing[];
+  locale: string;
+}) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {listings.map((listing) => (
@@ -357,7 +381,13 @@ function GridView({ listings, locale }: { listings: SerializedListing[]; locale:
 
 // ─── List View ───────────────────────────────────────────
 
-function ListView({ listings, locale }: { listings: SerializedListing[]; locale: string }) {
+function ListView({
+  listings,
+  locale,
+}: {
+  listings: SerializedListing[];
+  locale: string;
+}) {
   return (
     <div className="space-y-3">
       {listings.map((listing) => (
@@ -375,12 +405,18 @@ function ListView({ listings, locale }: { listings: SerializedListing[]; locale:
               className="h-full w-full object-cover transition-transform group-hover:scale-105"
             />
             {listing.isFeatured && (
-              <Badge variant="default" className="absolute left-1.5 top-1.5 text-[10px]">
+              <Badge
+                variant="default"
+                className="absolute left-1.5 top-1.5 text-[10px]"
+              >
                 Featured
               </Badge>
             )}
             {listing.hasAgent && (
-              <Badge variant="secondary" className="absolute left-1.5 bottom-1.5 gap-0.5 text-[10px]">
+              <Badge
+                variant="secondary"
+                className="absolute left-1.5 bottom-1.5 gap-0.5 text-[10px]"
+              >
                 <Bot className="h-3 w-3" /> AI
               </Badge>
             )}
@@ -405,7 +441,8 @@ function ListView({ listings, locale }: { listings: SerializedListing[]; locale:
             <div className="mt-2 flex items-center gap-4 text-[11px] text-muted-foreground">
               <span className="inline-flex items-center gap-0.5">
                 <Badge variant="outline" className="text-[10px] px-1">
-                  {listing.condition.charAt(0) + listing.condition.slice(1).toLowerCase()}
+                  {listing.condition.charAt(0) +
+                    listing.condition.slice(1).toLowerCase()}
                 </Badge>
               </span>
               {listing.categoryName && (
@@ -419,7 +456,8 @@ function ListView({ listings, locale }: { listings: SerializedListing[]; locale:
                 </span>
               )}
               <span className="inline-flex items-center gap-0.5">
-                <Clock className="h-3 w-3" /> {formatRelativeTime(new Date(listing.createdAt))}
+                <Clock className="h-3 w-3" />{" "}
+                {formatRelativeTime(new Date(listing.createdAt))}
               </span>
               <span className="inline-flex items-center gap-0.5">
                 <Eye className="h-3 w-3" /> {listing.viewCount}
@@ -434,19 +472,32 @@ function ListView({ listings, locale }: { listings: SerializedListing[]; locale:
 
 // ─── Map View (Leaflet) ──────────────────────────────────
 
-function MapView({ listings, locale }: { listings: SerializedListing[]; locale: string }) {
+function MapView({
+  listings,
+  locale,
+}: {
+  listings: SerializedListing[];
+  locale: string;
+}) {
   // Filter listings that have coordinates
-  const geoListings = listings.filter((l) => l.latitude != null && l.longitude != null);
+  const geoListings = listings.filter(
+    (l) => l.latitude != null && l.longitude != null,
+  );
 
   // Fallback center: Riga, Latvia
   const defaultCenter = { lat: 56.9496, lng: 24.1052 };
 
-  const center = geoListings.length > 0
-    ? {
-        lat: geoListings.reduce((s, l) => s + (l.latitude || 0), 0) / geoListings.length,
-        lng: geoListings.reduce((s, l) => s + (l.longitude || 0), 0) / geoListings.length,
-      }
-    : defaultCenter;
+  const center =
+    geoListings.length > 0
+      ? {
+          lat:
+            geoListings.reduce((s, l) => s + (l.latitude || 0), 0) /
+            geoListings.length,
+          lng:
+            geoListings.reduce((s, l) => s + (l.longitude || 0), 0) /
+            geoListings.length,
+        }
+      : defaultCenter;
 
   return (
     <div className="space-y-4">
@@ -455,11 +506,14 @@ function MapView({ listings, locale }: { listings: SerializedListing[]; locale: 
           <Map className="mb-3 h-10 w-10 text-muted-foreground" />
           <h3 className="text-sm font-medium">No map data available</h3>
           <p className="mt-1 text-xs text-muted-foreground">
-            These listings don&apos;t have location coordinates. Try switching to grid or list view.
+            These listings don&apos;t have location coordinates. Try switching
+            to grid or list view.
           </p>
           <div className="mt-4 flex gap-2">
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/${locale}/search?${new URLSearchParams({ ...Object.fromEntries(Object.entries({}).filter(([, v]) => v)), view: 'grid' }).toString()}`}>
+              <Link
+                href={`/${locale}/search?${new URLSearchParams({ ...Object.fromEntries(Object.entries({}).filter(([, v]) => v)), view: "grid" }).toString()}`}
+              >
                 <Grid3X3 className="h-3.5 w-3.5 mr-1" /> Grid View
               </Link>
             </Button>
@@ -468,11 +522,7 @@ function MapView({ listings, locale }: { listings: SerializedListing[]; locale: 
       ) : (
         <>
           {/* Leaflet map container — loaded dynamically */}
-          <LeafletMap
-            listings={geoListings}
-            center={center}
-            locale={locale}
-          />
+          <LeafletMap listings={geoListings} center={center} locale={locale} />
 
           {/* Listing cards below map */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -538,7 +588,10 @@ function LeafletMap({
               >
                 <X className="h-3 w-3" />
               </button>
-              <Link href={`/${locale}/listing/${selected.slug}`} className="flex gap-3">
+              <Link
+                href={`/${locale}/listing/${selected.slug}`}
+                className="flex gap-3"
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={selected.imageUrl}
@@ -546,7 +599,9 @@ function LeafletMap({
                   className="h-16 w-20 rounded-md object-cover"
                 />
                 <div>
-                  <h4 className="line-clamp-1 text-sm font-medium">{selected.title}</h4>
+                  <h4 className="line-clamp-1 text-sm font-medium">
+                    {selected.title}
+                  </h4>
                   <p className="text-sm font-bold text-primary">
                     {formatPrice(selected.price, selected.currency)}
                   </p>
@@ -601,11 +656,13 @@ function LeafletMapInner({
 
       // Fix default marker icons
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      delete (L.Icon.Default.prototype as Record<string, any>)._getIconUrl;
       L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+        iconRetinaUrl:
+          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
         iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        shadowUrl:
+          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       });
 
       if (!mapRef.current) return;
@@ -613,7 +670,8 @@ function LeafletMapInner({
       const map = L.map(mapRef.current).setView([center.lat, center.lng], 10);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         maxZoom: 18,
       }).addTo(map);
 
@@ -743,17 +801,25 @@ function SaveSearchButton({
 
             {/* Show active filters summary */}
             <div className="rounded-lg bg-muted/50 p-3">
-              <p className="mb-1.5 text-xs font-medium text-muted-foreground">Your search criteria:</p>
+              <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+                Your search criteria:
+              </p>
               <div className="flex flex-wrap gap-1">
                 {Object.entries(filters)
-                  .filter(([k, v]) => v && !["page", "view", "sort"].includes(k))
+                  .filter(
+                    ([k, v]) => v && !["page", "view", "sort"].includes(k),
+                  )
                   .map(([k, v]) => (
                     <Badge key={k} variant="secondary" className="text-[10px]">
                       {k}: {v}
                     </Badge>
                   ))}
-                {Object.entries(filters).filter(([k, v]) => v && !["page", "view", "sort"].includes(k)).length === 0 && (
-                  <span className="text-xs text-muted-foreground">All listings</span>
+                {Object.entries(filters).filter(
+                  ([k, v]) => v && !["page", "view", "sort"].includes(k),
+                ).length === 0 && (
+                  <span className="text-xs text-muted-foreground">
+                    All listings
+                  </span>
                 )}
               </div>
             </div>
@@ -835,17 +901,15 @@ function AgentPromptBanner({
               : "Let an AI agent find the best deals for you"}
           </h3>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Set your criteria and our buying agent will monitor 24/7, alert you on great deals,
-            and even negotiate on your behalf.
+            Set your criteria and our buying agent will monitor 24/7, alert you
+            on great deals, and even negotiate on your behalf.
           </p>
         </div>
         <Button size="sm" className="shrink-0 gap-1.5" asChild>
           <Link
             href={`/${locale}/dashboard/agents?action=create-buying${
               query ? `&keywords=${encodeURIComponent(query)}` : ""
-            }${
-              filters.category ? `&category=${filters.category}` : ""
-            }${
+            }${filters.category ? `&category=${filters.category}` : ""}${
               filters.maxPrice ? `&maxPrice=${filters.maxPrice}` : ""
             }`}
           >
@@ -899,7 +963,10 @@ function Pagination({
 
       {pages.map((p, i) =>
         p === "..." ? (
-          <span key={`dots-${i}`} className="px-2 text-sm text-muted-foreground">
+          <span
+            key={`dots-${i}`}
+            className="px-2 text-sm text-muted-foreground"
+          >
             ...
           </span>
         ) : (

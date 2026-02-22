@@ -5,6 +5,54 @@
 import { z } from "zod";
 import { createTRPCRouter, adminProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
+import { Prisma } from "@prisma/client";
+
+// ── Redis cache helper (lazy init, graceful fallback) ────────
+let redis: import("ioredis").default | null = null;
+let redisUnavailable = false;
+
+async function getAdminRedis() {
+  if (redisUnavailable) return null;
+  if (redis) return redis;
+  try {
+    const { default: IORedis } = await import("ioredis");
+    const url = process.env.REDIS_URL || "redis://localhost:6379";
+    redis = new IORedis(url, {
+      maxRetriesPerRequest: 1,
+      connectTimeout: 3000,
+      lazyConnect: true,
+    });
+    await redis.connect();
+    return redis;
+  } catch {
+    console.warn("[admin] Redis unavailable — caching disabled");
+    redisUnavailable = true;
+    return null;
+  }
+}
+
+const CACHE_TTL = 300; // 5 minutes
+
+async function cached<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+  const client = await getAdminRedis();
+  if (client) {
+    try {
+      const hit = await client.get(key);
+      if (hit) return JSON.parse(hit) as T;
+    } catch {
+      /* ignore read errors */
+    }
+  }
+  const data = await fetcher();
+  if (client) {
+    try {
+      await client.set(key, JSON.stringify(data), "EX", CACHE_TTL);
+    } catch {
+      /* ignore write errors */
+    }
+  }
+  return data;
+}
 
 export const adminRouter = createTRPCRouter({
   // ──────────────────────────────────────────
@@ -51,17 +99,21 @@ export const adminRouter = createTRPCRouter({
   moderationQueue: adminProcedure
     .input(
       z.object({
-        status: z.enum(["MODERATION", "REJECTED", "ACTIVE"]).default("MODERATION"),
+        status: z
+          .enum(["MODERATION", "REJECTED", "ACTIVE"])
+          .default("MODERATION"),
         page: z.number().min(1).default(1),
         limit: z.number().min(1).max(100).default(20),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const [items, total] = await Promise.all([
         ctx.db.listing.findMany({
           where: { status: input.status },
           include: {
-            user: { select: { id: true, name: true, email: true, avatar: true } },
+            user: {
+              select: { id: true, name: true, email: true, avatar: true },
+            },
             category: { select: { id: true, name: true, slug: true } },
             images: { take: 1, orderBy: { sortOrder: "asc" } },
             location: { select: { name: true } },
@@ -82,7 +134,7 @@ export const adminRouter = createTRPCRouter({
         listingId: z.string(),
         action: z.enum(["APPROVE", "REJECT", "FLAG"]),
         reason: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const statusMap = {
@@ -135,12 +187,15 @@ export const adminRouter = createTRPCRouter({
         icon: z.string().optional(),
         parentId: z.string().nullish(),
         sortOrder: z.number().default(0),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { parentId, ...rest } = input;
       return ctx.db.category.create({
-        data: { ...rest, ...(parentId ? { parent: { connect: { id: parentId } } } : {}) },
+        data: {
+          ...rest,
+          ...(parentId ? { parent: { connect: { id: parentId } } } : {}),
+        },
       });
     }),
 
@@ -155,7 +210,7 @@ export const adminRouter = createTRPCRouter({
         parentId: z.string().nullish(),
         sortOrder: z.number().optional(),
         isActive: z.boolean().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { id, parentId, ...rest } = input;
@@ -175,13 +230,23 @@ export const adminRouter = createTRPCRouter({
   deleteCategory: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const childCount = await ctx.db.category.count({ where: { parentId: input.id } });
+      const childCount = await ctx.db.category.count({
+        where: { parentId: input.id },
+      });
       if (childCount > 0) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot delete category with children" });
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot delete category with children",
+        });
       }
-      const listingCount = await ctx.db.listing.count({ where: { categoryId: input.id } });
+      const listingCount = await ctx.db.listing.count({
+        where: { categoryId: input.id },
+      });
       if (listingCount > 0) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot delete category with listings" });
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot delete category with listings",
+        });
       }
       return ctx.db.category.delete({ where: { id: input.id } });
     }),
@@ -194,8 +259,8 @@ export const adminRouter = createTRPCRouter({
           ctx.db.category.update({
             where: { id: item.id },
             data: { sortOrder: item.sortOrder },
-          })
-        )
+          }),
+        ),
       );
       return { success: true };
     }),
@@ -204,170 +269,267 @@ export const adminRouter = createTRPCRouter({
   // REVENUE DASHBOARD
   // ──────────────────────────────────────────
   revenue: adminProcedure.query(async ({ ctx }) => {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    return cached("admin:revenue", async () => {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startOfLastMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() - 1,
+        1,
+      );
 
-    // Active subscriptions by plan
-    const subscriptions = await ctx.db.subscription.findMany({
-      where: { status: "ACTIVE" },
-      include: { plan: true },
-    });
+      // Active subscriptions by plan
+      const subscriptions = await ctx.db.subscription.findMany({
+        where: { status: "ACTIVE" },
+        include: { plan: true },
+      });
 
-    const planCounts = { FREE: 0, PRO: 0, BUSINESS: 0 };
-    let mrr = 0;
-    for (const sub of subscriptions) {
-      planCounts[sub.plan.name] = (planCounts[sub.plan.name] || 0) + 1;
-      if (sub.plan.interval === "MONTHLY") {
-        mrr += sub.plan.price;
-      } else {
-        mrr += sub.plan.price / 12;
+      const planCounts: Record<string, number> = {
+        FREE: 0,
+        PRO: 0,
+        BUSINESS: 0,
+      };
+      let mrr = 0;
+      for (const sub of subscriptions) {
+        planCounts[sub.plan.name] = (planCounts[sub.plan.name] || 0) + 1;
+        if (sub.plan.interval === "MONTHLY") {
+          mrr += sub.plan.price;
+        } else {
+          mrr += sub.plan.price / 12;
+        }
       }
-    }
 
-    // Boost revenue this month
-    const boosts = await ctx.db.listingBoost.findMany({
-      where: { startAt: { gte: startOfMonth } },
-    });
-    const boostRevenue = boosts.reduce((sum, b) => {
-      const prices: Record<string, number> = { FEATURED: 4.99, HIGHLIGHTED: 2.99, TOP: 9.99 };
-      return sum + (prices[b.type] || 0);
-    }, 0);
+      // Boost revenue this month
+      const boosts = await ctx.db.listingBoost.findMany({
+        where: { startAt: { gte: startOfMonth } },
+      });
+      const boostRevenue = boosts.reduce((sum, b) => {
+        const prices: Record<string, number> = {
+          FEATURED: 4.99,
+          HIGHLIGHTED: 2.99,
+          TOP: 9.99,
+        };
+        return sum + (prices[b.type] || 0);
+      }, 0);
 
-    // Last month subscriptions for churn
-    const lastMonthCancelled = await ctx.db.subscription.count({
-      where: {
-        status: "CANCELLED",
-        updatedAt: { gte: startOfLastMonth, lt: startOfMonth },
-      },
-    });
-
-    const totalActiveStart = subscriptions.length + lastMonthCancelled;
-    const churnRate = totalActiveStart > 0 ? (lastMonthCancelled / totalActiveStart) * 100 : 0;
-
-    // MRR over last 12 months (approximation from subscription counts)
-    const mrrHistory: { month: string; mrr: number; boosts: number }[] = [];
-    for (let i = 11; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const endD = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
-      const label = d.toLocaleDateString("en", { month: "short", year: "2-digit" });
-
-      const activeSubs = await ctx.db.subscription.count({
+      // Last month subscriptions for churn
+      const lastMonthCancelled = await ctx.db.subscription.count({
         where: {
-          status: "ACTIVE",
-          createdAt: { lt: endD },
+          status: "CANCELLED",
+          updatedAt: { gte: startOfLastMonth, lt: startOfMonth },
         },
       });
 
-      const monthBoosts = await ctx.db.listingBoost.count({
-        where: {
-          startAt: { gte: d, lt: endD },
-        },
-      });
+      const totalActiveStart = subscriptions.length + lastMonthCancelled;
+      const churnRate =
+        totalActiveStart > 0
+          ? (lastMonthCancelled / totalActiveStart) * 100
+          : 0;
 
-      mrrHistory.push({
-        month: label,
-        mrr: activeSubs * 8, // rough avg
-        boosts: monthBoosts * 5, // rough avg
-      });
-    }
+      // MRR over last 12 months — single query for subscriptions, single for boosts
+      const twelveMonthsAgo = new Date(
+        now.getFullYear(),
+        now.getMonth() - 11,
+        1,
+      );
 
-    return {
-      mrr: Math.round(mrr * 100) / 100,
-      boostRevenue: Math.round(boostRevenue * 100) / 100,
-      planCounts,
-      churnRate: Math.round(churnRate * 10) / 10,
-      totalSubscribers: subscriptions.length,
-      mrrHistory,
-    };
+      const subsByMonth = await ctx.db.$queryRaw<
+        { month: Date; cnt: bigint }[]
+      >(Prisma.sql`
+        SELECT DATE_TRUNC('month', m.month) AS month,
+               COUNT(s.id)                  AS cnt
+        FROM   generate_series(
+                 ${twelveMonthsAgo}::timestamp,
+                 ${startOfMonth}::timestamp,
+                 '1 month'
+               ) AS m(month)
+        LEFT JOIN "Subscription" s
+               ON s.status = 'ACTIVE'
+              AND s."createdAt" < (m.month + INTERVAL '1 month')
+        GROUP BY 1
+        ORDER BY 1
+      `);
+
+      const boostsByMonth = await ctx.db.$queryRaw<
+        { month: Date; cnt: bigint }[]
+      >(Prisma.sql`
+        SELECT DATE_TRUNC('month', m.month) AS month,
+               COUNT(b.id)                  AS cnt
+        FROM   generate_series(
+                 ${twelveMonthsAgo}::timestamp,
+                 ${startOfMonth}::timestamp,
+                 '1 month'
+               ) AS m(month)
+        LEFT JOIN "ListingBoost" b
+               ON b."startAt" >= m.month
+              AND b."startAt" <  (m.month + INTERVAL '1 month')
+        GROUP BY 1
+        ORDER BY 1
+      `);
+
+      // Build lookup maps
+      const subsMap = new Map<string, number>();
+      for (const row of subsByMonth) {
+        const key = new Date(row.month).toISOString().slice(0, 7);
+        subsMap.set(key, Number(row.cnt));
+      }
+      const boostsMap = new Map<string, number>();
+      for (const row of boostsByMonth) {
+        const key = new Date(row.month).toISOString().slice(0, 7);
+        boostsMap.set(key, Number(row.cnt));
+      }
+
+      const mrrHistory: { month: string; mrr: number; boosts: number }[] = [];
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const label = d.toLocaleDateString("en", {
+          month: "short",
+          year: "2-digit",
+        });
+        const key = d.toISOString().slice(0, 7);
+        const activeSubs = subsMap.get(key) ?? 0;
+        const monthBoosts = boostsMap.get(key) ?? 0;
+        mrrHistory.push({
+          month: label,
+          mrr: activeSubs * 8, // rough avg
+          boosts: monthBoosts * 5, // rough avg
+        });
+      }
+
+      return {
+        mrr: Math.round(mrr * 100) / 100,
+        boostRevenue: Math.round(boostRevenue * 100) / 100,
+        planCounts,
+        churnRate: Math.round(churnRate * 10) / 10,
+        totalSubscribers: subscriptions.length,
+        mrrHistory,
+      };
+    });
   }),
 
   // ──────────────────────────────────────────
   // ANALYTICS DASHBOARD
   // ──────────────────────────────────────────
   analytics: adminProcedure.query(async ({ ctx }) => {
-    // Listings per category
-    const categoryCounts = await ctx.db.category.findMany({
-      where: { parentId: null },
-      select: { name: true, slug: true, _count: { select: { listings: true } } },
-      orderBy: { sortOrder: "asc" },
+    return cached("admin:analytics", async () => {
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now);
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
+      const rangeStart = new Date(
+        thirtyDaysAgo.getFullYear(),
+        thirtyDaysAgo.getMonth(),
+        thirtyDaysAgo.getDate(),
+      );
+
+      // Parallel: category counts, country counts, users by country,
+      //           popular searches, and the two 30-day time-series queries
+      const [
+        categoryCounts,
+        countryCounts,
+        usersByCountry,
+        popularSearches,
+        listingRows,
+        userRows,
+      ] = await Promise.all([
+        ctx.db.category.findMany({
+          where: { parentId: null },
+          select: {
+            name: true,
+            slug: true,
+            _count: { select: { listings: true } },
+          },
+          orderBy: { sortOrder: "asc" },
+        }),
+        ctx.db.location.findMany({
+          where: { type: "COUNTRY" },
+          select: {
+            name: true,
+            countryCode: true,
+            _count: { select: { listings: true } },
+          },
+        }),
+        ctx.db.location.findMany({
+          where: { type: "COUNTRY" },
+          select: {
+            name: true,
+            countryCode: true,
+            _count: { select: { users: true } },
+          },
+        }),
+        ctx.db.searchLog.groupBy({
+          by: ["query"],
+          _count: { query: true },
+          orderBy: { _count: { query: "desc" } },
+          take: 50,
+        }),
+        // Single query: listings created per day over last 30 days
+        ctx.db.$queryRaw<{ day: Date; cnt: bigint }[]>(Prisma.sql`
+          SELECT d.day::date AS day, COUNT(l.id) AS cnt
+          FROM   generate_series(
+                   ${rangeStart}::date,
+                   CURRENT_DATE,
+                   '1 day'
+                 ) AS d(day)
+          LEFT JOIN "Listing" l
+                 ON l."createdAt" >= d.day
+                AND l."createdAt" <  d.day + INTERVAL '1 day'
+          GROUP BY 1
+          ORDER BY 1
+        `),
+        // Single query: user registrations per day over last 30 days
+        ctx.db.$queryRaw<{ day: Date; cnt: bigint }[]>(Prisma.sql`
+          SELECT d.day::date AS day, COUNT(u.id) AS cnt
+          FROM   generate_series(
+                   ${rangeStart}::date,
+                   CURRENT_DATE,
+                   '1 day'
+                 ) AS d(day)
+          LEFT JOIN "User" u
+                 ON u."createdAt" >= d.day
+                AND u."createdAt" <  d.day + INTERVAL '1 day'
+          GROUP BY 1
+          ORDER BY 1
+        `),
+      ]);
+
+      // Map raw rows into the expected { date, count } shape
+      const listingsOverTime = listingRows.map((r) => ({
+        date: new Date(r.day).toISOString().slice(0, 10),
+        count: Number(r.cnt),
+      }));
+
+      const registrationTrend = userRows.map((r) => ({
+        date: new Date(r.day).toISOString().slice(0, 10),
+        count: Number(r.cnt),
+      }));
+
+      return {
+        categoryCounts: categoryCounts.map((c) => ({
+          name: (c.name as Record<string, string>).en || c.slug,
+          count: c._count.listings,
+        })),
+        countryCounts: countryCounts.map((c) => ({
+          name:
+            (c.name as Record<string, string>).en || c.countryCode || "Unknown",
+          code: c.countryCode,
+          count: c._count.listings,
+        })),
+        listingsOverTime,
+        registrationTrend,
+        usersByCountry: usersByCountry.map((c) => ({
+          name:
+            (c.name as Record<string, string>).en || c.countryCode || "Unknown",
+          code: c.countryCode,
+          count: c._count.users,
+        })),
+        popularSearches: popularSearches.map(
+          (s: { query: string; _count: { query: number } }) => ({
+            word: s.query,
+            count: s._count.query,
+          }),
+        ),
+      };
     });
-
-    // Listings per country
-    const countryCounts = await ctx.db.location.findMany({
-      where: { type: "COUNTRY" },
-      select: { name: true, countryCode: true, _count: { select: { listings: true } } },
-    });
-
-    // New listings over past 30 days
-    const listingsOverTime: { date: string; count: number }[] = [];
-    const now = new Date();
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
-      const count = await ctx.db.listing.count({
-        where: { createdAt: { gte: start, lt: end } },
-      });
-      listingsOverTime.push({
-        date: start.toISOString().slice(0, 10),
-        count,
-      });
-    }
-
-    // User registration trends last 30 days
-    const registrationTrend: { date: string; count: number }[] = [];
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
-      const count = await ctx.db.user.count({
-        where: { createdAt: { gte: start, lt: end } },
-      });
-      registrationTrend.push({
-        date: start.toISOString().slice(0, 10),
-        count,
-      });
-    }
-
-    // User registrations by country (via default location)
-    const usersByCountry = await ctx.db.location.findMany({
-      where: { type: "COUNTRY" },
-      select: { name: true, countryCode: true, _count: { select: { users: true } } },
-    });
-
-    // Popular searches
-    const popularSearches = await ctx.db.searchLog.groupBy({
-      by: ["query"],
-      _count: { query: true },
-      orderBy: { _count: { query: "desc" } },
-      take: 50,
-    });
-
-    return {
-      categoryCounts: categoryCounts.map((c) => ({
-        name: (c.name as Record<string, string>).en || c.slug,
-        count: c._count.listings,
-      })),
-      countryCounts: countryCounts.map((c) => ({
-        name: (c.name as Record<string, string>).en || c.countryCode || "Unknown",
-        code: c.countryCode,
-        count: c._count.listings,
-      })),
-      listingsOverTime,
-      registrationTrend,
-      usersByCountry: usersByCountry.map((c) => ({
-        name: (c.name as Record<string, string>).en || c.countryCode || "Unknown",
-        code: c.countryCode,
-        count: c._count.users,
-      })),
-      popularSearches: popularSearches.map((s: { query: string; _count: { query: number } }) => ({
-        word: s.query,
-        count: s._count.query,
-      })),
-    };
   }),
 
   // ──────────────────────────────────────────
@@ -380,7 +542,7 @@ export const adminRouter = createTRPCRouter({
         role: z.enum(["USER", "MODERATOR", "ADMIN"]).optional(),
         page: z.number().min(1).default(1),
         limit: z.number().min(1).max(100).default(20),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const where: Record<string, unknown> = {};
@@ -435,7 +597,7 @@ export const adminRouter = createTRPCRouter({
         userId: z.string(),
         reason: z.string().min(1),
         durationDays: z.number().optional(), // null = permanent
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const expiresAt = input.durationDays
@@ -498,10 +660,12 @@ export const adminRouter = createTRPCRouter({
   reports: adminProcedure
     .input(
       z.object({
-        status: z.enum(["OPEN", "REVIEWING", "RESOLVED", "DISMISSED"]).optional(),
+        status: z
+          .enum(["OPEN", "REVIEWING", "RESOLVED", "DISMISSED"])
+          .optional(),
         page: z.number().min(1).default(1),
         limit: z.number().min(1).max(100).default(20),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const where: Record<string, unknown> = {};
@@ -537,7 +701,7 @@ export const adminRouter = createTRPCRouter({
         reportId: z.string(),
         action: z.enum(["RESOLVED", "DISMISSED"]),
         note: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.db.report.update({
@@ -559,7 +723,7 @@ export const adminRouter = createTRPCRouter({
       z.object({
         type: z.enum(["COUNTRY", "REGION", "CITY", "DISTRICT"]).optional(),
         parentId: z.string().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const where: Record<string, unknown> = {};
@@ -590,12 +754,15 @@ export const adminRouter = createTRPCRouter({
         countryCode: z.string().optional(),
         latitude: z.number().optional(),
         longitude: z.number().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { parentId, ...rest } = input;
       return ctx.db.location.create({
-        data: { ...rest, ...(parentId ? { parent: { connect: { id: parentId } } } : {}) },
+        data: {
+          ...rest,
+          ...(parentId ? { parent: { connect: { id: parentId } } } : {}),
+        },
       });
     }),
 
@@ -610,7 +777,7 @@ export const adminRouter = createTRPCRouter({
         countryCode: z.string().optional(),
         latitude: z.number().optional(),
         longitude: z.number().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { id, parentId, ...rest } = input;
@@ -630,9 +797,14 @@ export const adminRouter = createTRPCRouter({
   deleteLocation: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const childCount = await ctx.db.location.count({ where: { parentId: input.id } });
+      const childCount = await ctx.db.location.count({
+        where: { parentId: input.id },
+      });
       if (childCount > 0) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot delete location with children" });
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot delete location with children",
+        });
       }
       return ctx.db.location.delete({ where: { id: input.id } });
     }),
@@ -661,7 +833,8 @@ export const adminRouter = createTRPCRouter({
       where: { createdAt: { gte: oneDayAgo }, rejectedAt: { not: null } },
     });
 
-    const errorRate = recentActions > 0 ? (rejectedActions / recentActions) * 100 : 0;
+    const errorRate =
+      recentActions > 0 ? (rejectedActions / recentActions) * 100 : 0;
 
     // Metrics over last 14 days
     const metricsHistory = await ctx.db.agentMetrics.findMany({
@@ -676,8 +849,14 @@ export const adminRouter = createTRPCRouter({
       where: { date: today },
     });
 
-    const totalAiCostToday = todayMetrics.reduce((s: number, m: { aiCostCents: number }) => s + m.aiCostCents, 0);
-    const totalTokensToday = todayMetrics.reduce((s: number, m: { aiTokensUsed: number }) => s + m.aiTokensUsed, 0);
+    const totalAiCostToday = todayMetrics.reduce(
+      (s: number, m: { aiCostCents: number }) => s + m.aiCostCents,
+      0,
+    );
+    const totalTokensToday = todayMetrics.reduce(
+      (s: number, m: { aiTokensUsed: number }) => s + m.aiTokensUsed,
+      0,
+    );
 
     // Agent status breakdown
     const sellingByStatus = await ctx.db.sellingAgent.groupBy({
@@ -696,20 +875,30 @@ export const adminRouter = createTRPCRouter({
       errorRate: Math.round(errorRate * 10) / 10,
       aiCostTodayCents: totalAiCostToday,
       aiTokensToday: totalTokensToday,
-      metricsHistory: metricsHistory.map((m: { date: Date; agentType: string; itemsProcessed: number; errorsCount: number; avgResponseMs: number; aiTokensUsed: number; aiCostCents: number }) => ({
-        date: m.date.toISOString().slice(0, 10),
-        agentType: m.agentType,
-        processed: m.itemsProcessed,
-        errors: m.errorsCount,
-        avgMs: m.avgResponseMs,
-        tokens: m.aiTokensUsed,
-        costCents: m.aiCostCents,
-      })),
+      metricsHistory: metricsHistory.map(
+        (m: {
+          date: Date;
+          agentType: string;
+          itemsProcessed: number;
+          errorsCount: number;
+          avgResponseMs: number;
+          aiTokensUsed: number;
+          aiCostCents: number;
+        }) => ({
+          date: m.date.toISOString().slice(0, 10),
+          agentType: m.agentType,
+          processed: m.itemsProcessed,
+          errors: m.errorsCount,
+          avgMs: m.avgResponseMs,
+          tokens: m.aiTokensUsed,
+          costCents: m.aiCostCents,
+        }),
+      ),
       sellingByStatus: Object.fromEntries(
-        sellingByStatus.map((s) => [s.status, s._count.status])
+        sellingByStatus.map((s) => [s.status, s._count.status]),
       ),
       buyingByStatus: Object.fromEntries(
-        buyingByStatus.map((s) => [s.status, s._count.status])
+        buyingByStatus.map((s) => [s.status, s._count.status]),
       ),
     };
   }),
@@ -720,11 +909,20 @@ export const adminRouter = createTRPCRouter({
   escalations: adminProcedure
     .input(
       z.object({
-        status: z.enum(["PENDING", "IN_REVIEW", "RESOLVED", "DISMISSED"]).optional(),
-        source: z.enum(["SELLING_AGENT", "BUYING_AGENT", "CONCIERGE", "AUTO_MODERATION"]).optional(),
+        status: z
+          .enum(["PENDING", "IN_REVIEW", "RESOLVED", "DISMISSED"])
+          .optional(),
+        source: z
+          .enum([
+            "SELLING_AGENT",
+            "BUYING_AGENT",
+            "CONCIERGE",
+            "AUTO_MODERATION",
+          ])
+          .optional(),
         page: z.number().min(1).default(1),
         limit: z.number().min(1).max(100).default(20),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const where: Record<string, unknown> = {};
@@ -750,7 +948,7 @@ export const adminRouter = createTRPCRouter({
         id: z.string(),
         action: z.enum(["RESOLVED", "DISMISSED"]),
         note: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.db.escalationItem.update({

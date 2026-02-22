@@ -3,16 +3,17 @@
  * Core engine that runs all agent operations via background jobs
  */
 
-import { Queue, Worker, type Job } from "bullmq";
+import { Queue, Worker, type Job, type ConnectionOptions } from "bullmq";
 import IORedis from "ioredis";
+import { registerAllWorkers } from "./agent-workers";
+import { REDIS_URL } from "@/lib/redis";
 
-// Redis connection (lazy init for dev environments without Redis)
+// BullMQ needs its own connection with maxRetriesPerRequest: null
 let connection: IORedis | null = null;
 
 function getConnection(): IORedis {
   if (!connection) {
-    const url = process.env.REDIS_URL || "redis://localhost:6379";
-    connection = new IORedis(url, { maxRetriesPerRequest: null });
+    connection = new IORedis(REDIS_URL, { maxRetriesPerRequest: null });
   }
   return connection;
 }
@@ -39,8 +40,7 @@ export function getQueue(name: string): Queue {
   if (!queues.has(name)) {
     queues.set(
       name,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      new Queue(name, { connection: getConnection() as any })
+      new Queue(name, { connection: getConnection() as ConnectionOptions }),
     );
   }
   return queues.get(name)!;
@@ -55,7 +55,7 @@ export async function scheduleJob(
   queueName: string,
   jobName: AgentJobType,
   data: Record<string, unknown>,
-  options?: { delay?: number; priority?: number }
+  options?: { delay?: number; priority?: number },
 ) {
   const queue = getQueue(queueName);
   return queue.add(jobName, data, {
@@ -71,7 +71,7 @@ export async function scheduleRecurring(
   queueName: string,
   jobName: AgentJobType,
   data: Record<string, unknown>,
-  pattern: string // CRON pattern
+  pattern: string, // CRON pattern
 ) {
   const queue = getQueue(queueName);
   return queue.add(jobName, data, {
@@ -100,15 +100,14 @@ const workers = new Map<string, Worker>();
 
 export function registerWorker(
   queueName: string,
-  processor: (job: Job) => Promise<void>
+  processor: (job: Job) => Promise<void>,
 ): Worker {
   if (workers.has(queueName)) {
     return workers.get(queueName)!;
   }
 
   const worker = new Worker(queueName, processor, {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    connection: getConnection() as any,
+    connection: getConnection() as ConnectionOptions,
     concurrency: 5,
   });
 
@@ -148,7 +147,7 @@ export async function transitionAgent(
   currentState: AgentState,
   newState: AgentState,
   agentId: string,
-  queueName: string
+  queueName: string,
 ): Promise<void> {
   if (!isValidTransition(currentState, newState)) {
     throw new Error(`Invalid transition: ${currentState} → ${newState}`);
@@ -178,14 +177,40 @@ export async function transitionAgent(
 export async function initializeOrchestrator() {
   console.log("[Agent Orchestrator] Initializing...");
 
-  // Daily quality check
-  await scheduleRecurring("quality", "quality-check", {}, "0 6 * * *"); // 6 AM daily
+  // 1. Register all BullMQ workers (processors)
+  registerAllWorkers();
+
+  // 2. Schedule recurring jobs
+
+  // Selling agent price adjustments every 2 hours
+  await scheduleRecurring(
+    "selling-agents",
+    "selling-agent-price-adjust",
+    {},
+    "0 */2 * * *",
+  );
+
+  // Selling agent daily summaries at 8 AM
+  await scheduleRecurring(
+    "selling-agents",
+    "selling-agent-daily-summary",
+    {},
+    "0 8 * * *",
+  );
 
   // Buying agent monitor every 5 minutes
-  await scheduleRecurring("buying-agents", "buying-agent-monitor", {}, "*/5 * * * *");
+  await scheduleRecurring(
+    "buying-agents",
+    "buying-agent-monitor",
+    {},
+    "*/5 * * * *",
+  );
 
-  // Daily analytics snapshot
-  await scheduleRecurring("analytics", "analytics-snapshot", {}, "0 1 * * *"); // 1 AM daily
+  // Daily quality check at 6 AM
+  await scheduleRecurring("quality", "quality-check", {}, "0 6 * * *");
+
+  // Daily analytics snapshot at 1 AM
+  await scheduleRecurring("analytics", "analytics-snapshot", {}, "0 1 * * *");
 
   // SS.lv scraper (if enabled)
   if (process.env.SSLV_SCRAPER_ENABLED === "true") {
@@ -193,5 +218,28 @@ export async function initializeOrchestrator() {
     await scheduleRecurring("scraper", "scraper-sslv", {}, cron);
   }
 
-  console.log("[Agent Orchestrator] Initialized successfully");
+  console.log(
+    "[Agent Orchestrator] Initialized — workers registered, CRON jobs scheduled",
+  );
+}
+
+/** Gracefully shut down all workers, queues, and the Redis connection */
+export async function shutdownOrchestrator() {
+  console.log("[Agent Orchestrator] Shutting down...");
+
+  // Close workers first so no new jobs are picked up
+  await Promise.all([...workers.values()].map((w) => w.close()));
+  workers.clear();
+
+  // Close queues
+  await Promise.all([...queues.values()].map((q) => q.close()));
+  queues.clear();
+
+  // Close shared Redis connection
+  if (connection) {
+    await connection.quit();
+    connection = null;
+  }
+
+  console.log("[Agent Orchestrator] Shut down complete");
 }

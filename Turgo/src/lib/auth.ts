@@ -9,29 +9,7 @@ import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import bcrypt from "bcryptjs";
 import { db } from "@/server/db";
-
-// ── Redis helper for force-refresh flag ──────────────────────
-let redis: import("ioredis").default | null = null;
-let redisUnavailable = false;
-
-async function getRedis() {
-  if (redisUnavailable) return null;
-  if (redis) return redis;
-  try {
-    const { default: IORedis } = await import("ioredis");
-    const url = process.env.REDIS_URL || "redis://localhost:6379";
-    redis = new IORedis(url, {
-      maxRetriesPerRequest: 1,
-      connectTimeout: 3000,
-      lazyConnect: true,
-    });
-    await redis.connect();
-    return redis;
-  } catch {
-    redisUnavailable = true;
-    return null;
-  }
-}
+import { getRedis } from "@/lib/redis";
 
 /** Set a force-refresh flag so the JWT callback re-queries the DB on next request. */
 export async function triggerAuthRefresh(userId: string): Promise<void> {

@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "@/server/trpc";
 import {
   createCheckoutSession,
   createBoostPayment,
@@ -41,7 +45,7 @@ export const subscriptionRouter = createTRPCRouter({
     .input(
       z.object({
         planId: z.string().cuid(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       if (!isStripeConfigured()) {
@@ -101,7 +105,7 @@ export const subscriptionRouter = createTRPCRouter({
       z.object({
         listingId: z.string().cuid(),
         boostType: z.enum(["FEATURED", "HIGHLIGHTED", "TOP"]),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       if (!isStripeConfigured()) {
@@ -180,7 +184,7 @@ export const subscriptionRouter = createTRPCRouter({
 
     const session = await createPortalSession(
       subscription.stripeCustomerId,
-      `${APP_URL}/${locale}/dashboard`
+      `${APP_URL}/${locale}/dashboard`,
     );
 
     return { portalUrl: session.url };
@@ -245,14 +249,14 @@ export const subscriptionRouter = createTRPCRouter({
         },
       });
 
-      const activeTypes = activeBoosts.map((b) => b.type);
+      const activeTypes: string[] = activeBoosts.map((b) => b.type);
 
       return Object.entries(BOOST_PRICES).map(([type, config]) => ({
         type,
         label: config.label,
         priceEur: config.amount / 100,
         durationDays: config.durationDays,
-        isActive: activeTypes.includes(type as never),
+        isActive: activeTypes.includes(type),
       }));
     }),
 });

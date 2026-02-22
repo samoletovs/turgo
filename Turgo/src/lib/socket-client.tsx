@@ -4,7 +4,14 @@
 
 "use client";
 
-import { useEffect, useRef, useCallback, useState, createContext, useContext } from "react";
+import {
+  useEffect,
+  useRef,
+  useCallback,
+  useState,
+  createContext,
+  useContext,
+} from "react";
 import { io, Socket } from "socket.io-client";
 import { useSession } from "next-auth/react";
 
@@ -125,21 +132,29 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socketState, setSocketState] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([]);
+  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>(
+    [],
+  );
   const [notifications, setNotifications] = useState<NotificationEvent[]>([]);
 
   useEffect(() => {
     if (!session?.user?.id) return;
 
-    const socket = io(process.env.NEXT_PUBLIC_APP_URL || window.location.origin, {
-      path: "/api/socketio",
-      auth: { userId: session.user.id },
-      transports: ["websocket", "polling"],
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-    });
+    const socket = io(
+      process.env.NEXT_PUBLIC_APP_URL || window.location.origin,
+      {
+        path: "/api/socketio",
+        // Auth is handled server-side by verifying the NextAuth session cookie
+        // which the browser sends automatically with the handshake request.
+        // Do NOT pass userId here — it would be unverified and spoofable.
+        transports: ["websocket", "polling"],
+        withCredentials: true,
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+      },
+    );
 
     socketRef.current = socket;
 
@@ -184,19 +199,27 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     socketRef.current?.emit("leave:conversation", conversationId);
   }, []);
 
-  const sendTyping = useCallback((conversationId: string, isTyping: boolean) => {
-    socketRef.current?.emit("typing", { conversationId, isTyping });
-  }, []);
+  const sendTyping = useCallback(
+    (conversationId: string, isTyping: boolean) => {
+      socketRef.current?.emit("typing", { conversationId, isTyping });
+    },
+    [],
+  );
 
-  const sendReadReceipt = useCallback((conversationId: string, messageId: string) => {
-    socketRef.current?.emit("read:receipt", {
-      conversationId,
-      lastReadMessageId: messageId,
-    });
-  }, []);
+  const sendReadReceipt = useCallback(
+    (conversationId: string, messageId: string) => {
+      socketRef.current?.emit("read:receipt", {
+        conversationId,
+        lastReadMessageId: messageId,
+      });
+    },
+    [],
+  );
 
   const clearPendingApproval = useCallback((messageId: string) => {
-    setPendingApprovals((prev) => prev.filter((p) => p.messageId !== messageId));
+    setPendingApprovals((prev) =>
+      prev.filter((p) => p.messageId !== messageId),
+    );
   }, []);
 
   const clearNotification = useCallback((id: string) => {
@@ -234,10 +257,20 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
  * typing indicators, and read receipts.
  */
 export function useConversationSocket(conversationId: string) {
-  const { socket, joinConversation, leaveConversation, sendTyping, sendReadReceipt } = useSocket();
+  const {
+    socket,
+    joinConversation,
+    leaveConversation,
+    sendTyping,
+    sendReadReceipt,
+  } = useSocket();
   const [newMessages, setNewMessages] = useState<SocketMessage[]>([]);
-  const [typingUsers, setTypingUsers] = useState<Map<string, boolean>>(new Map());
-  const [readReceipts, setReadReceipts] = useState<Map<string, string>>(new Map());
+  const [typingUsers, setTypingUsers] = useState<Map<string, boolean>>(
+    new Map(),
+  );
+  const [readReceipts, setReadReceipts] = useState<Map<string, string>>(
+    new Map(),
+  );
   const typingTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   useEffect(() => {
@@ -269,7 +302,7 @@ export function useConversationSocket(conversationId: string) {
                   n.delete(event.userId);
                   return n;
                 });
-              }, 5000)
+              }, 5000),
             );
           } else {
             next.delete(event.userId);
@@ -312,6 +345,7 @@ export function useConversationSocket(conversationId: string) {
     readReceipts,
     clearMessages,
     sendTyping: (isTyping: boolean) => sendTyping(conversationId, isTyping),
-    sendReadReceipt: (messageId: string) => sendReadReceipt(conversationId, messageId),
+    sendReadReceipt: (messageId: string) =>
+      sendReadReceipt(conversationId, messageId),
   };
 }

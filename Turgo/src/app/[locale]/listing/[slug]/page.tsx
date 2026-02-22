@@ -17,7 +17,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatPrice, formatRelativeTime, getLocalizedName } from "@/lib/utils";
-import { ViewTracker, FavoriteButton, SendMessageButton } from "./client-components";
+import {
+  ViewTracker,
+  FavoriteButton,
+  SendMessageButton,
+  ReportButton,
+} from "./client-components";
 import { ImageGallery } from "@/components/image-gallery";
 
 interface ListingPageProps {
@@ -120,9 +125,14 @@ export default async function ListingPage({ params }: ListingPageProps) {
           {/* Title & Price */}
           <div>
             <div className="flex items-start justify-between gap-4">
-              <h1 className="text-2xl font-bold lg:text-3xl">{listing.title}</h1>
+              <h1 className="text-2xl font-bold lg:text-3xl">
+                {listing.title}
+              </h1>
               <div className="flex gap-2">
-                <FavoriteButton listingId={listing.id} initialCount={listing._count.favorites} />
+                <FavoriteButton
+                  listingId={listing.id}
+                  initialCount={listing._count.favorites}
+                />
                 <Button variant="outline" size="icon">
                   <Share2 className="h-4 w-4" />
                 </Button>
@@ -159,8 +169,8 @@ export default async function ListingPage({ params }: ListingPageProps) {
                   {listing.condition === "NEW"
                     ? "New"
                     : listing.condition === "REFURBISHED"
-                    ? "Refurbished"
-                    : "Used"}
+                      ? "Refurbished"
+                      : "Used"}
                 </Badge>
               </div>
             </div>
@@ -198,7 +208,12 @@ export default async function ListingPage({ params }: ListingPageProps) {
                   </div>
                 )}
                 <div>
-                  <p className="font-semibold">{listing.user.name || "User"}</p>
+                  <Link
+                    href={`/${locale}/profile/${listing.user.id}`}
+                    className="font-semibold hover:underline"
+                  >
+                    {listing.user.name || "User"}
+                  </Link>
                   <p className="text-xs text-muted-foreground">
                     Member since {listing.user.createdAt.getFullYear()}
                   </p>
@@ -267,6 +282,11 @@ export default async function ListingPage({ params }: ListingPageProps) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Report */}
+          <div className="flex justify-center">
+            <ReportButton listingId={listing.id} locale={locale} />
+          </div>
         </div>
       </div>
 

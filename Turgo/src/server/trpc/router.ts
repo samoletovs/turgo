@@ -10,6 +10,8 @@ import { subscriptionRouter } from "./routers/subscription";
 import { aiRouter } from "./routers/ai";
 import { notificationRouter } from "./routers/notification";
 import { adminRouter } from "./routers/admin";
+import { authRouter } from "./routers/auth";
+import { reviewRouter } from "./routers/review";
 
 export const appRouter = createTRPCRouter({
   listing: listingRouter,
@@ -23,6 +25,8 @@ export const appRouter = createTRPCRouter({
   ai: aiRouter,
   notification: notificationRouter,
   admin: adminRouter,
+  auth: authRouter,
+  review: reviewRouter,
 });
 
 export type AppRouter = typeof appRouter;

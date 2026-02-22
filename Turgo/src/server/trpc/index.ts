@@ -10,6 +10,7 @@ import type { UserTier } from "@/server/services/ai";
 export interface TRPCContext {
   db: typeof db;
   session: Session | null;
+  headers: Headers;
 }
 
 export async function createTRPCContext(opts: {
@@ -19,6 +20,7 @@ export async function createTRPCContext(opts: {
   return {
     db,
     session: opts.session,
+    headers: opts.headers,
   };
 }
 

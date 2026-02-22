@@ -3,12 +3,14 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { KeyRound, CheckCircle, ArrowLeft } from "lucide-react";
+import { KeyRound, CheckCircle, ArrowLeft, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
+import { trpc } from "@/lib/trpc/client";
+import { toast } from "sonner";
 
 export default function ForgotPasswordPage() {
   const t = useTranslations("forgotPassword");
@@ -22,23 +24,52 @@ export default function ForgotPasswordPage() {
     "form" | "sent" | "reset" | "success" | "invalid"
   >(token ? "reset" : "form");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const requestReset = trpc.auth.requestPasswordReset.useMutation({
+    onSuccess: () => setStatus("sent"),
+    onError: () => {
+      // Still show "sent" to prevent email enumeration
+      setStatus("sent");
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const resetPassword = trpc.auth.resetPassword.useMutation({
+    onSuccess: () => {
+      setStatus("success");
+      toast.success(t("resetSuccess"));
+    },
+    onError: (err) => {
+      setError(err.message);
+      if (err.message.includes("expired")) {
+        setStatus("invalid");
+      }
+      toast.error(err.message);
+    },
+    onSettled: () => setLoading(false),
+  });
 
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setStatus("sent");
-    setLoading(false);
+    setError(null);
+    requestReset.mutate({ email });
   };
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword !== confirmPassword) return;
+    if (newPassword !== confirmPassword) {
+      setError("Passwords don't match");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setStatus("success");
-    setLoading(false);
+    setError(null);
+    resetPassword.mutate({ token: token!, password: newPassword });
   };
 
   // Success state after password reset
@@ -90,6 +121,33 @@ export default function ForgotPasswordPage() {
     );
   }
 
+  // Invalid / expired token state
+  if (status === "invalid") {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center px-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <div className="mb-4 flex justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+                <AlertTriangle className="h-8 w-8 text-destructive" />
+              </div>
+            </div>
+            <h1 className="mb-2 text-2xl font-bold">{t("invalidToken")}</h1>
+            <p className="mb-6 text-muted-foreground">{t("requestNew")}</p>
+            <Button
+              onClick={() => {
+                setStatus("form");
+                setError(null);
+              }}
+            >
+              {t("submit")}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // Reset password form (with token)
   if (status === "reset") {
     return (
@@ -105,6 +163,11 @@ export default function ForgotPasswordPage() {
               <h1 className="text-2xl font-bold">{t("title")}</h1>
             </div>
             <form onSubmit={handleResetPassword} className="space-y-4">
+              {error && (
+                <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="newPassword">{t("newPassword")}</Label>
                 <Input
@@ -117,9 +180,7 @@ export default function ForgotPasswordPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">
-                  {t("confirmPassword")}
-                </Label>
+                <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
                 <Input
                   id="confirmPassword"
                   type="password"

@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
 import { db } from "@/server/db";
 import { registerSchema } from "@/lib/validators";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { RATE_LIMITS } from "@/lib/constants";
+import { sendVerificationEmail } from "@/server/services/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -91,6 +93,21 @@ export async function POST(req: NextRequest) {
         },
       });
     }
+
+    // Generate email verification token (24 h expiry)
+    const token = randomBytes(32).toString("hex");
+    await db.verificationToken.create({
+      data: {
+        identifier: `email-verify:${user.email}`,
+        token,
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+
+    // Fire-and-forget — don't block the response
+    sendVerificationEmail(user.email, token).catch((err) =>
+      console.error("[REGISTER] Failed to send verification email:", err),
+    );
 
     return NextResponse.json(
       { message: "Account created successfully", user },

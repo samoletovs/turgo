@@ -2,15 +2,52 @@
  * Socket.IO Server — Real-time messaging for Turgo
  * Handles WebSocket connections for instant messaging,
  * agent notifications, typing indicators, and read receipts.
+ *
+ * Authentication: JWT from the NextAuth session cookie (or handshake.auth.token)
+ * is verified in the io.use() middleware. Only authenticated users may connect.
  */
 
 import { Server as SocketIOServer } from "socket.io";
 import type { Server as HTTPServer } from "http";
+import { decode } from "next-auth/jwt";
 
 let io: SocketIOServer | null = null;
 
 /** User ID → Set of socket IDs */
 const userSockets = new Map<string, Set<string>>();
+
+/**
+ * Possible NextAuth session-cookie names (v5 "authjs" prefix + legacy "next-auth").
+ * Secure variants are used when the site is served over HTTPS.
+ */
+const SESSION_COOKIE_NAMES = [
+  "__Secure-authjs.session-token",
+  "authjs.session-token",
+  "__Secure-next-auth.session-token",
+  "next-auth.session-token",
+] as const;
+
+/**
+ * Extract the raw JWT string and the cookie name (used as salt for decode)
+ * from the Cookie header sent with the Socket.IO handshake.
+ */
+function extractSessionToken(
+  cookieHeader: string | undefined,
+): { token: string; salt: string } | null {
+  if (!cookieHeader) return null;
+
+  const cookies = cookieHeader.split(";").map((c) => c.trim());
+
+  for (const name of SESSION_COOKIE_NAMES) {
+    const match = cookies.find((c) => c.startsWith(`${name}=`));
+    if (match) {
+      const token = decodeURIComponent(match.substring(name.length + 1));
+      return { token, salt: name };
+    }
+  }
+
+  return null;
+}
 
 export interface SocketMessagePayload {
   id: string;
@@ -69,13 +106,62 @@ export function initSocketServer(httpServer: HTTPServer): SocketIOServer {
     pingTimeout: 20000,
   });
 
-  io.on("connection", (socket) => {
-    const userId = socket.handshake.auth.userId as string;
+  // ── Authentication middleware ────────────────────────────
+  // Verifies the NextAuth JWT before allowing a connection.
+  // Supports two token sources (in priority order):
+  //   1. handshake.auth.token  – explicitly passed by the client
+  //   2. Session cookie        – automatically attached by the browser
+  io.use(async (socket, next) => {
+    try {
+      const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+      if (!secret) {
+        console.error("[Socket] AUTH_SECRET / NEXTAUTH_SECRET is not set");
+        return next(new Error("Server configuration error"));
+      }
 
-    if (!userId) {
-      socket.disconnect(true);
-      return;
+      let rawToken: string | undefined;
+      let salt = "authjs.session-token";
+
+      // 1. Explicit token passed by the client
+      if (
+        typeof socket.handshake.auth.token === "string" &&
+        socket.handshake.auth.token
+      ) {
+        rawToken = socket.handshake.auth.token;
+      }
+
+      // 2. Fall back to session cookie from the handshake headers
+      if (!rawToken) {
+        const extracted = extractSessionToken(socket.handshake.headers.cookie);
+        if (extracted) {
+          rawToken = extracted.token;
+          salt = extracted.salt;
+        }
+      }
+
+      if (!rawToken) {
+        return next(new Error("Authentication required"));
+      }
+
+      const decoded = await decode({ token: rawToken, secret, salt });
+
+      if (!decoded || !decoded.id) {
+        return next(new Error("Invalid or expired token"));
+      }
+
+      // Attach the verified user ID so handlers never trust client claims
+      socket.data.userId = decoded.id as string;
+      next();
+    } catch (err) {
+      console.error("[Socket] Auth middleware error:", err);
+      next(new Error("Authentication failed"));
     }
+  });
+
+  // ── Connection handler ───────────────────────────────────
+  io.on("connection", (socket) => {
+    // userId is guaranteed to be set by the auth middleware above
+    const userId = socket.data.userId as string;
 
     // Register user socket
     if (!userSockets.has(userId)) {
@@ -91,7 +177,9 @@ export function initSocketServer(httpServer: HTTPServer): SocketIOServer {
     // Join conversation rooms
     socket.on("join:conversation", (conversationId: string) => {
       socket.join(`conversation:${conversationId}`);
-      console.log(`[Socket] User ${userId} joined conversation ${conversationId}`);
+      console.log(
+        `[Socket] User ${userId} joined conversation ${conversationId}`,
+      );
     });
 
     socket.on("leave:conversation", (conversationId: string) => {
@@ -161,7 +249,10 @@ export function emitMessage(payload: SocketMessagePayload): void {
 }
 
 /** Emit a notification to a specific user */
-export function emitNotification(userId: string, payload: NotificationPayload): void {
+export function emitNotification(
+  userId: string,
+  payload: NotificationPayload,
+): void {
   if (!io) return;
   io.to(`user:${userId}`).emit("notification", payload);
 }
@@ -176,7 +267,7 @@ export function emitAgentAction(
     description: string;
     metadata?: Record<string, unknown>;
     requiresApproval?: boolean;
-  }
+  },
 ): void {
   if (!io) return;
   io.to(`user:${userId}`).emit("agent:action", payload);
@@ -192,7 +283,7 @@ export function emitPendingApproval(
     messageType: string;
     agentType: "SELLING" | "BUYING";
     metadata?: Record<string, unknown>;
-  }
+  },
 ): void {
   if (!io) return;
   io.to(`user:${userId}`).emit("message:pending-approval", payload);

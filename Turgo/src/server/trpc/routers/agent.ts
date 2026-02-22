@@ -38,7 +38,7 @@ export const agentRouter = createTRPCRouter({
         data: {
           userId: ctx.session.user.id!,
           listingId: input.listingId!,
-          urgency: input.urgency as never,
+          urgency: input.urgency,
           startingPrice: input.startingPrice,
           minimumPrice: input.minimumPrice,
           currentPrice: input.startingPrice,
@@ -124,7 +124,7 @@ export const agentRouter = createTRPCRouter({
         return ctx.db.sellingAgent.update({
           where: { id: input.agentId },
           data: {
-            status: input.status as never,
+            status: input.status,
             ...(input.status === "COMPLETED"
               ? { completedAt: new Date() }
               : {}),
@@ -135,7 +135,7 @@ export const agentRouter = createTRPCRouter({
       // Try buying agent
       return ctx.db.buyingAgent.update({
         where: { id: input.agentId },
-        data: { status: input.status as never },
+        data: { status: input.status },
       });
     }),
 

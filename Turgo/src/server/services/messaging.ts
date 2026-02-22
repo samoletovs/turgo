@@ -4,8 +4,13 @@
  */
 
 import { db } from "@/server/db";
+import type { Prisma, MessageType } from "@prisma/client";
 import { generateAutoResponse, evaluateOffer } from "./agent-selling";
-import { emitMessage, emitPendingApproval, emitAgentAction } from "@/server/socket";
+import {
+  emitMessage,
+  emitPendingApproval,
+  emitAgentAction,
+} from "@/server/socket";
 import type { SocketMessagePayload } from "@/server/socket";
 
 // ──────────────────────────────────────────────
@@ -84,7 +89,8 @@ export async function processAutoRespond(params: {
   receiverId: string;
   listingId: string;
 }): Promise<boolean> {
-  const { conversationId, messageContent, senderId, receiverId, listingId } = params;
+  const { conversationId, messageContent, senderId, receiverId, listingId } =
+    params;
 
   // Check if listing has a selling agent with autoRespond enabled
   const sellingAgent = await db.sellingAgent.findFirst({
@@ -95,7 +101,9 @@ export async function processAutoRespond(params: {
       userId: receiverId, // Agent belongs to the message receiver (seller)
     },
     include: {
-      listing: { select: { title: true, description: true, price: true, status: true } },
+      listing: {
+        select: { title: true, description: true, price: true, status: true },
+      },
       user: { select: { id: true, name: true, avatar: true } },
     },
   });
@@ -147,10 +155,14 @@ export async function processAutoRespond(params: {
   const aiResponse = await generateAutoResponse(
     messageContent,
     sellingAgent.listing.title,
-    sellingAgent.listing.description
+    sellingAgent.listing.description,
   );
 
-  if (aiResponse && aiResponse !== "null" && !aiResponse.includes("[AI Mock]")) {
+  if (
+    aiResponse &&
+    aiResponse !== "null" &&
+    !aiResponse.includes("[AI Mock]")
+  ) {
     await sendAgentMessage({
       conversationId,
       senderId: receiverId,
@@ -196,7 +208,8 @@ export async function processAutoNegotiate(params: {
   receiverId: string;
   listingId: string;
 }): Promise<boolean> {
-  const { conversationId, messageContent, senderId, receiverId, listingId } = params;
+  const { conversationId, messageContent, senderId, receiverId, listingId } =
+    params;
 
   const offerAmount = extractOfferAmount(messageContent);
   if (offerAmount === null) return false;
@@ -237,7 +250,8 @@ export async function processAutoNegotiate(params: {
     currentPrice: sellingAgent.listing.price,
     rules: {
       minPrice: sellingAgent.minimumPrice,
-      autoAcceptAbove: sellingAgent.autoAcceptAbove ?? sellingAgent.listing.price * 0.95,
+      autoAcceptAbove:
+        sellingAgent.autoAcceptAbove ?? sellingAgent.listing.price * 0.95,
       maxCounterRounds: 3,
       concessionRate: 0.3,
     },
@@ -285,10 +299,10 @@ export async function processAutoNegotiate(params: {
         receiverId: senderId,
         listingId,
         content: result.message,
-        messageType: messageType as never,
+        messageType: messageType as MessageType,
         isAgentMessage: true,
         requiresApproval: true,
-        metadata: metadata as never,
+        metadata: metadata as Prisma.InputJsonValue,
       },
     });
 
@@ -335,7 +349,7 @@ export async function processAutoNegotiate(params: {
       agentType: "SELLING",
       actionType: "AUTO_NEGOTIATE",
       description: `${result.action}: Buyer offered €${offerAmount}. ${result.reasoning}`,
-      metadata: metadata as never,
+      metadata: metadata as Prisma.InputJsonValue,
       requiresApproval,
     },
   });
@@ -406,7 +420,11 @@ export async function approveAgentMessage(params: {
     metadata: message.metadata as Record<string, unknown> | undefined,
     createdAt: new Date().toISOString(),
     sender: message.sender
-      ? { id: message.sender.id, name: message.sender.name ?? "User", avatar: message.sender.avatar ?? undefined }
+      ? {
+          id: message.sender.id,
+          name: message.sender.name ?? "User",
+          avatar: message.sender.avatar ?? undefined,
+        }
       : undefined,
   };
 
@@ -414,7 +432,10 @@ export async function approveAgentMessage(params: {
 }
 
 /** Reject an agent's pending message */
-export async function rejectAgentMessage(messageId: string, userId: string): Promise<void> {
+export async function rejectAgentMessage(
+  messageId: string,
+  userId: string,
+): Promise<void> {
   const message = await db.message.findUnique({
     where: { id: messageId },
   });
@@ -451,10 +472,10 @@ async function sendAgentMessage(params: {
       receiverId: params.receiverId,
       listingId: params.listingId,
       content: params.content,
-      messageType: params.messageType as never,
+      messageType: params.messageType as MessageType,
       isAgentMessage: params.isAgentMessage,
       requiresApproval: params.requiresApproval,
-      metadata: params.metadata as never,
+      metadata: params.metadata as Prisma.InputJsonValue,
     },
   });
 
@@ -525,7 +546,9 @@ export async function sendBuyingAgentMessage(params: {
   }
 
   const messageType = params.offerPrice ? "OFFER" : "TEXT";
-  const metadata = params.offerPrice ? { offerPrice: params.offerPrice } : undefined;
+  const metadata = params.offerPrice
+    ? { offerPrice: params.offerPrice }
+    : undefined;
 
   if (params.requiresApproval) {
     const draftMessage = await db.message.create({
@@ -535,10 +558,10 @@ export async function sendBuyingAgentMessage(params: {
         receiverId: params.sellerId,
         listingId: params.listingId,
         content: params.message,
-        messageType: messageType as never,
+        messageType: messageType as MessageType,
         isAgentMessage: true,
         requiresApproval: true,
-        metadata: metadata as never,
+        metadata: metadata as Prisma.InputJsonValue,
       },
     });
 

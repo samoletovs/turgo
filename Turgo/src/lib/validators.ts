@@ -17,7 +17,9 @@ export const registerSchema = z
     confirmPassword: z.string(),
     locale: z.enum(["en", "lv", "ru", "lt", "et"]).default("en"),
     marketingOptIn: z.boolean().default(false),
-    gdprConsent: z.boolean().refine((v) => v, "You must accept the privacy policy"),
+    gdprConsent: z
+      .boolean()
+      .refine((v) => v, "You must accept the privacy policy"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -28,13 +30,27 @@ export const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),
 });
 
+export const resetPasswordSchema = z
+  .object({
+    token: z.string().min(1, "Token is required"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
 // ──────────────────────────────────────────────
 // LISTING VALIDATORS
 // ──────────────────────────────────────────────
 
 export const createListingSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters").max(200),
-  description: z.string().min(20, "Description must be at least 20 characters").max(5000),
+  description: z
+    .string()
+    .min(20, "Description must be at least 20 characters")
+    .max(5000),
   price: z.number().positive("Price must be positive"),
   currency: z.string().default("EUR"),
   negotiable: z.boolean().default(true),
@@ -57,7 +73,9 @@ export const listingFilterSchema = z.object({
   condition: z.enum(["NEW", "USED", "REFURBISHED"]).optional(),
   status: z.enum(["ACTIVE", "SOLD", "EXPIRED"]).optional(),
   query: z.string().optional(),
-  sortBy: z.enum(["newest", "oldest", "price_asc", "price_desc", "views"]).default("newest"),
+  sortBy: z
+    .enum(["newest", "oldest", "price_asc", "price_desc", "views"])
+    .default("newest"),
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(100).default(24),
 });
@@ -68,7 +86,14 @@ export const listingFilterSchema = z.object({
 
 export const createSellingAgentSchema = z.object({
   listingId: z.string().cuid().optional(), // If attaching to existing listing
-  urgency: z.enum(["ONE_DAY", "THREE_DAYS", "ONE_WEEK", "TWO_WEEKS", "ONE_MONTH", "NO_RUSH"]),
+  urgency: z.enum([
+    "ONE_DAY",
+    "THREE_DAYS",
+    "ONE_WEEK",
+    "TWO_WEEKS",
+    "ONE_MONTH",
+    "NO_RUSH",
+  ]),
   startingPrice: z.number().positive(),
   minimumPrice: z.number().positive(),
   maxDiscountPercent: z.number().min(0).max(100).optional(),
@@ -137,7 +162,7 @@ export const conciergeMessageSchema = z.object({
       z.object({
         role: z.enum(["user", "assistant"]),
         content: z.string(),
-      })
+      }),
     )
     .optional(),
 });
@@ -166,3 +191,5 @@ export const sendOfferSchema = z.object({
 });
 
 export type SendOfferInput = z.infer<typeof sendOfferSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

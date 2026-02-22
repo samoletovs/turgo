@@ -5,6 +5,7 @@
 
 import { aiComplete, createMessages } from "./ai";
 import { db } from "@/server/db";
+import type { Prisma } from "@prisma/client";
 import type { Locale } from "@/lib/constants";
 
 const LANGUAGE_NAMES: Record<string, string> = {
@@ -47,7 +48,7 @@ export function detectLanguage(text: string): Locale {
 export async function translateMessage(
   content: string,
   targetLocale: Locale,
-  sourceLocale?: Locale
+  sourceLocale?: Locale,
 ): Promise<string> {
   const source = sourceLocale || detectLanguage(content);
 
@@ -62,11 +63,15 @@ Translate the following message from ${sourceLang} to ${targetLang}.
 Keep the tone conversational and natural. Preserve any prices, numbers, and product names.
 If the text contains emoji or special characters, keep them as-is.
 Return ONLY the translation, nothing else.`,
-    content
+    content,
   );
 
   try {
-    const result = await aiComplete({ messages, temperature: 0.3, maxTokens: 500 });
+    const result = await aiComplete({
+      messages,
+      temperature: 0.3,
+      maxTokens: 500,
+    });
     return result.content.trim();
   } catch {
     console.error("[Translation] AI translation failed, returning original");
@@ -77,11 +82,11 @@ Return ONLY the translation, nothing else.`,
 /** Translate a message to all supported locales */
 export async function translateToAll(
   content: string,
-  sourceLocale?: Locale
+  sourceLocale?: Locale,
 ): Promise<Record<string, string>> {
   const source = sourceLocale || detectLanguage(content);
   const targetLocales: Locale[] = ["en", "lv", "ru", "lt", "et"].filter(
-    (l) => l !== source
+    (l) => l !== source,
   ) as Locale[];
 
   const translations: Record<string, string> = { [source]: content };
@@ -91,7 +96,7 @@ export async function translateToAll(
     targetLocales.map(async (locale) => ({
       locale,
       translation: await translateMessage(content, locale, source),
-    }))
+    })),
   );
 
   for (const result of results) {
@@ -127,7 +132,7 @@ export async function userHasTranslation(userId: string): Promise<boolean> {
  */
 export async function translateAndStoreMessage(
   messageId: string,
-  senderId: string
+  senderId: string,
 ): Promise<Record<string, string> | null> {
   const hasTranslation = await userHasTranslation(senderId);
   if (!hasTranslation) return null;
@@ -139,13 +144,14 @@ export async function translateAndStoreMessage(
 
   if (!message) return null;
 
-  const sourceLocale = (message.originalLanguage as Locale) || detectLanguage(message.content);
+  const sourceLocale =
+    (message.originalLanguage as Locale) || detectLanguage(message.content);
   const translations = await translateToAll(message.content, sourceLocale);
 
   await db.message.update({
     where: { id: messageId },
     data: {
-      translatedContent: translations as never,
+      translatedContent: translations as Prisma.InputJsonValue,
       originalLanguage: sourceLocale,
     },
   });
@@ -156,7 +162,7 @@ export async function translateAndStoreMessage(
 /** Translate a single message on-demand for a specific user locale */
 export async function translateMessageOnDemand(
   messageId: string,
-  targetLocale: Locale
+  targetLocale: Locale,
 ): Promise<string> {
   const message = await db.message.findUnique({
     where: { id: messageId },
@@ -172,15 +178,23 @@ export async function translateMessageOnDemand(
   }
 
   // Translate
-  const sourceLocale = (message.originalLanguage as Locale) || detectLanguage(message.content);
-  const translation = await translateMessage(message.content, targetLocale, sourceLocale);
+  const sourceLocale =
+    (message.originalLanguage as Locale) || detectLanguage(message.content);
+  const translation = await translateMessage(
+    message.content,
+    targetLocale,
+    sourceLocale,
+  );
 
   // Cache the translation
-  const updatedTranslations = { ...(existing || {}), [targetLocale]: translation };
+  const updatedTranslations = {
+    ...(existing || {}),
+    [targetLocale]: translation,
+  };
   await db.message.update({
     where: { id: messageId },
     data: {
-      translatedContent: updatedTranslations as never,
+      translatedContent: updatedTranslations as Prisma.InputJsonValue,
       originalLanguage: sourceLocale,
     },
   });

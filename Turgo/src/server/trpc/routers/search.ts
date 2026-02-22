@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "@/server/trpc";
+import type { Prisma } from "@prisma/client";
+import {
+  createTRPCRouter,
+  publicProcedure,
+  protectedProcedure,
+} from "@/server/trpc";
 import { searchSchema } from "@/lib/validators";
 import {
   searchListings as meiliSearch,
@@ -10,68 +15,67 @@ import {
 
 export const searchRouter = createTRPCRouter({
   /** Full-text search — tries Meilisearch, falls back to Prisma */
-  search: publicProcedure
-    .input(searchSchema)
-    .query(async ({ ctx, input }) => {
-      const { query, categoryId, locationId, minPrice, maxPrice, page, limit } = input;
+  search: publicProcedure.input(searchSchema).query(async ({ ctx, input }) => {
+    const { query, categoryId, locationId, minPrice, maxPrice, page, limit } =
+      input;
 
-      // ── Try Meilisearch first ──
-      try {
-        const result = await meiliSearch({
-          query,
-          minPrice,
-          maxPrice,
-          sort: "newest",
-          page,
-          limit,
-        });
-        if (result.hits.length > 0 || result.totalHits > 0) {
-          return {
-            listings: result.hits,
-            total: result.totalHits,
-            page: result.page,
-            totalPages: result.totalPages,
-          };
-        }
-      } catch {
-        // Meilisearch unavailable — fall through
-      }
-
-      // ── Prisma fallback ──
-      const where: Record<string, unknown> = {
-        status: "ACTIVE",
-        OR: [
-          { title: { contains: query, mode: "insensitive" } },
-          { description: { contains: query, mode: "insensitive" } },
-        ],
-      };
-
-      if (categoryId) where.categoryId = categoryId;
-      if (locationId) where.locationId = locationId;
-      if (minPrice || maxPrice) {
-        where.price = {
-          ...(minPrice ? { gte: minPrice } : {}),
-          ...(maxPrice ? { lte: maxPrice } : {}),
+    // ── Try Meilisearch first ──
+    try {
+      const result = await meiliSearch({
+        query,
+        minPrice,
+        maxPrice,
+        sort: "newest",
+        page,
+        limit,
+      });
+      if (result.hits.length > 0 || result.totalHits > 0) {
+        return {
+          listings: result.hits,
+          total: result.totalHits,
+          page: result.page,
+          totalPages: result.totalPages,
         };
       }
+    } catch {
+      // Meilisearch unavailable — fall through
+    }
 
-      const [listings, total] = await Promise.all([
-        ctx.db.listing.findMany({
-          where: where as never,
-          orderBy: { createdAt: "desc" },
-          skip: (page - 1) * limit,
-          take: limit,
-          include: {
-            images: { where: { isPrimary: true }, take: 1 },
-            location: true,
-            category: true,
-          },
-        }),
-        ctx.db.listing.count({ where: where as never }),
-      ]);
+    // ── Prisma fallback ──
+    const where: Prisma.ListingWhereInput = {
+      status: "ACTIVE",
+      OR: [
+        { title: { contains: query, mode: "insensitive" } },
+        { description: { contains: query, mode: "insensitive" } },
+      ],
+    };
 
-      return { listings, total, page, totalPages: Math.ceil(total / limit) };
-    }),
+    if (categoryId) where.categoryId = categoryId;
+    if (locationId) where.locationId = locationId;
+    if (minPrice || maxPrice) {
+      where.price = {
+        ...(minPrice ? { gte: minPrice } : {}),
+        ...(maxPrice ? { lte: maxPrice } : {}),
+      };
+    }
+
+    const [listings, total] = await Promise.all([
+      ctx.db.listing.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          images: { where: { isPrimary: true }, take: 1 },
+          location: true,
+          category: true,
+        },
+      }),
+      ctx.db.listing.count({ where }),
+    ]);
+
+    return { listings, total, page, totalPages: Math.ceil(total / limit) };
+  }),
 
   /** Search suggestions/autocomplete */
   suggest: publicProcedure
@@ -99,18 +103,22 @@ export const searchRouter = createTRPCRouter({
       const categories = await ctx.db.category.findMany({
         where: {
           isActive: true,
-          OR: [
-            { slug: { contains: input.query.toLowerCase() } },
-          ],
+          OR: [{ slug: { contains: input.query.toLowerCase() } }],
         },
         select: { name: true, slug: true },
         take: 3,
       });
 
       return {
-        listings: listings.map((l) => ({ text: l.title, type: "listing" as const })),
+        listings: listings.map((l) => ({
+          text: l.title,
+          type: "listing" as const,
+        })),
         categories: categories.map((c) => ({
-          text: typeof c.name === "object" ? (c.name as Record<string, string>).en || c.slug : String(c.name),
+          text:
+            typeof c.name === "object"
+              ? (c.name as Record<string, string>).en || c.slug
+              : String(c.name),
           type: "category" as const,
           slug: c.slug,
         })),
@@ -119,11 +127,13 @@ export const searchRouter = createTRPCRouter({
 
   /** Save a search for notifications */
   saveSearch: protectedProcedure
-    .input(z.object({
-      name: z.string().min(1).max(100),
-      filters: z.record(z.string(), z.unknown()),
-      notifyEmail: z.boolean().default(true),
-    }))
+    .input(
+      z.object({
+        name: z.string().min(1).max(100),
+        filters: z.record(z.string(), z.unknown()),
+        notifyEmail: z.boolean().default(true),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       // Check plan limits
       const count = await ctx.db.savedSearch.count({
@@ -132,15 +142,16 @@ export const searchRouter = createTRPCRouter({
 
       // Default limit for free users
       if (count >= 20) {
-        throw new Error("Saved search limit reached. Upgrade your plan for more.");
+        throw new Error(
+          "Saved search limit reached. Upgrade your plan for more.",
+        );
       }
 
       return ctx.db.savedSearch.create({
         data: {
           userId: ctx.session.user.id!,
           name: input.name,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          filters: input.filters as any,
+          filters: input.filters as Prisma.InputJsonValue,
           notifyEmail: input.notifyEmail,
         },
       });
@@ -157,11 +168,13 @@ export const searchRouter = createTRPCRouter({
 
   /** Update saved search notification preference */
   updateSavedSearch: protectedProcedure
-    .input(z.object({
-      id: z.string().cuid(),
-      name: z.string().min(1).max(100).optional(),
-      notifyEmail: z.boolean().optional(),
-    }))
+    .input(
+      z.object({
+        id: z.string().cuid(),
+        name: z.string().min(1).max(100).optional(),
+        notifyEmail: z.boolean().optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
       return ctx.db.savedSearch.update({
@@ -180,30 +193,32 @@ export const searchRouter = createTRPCRouter({
 
   /** Check saved searches against a new listing (called after indexing) */
   checkSavedSearches: protectedProcedure
-    .input(z.object({
-      listing: z.object({
-        id: z.string(),
-        title: z.string(),
-        slug: z.string(),
-        description: z.string(),
-        price: z.number(),
-        currency: z.string().default("EUR"),
-        condition: z.string(),
-        status: z.string(),
-        negotiable: z.boolean().default(true),
-        categoryId: z.string(),
-        categorySlug: z.string().default(""),
-        categoryName: z.string().default(""),
-        locationSlug: z.string().default(""),
-        locationName: z.string().default(""),
-        countryCode: z.string().optional(),
-        managedByAgent: z.boolean().default(false),
-        viewCount: z.number().default(0),
-        imageCount: z.number().default(0),
-        hasImages: z.boolean().default(false),
-        createdAt: z.number(),
+    .input(
+      z.object({
+        listing: z.object({
+          id: z.string(),
+          title: z.string(),
+          slug: z.string(),
+          description: z.string(),
+          price: z.number(),
+          currency: z.string().default("EUR"),
+          condition: z.string(),
+          status: z.string(),
+          negotiable: z.boolean().default(true),
+          categoryId: z.string(),
+          categorySlug: z.string().default(""),
+          categoryName: z.string().default(""),
+          locationSlug: z.string().default(""),
+          locationName: z.string().default(""),
+          countryCode: z.string().optional(),
+          managedByAgent: z.boolean().default(false),
+          viewCount: z.number().default(0),
+          imageCount: z.number().default(0),
+          hasImages: z.boolean().default(false),
+          createdAt: z.number(),
+        }),
       }),
-    }))
+    )
     .mutation(async ({ ctx, input }) => {
       // Find all saved searches with email notifications enabled
       const searches = await ctx.db.savedSearch.findMany({
@@ -211,11 +226,14 @@ export const searchRouter = createTRPCRouter({
         include: { user: { select: { email: true, name: true } } },
       });
 
-      const matches: { userId: string; email: string; searchName: string }[] = [];
+      const matches: { userId: string; email: string; searchName: string }[] =
+        [];
 
       for (const search of searches) {
         const filters = search.filters as Record<string, unknown>;
-        if (savedSearchMatchesListing(filters, input.listing as SearchDocument)) {
+        if (
+          savedSearchMatchesListing(filters, input.listing as SearchDocument)
+        ) {
           matches.push({
             userId: search.userId,
             email: search.user.email,

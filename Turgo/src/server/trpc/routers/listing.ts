@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 import {
   createTRPCRouter,
   publicProcedure,
@@ -11,6 +12,7 @@ import {
   listingFilterSchema,
 } from "@/lib/validators";
 import { RATE_LIMITS } from "@/lib/constants";
+import { incrementViewCount } from "@/server/services/view-counter";
 
 export const listingRouter = createTRPCRouter({
   /** Get a single listing by ID */
@@ -32,11 +34,13 @@ export const listingRouter = createTRPCRouter({
       });
 
       if (listing) {
-        // Increment view count
-        await ctx.db.listing.update({
-          where: { id: input.id },
-          data: { viewCount: { increment: 1 } },
-        });
+        // Increment view count (fire-and-forget via Redis-backed service)
+        const ip =
+          ctx.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+          ctx.headers.get("x-real-ip");
+        const userAgent = ctx.headers.get("user-agent");
+
+        void incrementViewCount({ listingId: input.id, ip, userAgent });
       }
 
       return listing;
@@ -48,7 +52,7 @@ export const listingRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { page, limit, sortBy, query, ...filters } = input;
 
-      const where: Record<string, unknown> = {
+      const where: Prisma.ListingWhereInput = {
         status: filters.status || "ACTIVE",
       };
       if (filters.categoryId) where.categoryId = filters.categoryId;
@@ -87,7 +91,7 @@ export const listingRouter = createTRPCRouter({
 
       const [listings, total] = await Promise.all([
         ctx.db.listing.findMany({
-          where: where as never,
+          where,
           orderBy,
           skip: (page - 1) * limit,
           take: limit,
@@ -98,7 +102,7 @@ export const listingRouter = createTRPCRouter({
             _count: { select: { favorites: true } },
           },
         }),
-        ctx.db.listing.count({ where: where as never }),
+        ctx.db.listing.count({ where }),
       ]);
 
       return {
@@ -216,12 +220,12 @@ export const listingRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const where: Record<string, unknown> = { userId: ctx.session.user.id! };
+      const where: Prisma.ListingWhereInput = { userId: ctx.session.user.id! };
       if (input.status) where.status = input.status;
 
       const [listings, total] = await Promise.all([
         ctx.db.listing.findMany({
-          where: where as never,
+          where,
           orderBy: { createdAt: "desc" },
           skip: (input.page - 1) * input.limit,
           take: input.limit,
@@ -231,7 +235,7 @@ export const listingRouter = createTRPCRouter({
             _count: { select: { favorites: true, messages: true } },
           },
         }),
-        ctx.db.listing.count({ where: where as never }),
+        ctx.db.listing.count({ where }),
       ]);
 
       return {
@@ -246,10 +250,12 @@ export const listingRouter = createTRPCRouter({
   incrementView: publicProcedure
     .input(z.object({ id: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.listing.update({
-        where: { id: input.id },
-        data: { viewCount: { increment: 1 } },
-      });
+      const ip =
+        ctx.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+        ctx.headers.get("x-real-ip");
+      const userAgent = ctx.headers.get("user-agent");
+
+      void incrementViewCount({ listingId: input.id, ip, userAgent });
       return { success: true };
     }),
 
@@ -269,6 +275,65 @@ export const listingRouter = createTRPCRouter({
           images: { where: { isPrimary: true }, take: 1 },
           location: true,
           category: true,
+        },
+      });
+    }),
+
+  /** Report a listing */
+  report: protectedProcedure
+    .input(
+      z.object({
+        listingId: z.string().cuid(),
+        reason: z.enum([
+          "SPAM",
+          "FRAUD",
+          "INAPPROPRIATE",
+          "DUPLICATE",
+          "WRONG_CATEGORY",
+          "MISLEADING_PRICE",
+          "PROHIBITED_ITEM",
+          "OTHER",
+        ]),
+        description: z.string().min(10).max(1000).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id!;
+
+      // Verify listing exists
+      const listing = await ctx.db.listing.findUnique({
+        where: { id: input.listingId },
+        select: { userId: true },
+      });
+
+      if (!listing) {
+        throw new Error("Listing not found");
+      }
+
+      // Prevent self-reporting
+      if (listing.userId === userId) {
+        throw new Error("You cannot report your own listing");
+      }
+
+      // Prevent duplicate reports
+      const existing = await ctx.db.report.findFirst({
+        where: {
+          listingId: input.listingId,
+          reporterId: userId,
+          status: { in: ["OPEN", "REVIEWING"] },
+        },
+      });
+
+      if (existing) {
+        throw new Error("You have already reported this listing");
+      }
+
+      return ctx.db.report.create({
+        data: {
+          listingId: input.listingId,
+          reporterId: userId,
+          reason: input.reason,
+          details: input.description,
         },
       });
     }),

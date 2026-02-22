@@ -15,7 +15,8 @@ export function getStripe(): Stripe {
       console.warn("[Stripe] STRIPE_SECRET_KEY not set — Stripe is disabled");
     }
     _stripe = new Stripe(key || "sk_test_placeholder", {
-      apiVersion: "2025-01-27.acacia" as Stripe.LatestApiVersion,
+      // @ts-expect-error Stripe SDK expects its bundled LatestApiVersion but we pin to a specific version for stability
+      apiVersion: "2025-01-27.acacia",
     });
   }
   return _stripe;
@@ -23,9 +24,8 @@ export function getStripe(): Stripe {
 
 /** @deprecated Use getStripe() instead */
 export const stripe = new Proxy({} as Stripe, {
-  get(_, prop) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (getStripe() as any)[prop];
+  get(_, prop: string) {
+    return (getStripe() as unknown as Record<string, unknown>)[prop];
   },
 });
 
@@ -161,7 +161,10 @@ export async function createBoostPayment(params: {
 // ──────────────────────────────────────────────
 
 /** Create Stripe Customer Portal session for managing billing */
-export async function createPortalSession(customerId: string, returnUrl: string) {
+export async function createPortalSession(
+  customerId: string,
+  returnUrl: string,
+) {
   return getStripe().billingPortal.sessions.create({
     customer: customerId,
     return_url: returnUrl,
@@ -189,7 +192,7 @@ export async function resumeSubscription(subscriptionId: string) {
 /** Change subscription plan (upgrade/downgrade) */
 export async function changeSubscriptionPlan(
   subscriptionId: string,
-  newPriceId: string
+  newPriceId: string,
 ) {
   const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
   const itemId = subscription.items.data[0]?.id;
@@ -211,11 +214,11 @@ export async function changeSubscriptionPlan(
 /** Verify Stripe webhook signature */
 export function constructWebhookEvent(
   payload: string | Buffer,
-  signature: string
+  signature: string,
 ): Stripe.Event {
   return getStripe().webhooks.constructEvent(
     payload,
     signature,
-    process.env.STRIPE_WEBHOOK_SECRET || ""
+    process.env.STRIPE_WEBHOOK_SECRET || "",
   );
 }
