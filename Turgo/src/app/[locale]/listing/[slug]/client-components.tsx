@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useRouter as useI18nRouter } from "@/i18n/navigation";
 import { useSession } from "next-auth/react";
 import { Heart, Flag, Trash2 } from "lucide-react";
 import { MessageCircle } from "lucide-react";
@@ -305,13 +306,13 @@ export function DeleteListingButton({
   locale,
 }: DeleteListingButtonProps) {
   const [open, setOpen] = useState(false);
-  const router = useRouter();
+  const router = useI18nRouter();
   const t = useTranslations("listing");
 
   const deleteMutation = trpc.listing.delete.useMutation({
     onSuccess: () => {
       setOpen(false);
-      router.push(`/${locale}/dashboard/listings`);
+      router.push("/dashboard/listings");
     },
   });
 
