@@ -214,7 +214,14 @@
     "safetyTip3": "Inspect the item before paying",
     "similarListings": "Similar Listings",
     "noImage": "No image",
-    "favorites": "favorites"
+    "favorites": "favorites",
+    "deleteListing": "Dzēst sludinājumu",
+    "deleteConfirmTitle": "Dzēst šo sludinājumu?",
+    "deleteConfirmDesc": "Šo darbību nevar atsaukt. Sludinājums un visi saistītie dati tiks neatgriezeniski dzēsti.",
+    "deleting": "Dzēš...",
+    "cancel": "Atcelt",
+    "editListing": "Rediģēt sludinājumu",
+    "manageYourListing": "Pārvaldīt sludinājumu"
   },
   "sell": {
     "title": "Pārdod ar AI aģentu",

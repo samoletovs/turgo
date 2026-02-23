@@ -11,7 +11,9 @@ import {
   Phone,
   Bot,
   TrendingDown,
+  Pencil,
 } from "lucide-react";
+import { auth } from "@/lib/auth";
 import { db } from "@/server/db";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +24,7 @@ import {
   FavoriteButton,
   SendMessageButton,
   ReportButton,
+  DeleteListingButton,
 } from "./client-components";
 import { ImageGallery } from "@/components/image-gallery";
 import { ListingJsonLd, BreadcrumbJsonLd } from "@/components/json-ld";
@@ -35,6 +38,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
   const { locale, slug } = await params;
   const t = await getTranslations("listing");
   const tn = await getTranslations("nav");
+  const session = await auth();
 
   const listing = await db.listing.findFirst({
     where: { slug, status: { in: ["ACTIVE", "SOLD"] } },
@@ -52,6 +56,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
   if (!listing) notFound();
 
   const isFeatured = listing.boosts.some((b) => b.type === "FEATURED");
+  const isOwner = session?.user?.id === listing.user.id;
 
   // Fetch related listings
   const relatedListings = await db.listing.findMany({
@@ -227,6 +232,26 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Owner Actions */}
+          {isOwner && (
+            <Card className="border-orange-200 bg-orange-50/50 dark:border-orange-900 dark:bg-orange-950/20">
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  {t("manageYourListing")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Link href={`/listing/${listing.slug}/edit`}>
+                  <Button variant="outline" className="w-full">
+                    <Pencil className="mr-2 h-4 w-4" />
+                    {t("editListing")}
+                  </Button>
+                </Link>
+                <DeleteListingButton listingId={listing.id} locale={locale} />
+              </CardContent>
+            </Card>
+          )}
+
           {/* Seller Card */}
           <Card>
             <CardHeader>

@@ -214,7 +214,14 @@
     "safetyTip3": "Inspect the item before paying",
     "similarListings": "Similar Listings",
     "noImage": "No image",
-    "favorites": "favorites"
+    "favorites": "favorites",
+    "deleteListing": "Удалить объявление",
+    "deleteConfirmTitle": "Удалить это объявление?",
+    "deleteConfirmDesc": "Это действие нельзя отменить. Объявление и все связанные данные будут удалены безвозвратно.",
+    "deleting": "Удаление...",
+    "cancel": "Отмена",
+    "editListing": "Редактировать объявление",
+    "manageYourListing": "Управление объявлением"
   },
   "sell": {
     "title": "Продайте с AI-агентом",

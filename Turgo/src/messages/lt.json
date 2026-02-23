@@ -214,7 +214,14 @@
     "safetyTip3": "Inspect the item before paying",
     "similarListings": "Similar Listings",
     "noImage": "No image",
-    "favorites": "favorites"
+    "favorites": "favorites",
+    "deleteListing": "Ištrinti skelbimą",
+    "deleteConfirmTitle": "Ištrinti šį skelbimą?",
+    "deleteConfirmDesc": "Šio veiksmo negalima atšaukti. Skelbimas ir visi susiję duomenys bus negrįžtamai pašalinti.",
+    "deleting": "Trinama...",
+    "cancel": "Atšaukti",
+    "editListing": "Redaguoti skelbimą",
+    "manageYourListing": "Tvarkyti skelbimą"
   },
   "sell": {
     "title": "Parduokite su AI agentu",

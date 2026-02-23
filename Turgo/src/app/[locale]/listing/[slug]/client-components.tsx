@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Heart, Flag } from "lucide-react";
+import { Heart, Flag, Trash2 } from "lucide-react";
 import { MessageCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -289,6 +289,57 @@ export function ReportButton({ listingId, locale }: ReportButtonProps) {
             </Button>
           </DialogFooter>
         )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── DeleteListingButton ────────────────────────────────────
+interface DeleteListingButtonProps {
+  listingId: string;
+  locale: string;
+}
+
+export function DeleteListingButton({
+  listingId,
+  locale,
+}: DeleteListingButtonProps) {
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const t = useTranslations("listing");
+
+  const deleteMutation = trpc.listing.delete.useMutation({
+    onSuccess: () => {
+      setOpen(false);
+      router.push(`/${locale}/dashboard/listings`);
+    },
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="destructive" className="w-full">
+          <Trash2 className="mr-2 h-4 w-4" />
+          {t("deleteListing")}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t("deleteConfirmTitle")}</DialogTitle>
+          <DialogDescription>{t("deleteConfirmDesc")}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            {t("cancel")}
+          </Button>
+          <Button
+            variant="destructive"
+            disabled={deleteMutation.isPending}
+            onClick={() => deleteMutation.mutate({ id: listingId })}
+          >
+            {deleteMutation.isPending ? t("deleting") : t("deleteListing")}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

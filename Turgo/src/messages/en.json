@@ -214,7 +214,14 @@
     "safetyTip3": "Inspect the item before paying",
     "similarListings": "Similar Listings",
     "noImage": "No image",
-    "favorites": "favorites"
+    "favorites": "favorites",
+    "deleteListing": "Delete listing",
+    "deleteConfirmTitle": "Delete this listing?",
+    "deleteConfirmDesc": "This action cannot be undone. The listing and all associated data will be permanently removed.",
+    "deleting": "Deleting...",
+    "cancel": "Cancel",
+    "editListing": "Edit listing",
+    "manageYourListing": "Manage your listing"
   },
   "review": {
     "title": "Reviews",

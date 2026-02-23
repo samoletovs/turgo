@@ -214,7 +214,14 @@
     "safetyTip3": "Inspect the item before paying",
     "similarListings": "Similar Listings",
     "noImage": "No image",
-    "favorites": "favorites"
+    "favorites": "favorites",
+    "deleteListing": "Kustuta kuulutus",
+    "deleteConfirmTitle": "Kustuta see kuulutus?",
+    "deleteConfirmDesc": "Seda toimingut ei saa tagasi võtta. Kuulutus ja kõik seotud andmed kustutatakse jäädavalt.",
+    "deleting": "Kustutamine...",
+    "cancel": "Tühista",
+    "editListing": "Muuda kuulutust",
+    "manageYourListing": "Halda kuulutust"
   },
   "sell": {
     "title": "Müü AI agendiga",
