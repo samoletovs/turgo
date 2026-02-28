@@ -1,58 +1,6 @@
 import type { BuyingStepContext } from "./types";
 import { MONITOR_FREQ } from "./types";
-
-// ──────────────────────────────────────────────
-// BUYING STRATEGY SELECTION CONSTANTS
-// ──────────────────────────────────────────────
-
-export const BUYING_STRATEGY_OPTIONS = [
-  {
-    value: "TIME_ESCALATION",
-    icon: "⏳",
-    label: "Time Escalation",
-    desc: "Start low, increase over time",
-  },
-  {
-    value: "MAX_BID",
-    icon: "💪",
-    label: "Max Bid",
-    desc: "Offer max budget immediately",
-  },
-  {
-    value: "SNIPER",
-    icon: "🎯",
-    label: "Sniper",
-    desc: "Wait, then strike at expiry",
-  },
-  {
-    value: "ACCEPT_LISTED",
-    icon: "✅",
-    label: "Accept Listed Price",
-    desc: "Offer the listed price directly",
-  },
-  {
-    value: "EARLY_BIRD",
-    icon: "🐦",
-    label: "Early Bird",
-    desc: "Bid early at 60–70% of listing price",
-  },
-] as const;
-
-/**
- * Handle buying strategy selection action from the wizard.
- */
-export function handleBuyingStrategySelection(
-  value: string,
-  ctx: BuyingStepContext,
-) {
-  const strategyId = value.replace("strategy_", "") as
-    | "TIME_ESCALATION"
-    | "MAX_BID"
-    | "SNIPER"
-    | "ACCEPT_LISTED"
-    | "EARLY_BIRD";
-  ctx.updateData({ buyingStrategyId: strategyId });
-}
+import { BUYING_STRATEGY_OPTIONS } from "./StrategyStep";
 
 // ──────────────────────────────────────────────
 // TEXT INPUT HANDLER
@@ -92,27 +40,34 @@ export async function handleAgentConfigInput(
     // If still no match, keep the default (5 min)
   }
 
-  if (ctx.data.autoNegotiate) {
-    // Show strategy selection before summary when auto-negotiate is on
-    await ctx.thinkAndRespond(
-      "How should your agent negotiate offers?",
-      BUYING_STRATEGY_OPTIONS.map((o) => ({
-        label: `${o.icon} ${o.label}`,
-        value: `strategy_${o.value}`,
-        desc: o.desc,
-      })),
-    );
-  } else {
-    ctx.setCurrentStep("summary");
-    await buildBuyingSummary(ctx);
-  }
+  // After frequency is set, always advance to strategy selection
+  ctx.setCurrentStep("strategy");
+  await ctx.thinkAndRespond(
+    ctx.t("chooseBuyingStrategy"),
+    BUYING_STRATEGY_OPTIONS.map((o) => ({
+      label: ctx.t(o.i18nKey),
+      value: `strategy_${o.value}`,
+    })),
+  );
 }
 
 // ──────────────────────────────────────────────
 // BUILD SUMMARY
 // ──────────────────────────────────────────────
 
+/** Strategy name lookup for summary display */
+const STRATEGY_LABELS: Record<string, string> = {
+  TIME_ESCALATION: "⏳ Time Escalation",
+  MAX_BID: "💪 Max Bid",
+  SNIPER: "🎯 Sniper",
+  ACCEPT_LISTED: "✅ Accept Listed Price",
+  EARLY_BIRD: "🐦 Early Bird",
+};
+
 export async function buildBuyingSummary(ctx: BuyingStepContext) {
+  const strategyLabel =
+    STRATEGY_LABELS[ctx.data.buyingStrategyId] || ctx.data.buyingStrategyId;
+
   await ctx.thinkAndRespond(
     ctx.t("summary", {
       query: ctx.data.searchQuery || "Your item",
@@ -121,6 +76,7 @@ export async function buildBuyingSummary(ctx: BuyingStepContext) {
       maxPrice: String(ctx.data.maxPrice),
       location: ctx.data.locationName || "Anywhere",
       condition: ctx.data.condition === "ANY" ? "Any" : ctx.data.condition,
+      strategy: strategyLabel,
       frequency: String(ctx.data.monitorFrequency),
     }),
     [

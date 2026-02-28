@@ -105,6 +105,7 @@ enum AgentActionType {
   LISTING_CREATED
   LISTING_UPDATED
   MATCH_FOUND
+  STATUS_CHANGE
 }
 
 enum MatchStatus {
@@ -565,7 +566,7 @@ model Plan {
   listingDurationDays Int          @default(30)
   maxSavedSearches    Int          @default(5)
   maxSellingAgents    Int          @default(1)
-  maxBuyingAgents     Int          @default(1)
+  maxBuyingAgents     Int          @default(3)
   hasAiPremium        Boolean      @default(false)
   hasAnalytics        Boolean      @default(false)
   hasAutoTranslate    Boolean      @default(false)

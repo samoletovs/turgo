@@ -192,12 +192,14 @@ describe("agent.createBuying", () => {
       ...validInput,
       status: "ACTIVE",
     });
+    mockDb.agentAction.create.mockResolvedValue({});
 
     const caller = createCaller(authedCtx());
     const result = await caller.agent.createBuying(validInput);
 
     expect(result.id).toBe("ba-1");
     expect(mockDb.buyingAgent.create).toHaveBeenCalledOnce();
+    expect(mockDb.agentAction.create).toHaveBeenCalledOnce();
   });
 
   it("throws UNAUTHORIZED without session", async () => {
@@ -237,6 +239,7 @@ describe("agent.createBuying", () => {
       id: "ba-2",
       status: "ACTIVE",
     });
+    mockDb.agentAction.create.mockResolvedValue({});
 
     const caller = createCaller(authedCtx());
     const result = await caller.agent.createBuying({
@@ -244,6 +247,19 @@ describe("agent.createBuying", () => {
       searchCriteria: {},
     });
     expect(result.id).toBe("ba-2");
+  });
+
+  it("defaults to 3 agents when no subscription", async () => {
+    mockDb.buyingAgent.count.mockResolvedValue(3);
+    mockDb.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      subscription: null,
+    });
+
+    const caller = createCaller(authedCtx());
+    await expect(caller.agent.createBuying(validInput)).rejects.toThrow(
+      /at most 3/,
+    );
   });
 });
 
@@ -263,38 +279,49 @@ describe("agent.updateStatus", () => {
       id: validCuid,
       status: "PAUSED",
     });
+    mockDb.agentAction.create.mockResolvedValue({});
 
     const caller = createCaller(authedCtx());
     const result = await caller.agent.updateStatus(validInput);
 
     expect(result.status).toBe("PAUSED");
     expect(mockDb.sellingAgent.update).toHaveBeenCalledOnce();
+    expect(mockDb.agentAction.create).toHaveBeenCalledOnce();
   });
 
   it("falls back to buying agent when selling agent not found", async () => {
     mockDb.sellingAgent.findFirst.mockResolvedValue(null);
+    mockDb.buyingAgent.findFirst.mockResolvedValue({
+      id: validCuid,
+      userId: "user-1",
+      status: "ACTIVE",
+    });
     mockDb.buyingAgent.update.mockResolvedValue({
       id: validCuid,
       status: "PAUSED",
     });
+    mockDb.agentAction.create.mockResolvedValue({});
 
     const caller = createCaller(authedCtx());
     const result = await caller.agent.updateStatus(validInput);
 
     expect(result.status).toBe("PAUSED");
     expect(mockDb.buyingAgent.update).toHaveBeenCalledOnce();
+    expect(mockDb.agentAction.create).toHaveBeenCalledOnce();
   });
 
   it("sets completedAt when status is COMPLETED", async () => {
     mockDb.sellingAgent.findFirst.mockResolvedValue({
       id: validCuid,
       userId: "user-1",
+      status: "ACTIVE",
     });
     mockDb.sellingAgent.update.mockResolvedValue({
       id: validCuid,
       status: "COMPLETED",
       completedAt: new Date(),
     });
+    mockDb.agentAction.create.mockResolvedValue({});
 
     const caller = createCaller(authedCtx());
     await caller.agent.updateStatus({

@@ -92,7 +92,7 @@ export const agentRouter = createTRPCRouter({
         include: { subscription: { include: { plan: true } } },
       });
 
-      const maxAgents = user?.subscription?.plan?.maxBuyingAgents ?? 1;
+      const maxAgents = user?.subscription?.plan?.maxBuyingAgents ?? 3;
       if (activeCount >= maxAgents) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -100,7 +100,7 @@ export const agentRouter = createTRPCRouter({
         });
       }
 
-      return ctx.db.buyingAgent.create({
+      const agent = await ctx.db.buyingAgent.create({
         data: {
           userId: ctx.session.user.id!,
           searchCriteria:
@@ -117,19 +117,44 @@ export const agentRouter = createTRPCRouter({
           status: "ACTIVE",
         },
       });
+
+      // Log initial action
+      await ctx.db.agentAction.create({
+        data: {
+          buyingAgentId: agent.id,
+          agentType: "BUYING",
+          actionType: "LISTING_CREATED",
+          description: `Buying agent started — budget €${input.maxBudget}${input.targetPrice ? `, target €${input.targetPrice}` : ""}`,
+          metadata: {
+            maxBudget: input.maxBudget,
+            targetPrice: input.targetPrice,
+            autoNegotiate: input.autoNegotiate,
+            searchCriteria: input.searchCriteria,
+          },
+        },
+      });
+
+      return agent;
     }),
 
   /** Update agent status (pause, resume, cancel) */
   updateStatus: protectedProcedure
     .input(updateAgentStatusSchema)
     .mutation(async ({ ctx, input }) => {
+      const statusLabels: Record<string, string> = {
+        ACTIVE: "resumed",
+        PAUSED: "paused",
+        CANCELLED: "cancelled",
+        COMPLETED: "completed",
+      };
+
       // Try selling agent first
       const sellingAgent = await ctx.db.sellingAgent.findFirst({
         where: { id: input.agentId, userId: ctx.session.user.id! },
       });
 
       if (sellingAgent) {
-        return ctx.db.sellingAgent.update({
+        const updated = await ctx.db.sellingAgent.update({
           where: { id: input.agentId },
           data: {
             status: input.status,
@@ -138,13 +163,54 @@ export const agentRouter = createTRPCRouter({
               : {}),
           },
         });
+
+        await ctx.db.agentAction.create({
+          data: {
+            sellingAgentId: input.agentId,
+            agentType: "SELLING",
+            actionType: "STATUS_CHANGE",
+            description: `Selling agent ${statusLabels[input.status] ?? input.status}`,
+            metadata: {
+              previousStatus: sellingAgent.status,
+              newStatus: input.status,
+            },
+          },
+        });
+
+        return updated;
       }
 
       // Try buying agent
-      return ctx.db.buyingAgent.update({
+      const buyingAgent = await ctx.db.buyingAgent.findFirst({
+        where: { id: input.agentId, userId: ctx.session.user.id! },
+      });
+
+      if (!buyingAgent) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Agent not found",
+        });
+      }
+
+      const updated = await ctx.db.buyingAgent.update({
         where: { id: input.agentId },
         data: { status: input.status },
       });
+
+      await ctx.db.agentAction.create({
+        data: {
+          buyingAgentId: input.agentId,
+          agentType: "BUYING",
+          actionType: "STATUS_CHANGE",
+          description: `Buying agent ${statusLabels[input.status] ?? input.status}`,
+          metadata: {
+            previousStatus: buyingAgent.status,
+            newStatus: input.status,
+          },
+        },
+      });
+
+      return updated;
     }),
 
   /** Get all my agents */

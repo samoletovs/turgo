@@ -7,25 +7,10 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { getLocalizedName } from "@/lib/utils";
 import { BreadcrumbJsonLd } from "@/components/json-ld";
-import { APP_URL, LOCALES } from "@/lib/constants";
+import { APP_URL } from "@/lib/constants";
 
-/** ISR: revalidate every 10 minutes */
-export const revalidate = 600;
-
-/** Pre-generate all category slugs */
-export async function generateStaticParams() {
-  try {
-    const categories = await db.category.findMany({
-      where: { isActive: true },
-      select: { slug: true },
-    });
-    return LOCALES.flatMap((locale) =>
-      categories.map((c) => ({ locale, slug: c.slug })),
-    );
-  } catch {
-    return [];
-  }
-}
+/** Force dynamic rendering — layout uses auth() which requires cookies() */
+export const dynamic = "force-dynamic";
 
 /* ── Fallback category catalogue (matches seed data) ── */
 const FALLBACK_CATEGORIES: {

@@ -18,12 +18,15 @@ import { handleCategoryInput, handleCategoryAction } from "./CategoryStep";
 import { handleBudgetInput } from "./BudgetStep";
 import { handleLocationInput, handleLocationAction } from "./LocationStep";
 import { handleConditionInput, handleConditionAction } from "./ConditionStep";
+import { handleAgentConfigInput, buildBuyingSummary } from "./AgentConfigStep";
 import {
-  handleAgentConfigInput,
-  buildBuyingSummary,
   BUYING_STRATEGY_OPTIONS,
-  handleBuyingStrategySelection,
-} from "./AgentConfigStep";
+  handleBuyingStrategyAction,
+} from "./StrategyStep";
+import {
+  showBuyingAgentProposal,
+  handleBuyingProposalAction,
+} from "./AgentProposalStep";
 
 export function useBuyingWizard({
   locale,
@@ -195,6 +198,11 @@ export function useBuyingWizard({
       case "agent_config":
         await handleAgentConfigInput(content, ctx);
         break;
+      case "strategy":
+      case "agent_proposal":
+        // These steps are action-button driven, not text-input driven
+        await thinkAndRespond(t("unclearInput"));
+        break;
       default:
         await thinkAndRespond(t("unclearInput"));
     }
@@ -211,6 +219,9 @@ export function useBuyingWizard({
       create_agent: "Start monitoring!",
       edit: "Let me adjust",
       reset: "Create another",
+      auto_all: "Enable all automation",
+      auto_monitor_only: "Monitor only",
+      no_agent: "No agent needed",
     };
     if (staticMap[value]) return staticMap[value];
     if (value.startsWith("cat_")) {
@@ -243,7 +254,7 @@ export function useBuyingWizard({
     if (value.startsWith("strategy_")) {
       const sid = value.replace("strategy_", "");
       const opt = BUYING_STRATEGY_OPTIONS.find((o) => o.value === sid);
-      return opt ? opt.label : value;
+      return opt ? t(opt.i18nKey).split(" — ")[0] : value;
     }
     if (value.startsWith("goto_")) return "View agent";
     return value;
@@ -295,27 +306,46 @@ export function useBuyingWizard({
       updateData({
         monitorFrequency: parseInt(value.replace("freq_", ""), 10),
       });
-      if (data.autoNegotiate) {
-        // Show strategy selection before summary when auto-negotiate is on
-        await thinkAndRespond(
-          "How should your agent negotiate offers?",
-          BUYING_STRATEGY_OPTIONS.map((o) => ({
-            label: `${o.icon} ${o.label}`,
-            value: `strategy_${o.value}`,
-            desc: o.desc,
-          })),
-        );
+      // After frequency is set, always advance to strategy selection
+      ctx.setCurrentStep("strategy");
+      await thinkAndRespond(
+        t("chooseBuyingStrategy"),
+        BUYING_STRATEGY_OPTIONS.map((o) => ({
+          label: t(o.i18nKey),
+          value: `strategy_${o.value}`,
+        })),
+      );
+      return;
+    }
+
+    // Strategy selection → show agent proposal
+    if (value.startsWith("strategy_")) {
+      const strategyId = value.replace("strategy_", "") as
+        | "TIME_ESCALATION"
+        | "MAX_BID"
+        | "SNIPER"
+        | "ACCEPT_LISTED"
+        | "EARLY_BIRD";
+      handleBuyingStrategyAction(value, ctx);
+      await showBuyingAgentProposal(ctx, strategyId);
+      return;
+    }
+
+    // Agent proposal actions — user picks automation level
+    if (
+      value === "auto_all" ||
+      value === "auto_monitor_only" ||
+      value === "no_agent"
+    ) {
+      const { skipAgent } = handleBuyingProposalAction(value, ctx);
+      if (skipAgent) {
+        await thinkAndRespond(t("skipAgentConfirm"), [
+          { label: t("adjustCriteria"), value: "edit" },
+        ]);
       } else {
         setCurrentStep("summary");
         await buildBuyingSummary(ctx);
       }
-      return;
-    }
-
-    if (value.startsWith("strategy_")) {
-      handleBuyingStrategySelection(value, ctx);
-      setCurrentStep("summary");
-      await buildBuyingSummary(ctx);
       return;
     }
 

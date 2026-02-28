@@ -12,6 +12,12 @@ import {
   Bot,
   TrendingDown,
   Pencil,
+  BarChart3,
+  Eye,
+  MessageSquare,
+  Target,
+  Zap,
+  Activity,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/server/db";
@@ -29,27 +35,10 @@ import {
 import { ImageGallery } from "@/components/image-gallery";
 import { ListingJsonLd, BreadcrumbJsonLd } from "@/components/json-ld";
 import { LocationMap } from "@/components/maps/LocationMap";
-import { APP_URL, LOCALES } from "@/lib/constants";
+import { APP_URL } from "@/lib/constants";
 
-/** ISR: revalidate every 5 minutes */
-export const revalidate = 300;
-
-/** Pre-generate top 100 most-viewed listing slugs */
-export async function generateStaticParams() {
-  try {
-    const listings = await db.listing.findMany({
-      where: { status: "ACTIVE" },
-      orderBy: { viewCount: "desc" },
-      take: 100,
-      select: { slug: true },
-    });
-    return LOCALES.flatMap((locale) =>
-      listings.map((l) => ({ locale, slug: l.slug })),
-    );
-  } catch {
-    return [];
-  }
-}
+/** Force dynamic rendering — this page uses auth() which requires cookies() */
+export const dynamic = "force-dynamic";
 
 interface ListingPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -344,8 +333,8 @@ export default async function ListingPage({ params }: ListingPageProps) {
             </CardContent>
           </Card>
 
-          {/* AI Agent Card */}
-          {listing.sellingAgent && (
+          {/* AI Agent Card — public view (non-owner) */}
+          {listing.sellingAgent && !isOwner && (
             <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -370,6 +359,143 @@ export default async function ListingPage({ params }: ListingPageProps) {
                     {t("dynamicPricing")}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* AI Agent Insights — detailed owner view */}
+          {listing.sellingAgent && isOwner && (
+            <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Bot className="h-5 w-5 text-blue-500" />
+                  {t("agentInsights")}
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  {t("agentInsightsDesc")}
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                {/* Status & Strategy */}
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{t("status")}</span>
+                  <Badge
+                    variant={
+                      listing.sellingAgent.status === "ACTIVE"
+                        ? "success"
+                        : "secondary"
+                    }
+                  >
+                    {listing.sellingAgent.status === "ACTIVE"
+                      ? t("active")
+                      : t("agentPaused")}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">
+                    {t("agentStrategy")}
+                  </span>
+                  <span className="font-medium text-xs">
+                    {listing.sellingAgent.sellingStrategyId
+                      .replace(/_/g, " ")
+                      .toLowerCase()
+                      .replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                  </span>
+                </div>
+
+                {/* Key Metrics */}
+                <div className="grid grid-cols-2 gap-3 rounded-lg border p-3">
+                  <div className="flex items-center gap-2">
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        {t("agentViews")}
+                      </p>
+                      <p className="font-semibold">
+                        {listing.sellingAgent.totalViews}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        {t("agentInquiries")}
+                      </p>
+                      <p className="font-semibold">
+                        {listing.sellingAgent.totalInquiries}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Target className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        {t("agentOffers")}
+                      </p>
+                      <p className="font-semibold">
+                        {listing.sellingAgent.totalOffers}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        {t("agentBestOffer")}
+                      </p>
+                      <p className="font-semibold">
+                        {listing.sellingAgent.bestOfferPrice
+                          ? formatPrice(listing.sellingAgent.bestOfferPrice)
+                          : t("agentNoOffers")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Price Info */}
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      {t("agentCurrentPrice")}
+                    </p>
+                    <p className="text-lg font-bold text-primary">
+                      {formatPrice(listing.sellingAgent.currentPrice)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">
+                      {t("agentMinPrice")}
+                    </p>
+                    <p className="font-semibold text-muted-foreground">
+                      {formatPrice(listing.sellingAgent.minimumPrice)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Active features */}
+                <div className="space-y-2">
+                  {listing.sellingAgent.autoRespond && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <MessageSquare className="h-4 w-4 text-green-500" />
+                      <span>{t("autoResponding")}</span>
+                    </div>
+                  )}
+                  {listing.sellingAgent.autoNegotiate && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Activity className="h-4 w-4 text-green-500" />
+                      <span>{t("dynamicPricing")}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Link to full dashboard */}
+                <Link href={`/agents`}>
+                  <Button variant="outline" className="w-full" size="sm">
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    {t("agentViewAgent")}
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           )}

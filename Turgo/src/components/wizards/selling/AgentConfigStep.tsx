@@ -3,6 +3,7 @@ import { URGENCY_OPTIONS } from "./types";
 import { URGENCY_HOURS } from "@/lib/constants";
 import type { PricingCurvePoint } from "@/types";
 import { PriceCurveVisualizer } from "@/components/price-curve-visualizer";
+import { SELLING_STRATEGY_OPTIONS } from "./StrategyStep";
 
 // ──────────────────────────────────────────────
 // CLIENT-SIDE PRICE CURVE GENERATION
@@ -128,57 +129,15 @@ export async function handleAgentConfigInput(
     ? ctx.t("minPriceDefault", { price: String(minP) })
     : "";
 
-  // Automation config step — show toggles for auto-negotiate and auto-boost
-  ctx.setCurrentStep("summary");
+  // After min price is set, advance to strategy selection (always shown)
+  ctx.setCurrentStep("strategy");
   await ctx.thinkAndRespond(
     ctx.t("minPriceSet", { price: String(minP), defaultNote }),
-    [
-      { label: ctx.t("autoBoth"), value: "auto_both" },
-      { label: ctx.t("autoNegotiateOnly"), value: "auto_negotiate_only" },
-      { label: ctx.t("autoBoostOnly"), value: "auto_boost_only" },
-      { label: ctx.t("autoNone"), value: "auto_none" },
-    ],
+    SELLING_STRATEGY_OPTIONS.map((s) => ({
+      label: ctx.t(s.i18nKey),
+      value: `strategy_${s.value}`,
+    })),
   );
-}
-
-// ──────────────────────────────────────────────
-// STRATEGY SELECTION CONSTANTS
-// ──────────────────────────────────────────────
-
-export const SELLING_STRATEGY_OPTIONS = [
-  {
-    value: "SEALED_BID",
-    icon: "🔒",
-    label: "Sealed Bid",
-    desc: "Blind offers — you pick the winner",
-  },
-  {
-    value: "FIXED_PRICE",
-    icon: "💲",
-    label: "Fixed Price",
-    desc: "Auto-accept at your price",
-  },
-  {
-    value: "DUTCH_AUCTION",
-    icon: "📉",
-    label: "Dutch Auction",
-    desc: "Price drops until someone buys",
-  },
-] as const;
-
-/**
- * Handle strategy selection action from the wizard.
- * Called when user picks a selling strategy.
- */
-export function handleStrategySelection(
-  value: string,
-  ctx: SellingStepContext,
-) {
-  const strategyId = value.replace("strategy_", "") as
-    | "SEALED_BID"
-    | "FIXED_PRICE"
-    | "DUTCH_AUCTION";
-  ctx.updateData({ sellingStrategyId: strategyId });
 }
 
 // ──────────────────────────────────────────────
@@ -191,6 +150,15 @@ export function buildSellingSummary(ctx: SellingStepContext) {
     URGENCY_OPTIONS.find((u) => u.value === ctx.data.urgency)?.label ||
     "1 week";
 
+  // Resolve strategy name for display
+  const strategyNames: Record<string, string> = {
+    SEALED_BID: "🔒 Sealed Bid",
+    FIXED_PRICE: "💲 Fixed Price",
+    DUTCH_AUCTION: "📉 Dutch Auction",
+  };
+  const strategyLabel =
+    strategyNames[ctx.data.sellingStrategyId] || ctx.data.sellingStrategyId;
+
   // Generate price curve for visualization
   const curve = generatePriceCurveClient(
     ctx.data.price,
@@ -201,7 +169,7 @@ export function buildSellingSummary(ctx: SellingStepContext) {
 
   // Build automation summary
   const autoFeatures: string[] = [];
-  autoFeatures.push(ctx.t("strategyAutoRespond"));
+  if (ctx.data.autoRespond) autoFeatures.push(ctx.t("strategyAutoRespond"));
   if (ctx.data.autoNegotiate) autoFeatures.push(ctx.t("strategyAutoNegotiate"));
   if (ctx.data.autoBoost) autoFeatures.push(ctx.t("strategyAutoBoost"));
   autoFeatures.push(ctx.t("strategyPriceAdjust"));
@@ -213,6 +181,7 @@ export function buildSellingSummary(ctx: SellingStepContext) {
       price: String(ctx.data.price),
       minPrice: String(minP),
       urgency: urgencyLabel,
+      strategy: strategyLabel,
       postingTip,
       features: autoFeatures.join("\n"),
     }),

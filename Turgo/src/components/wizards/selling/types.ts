@@ -13,6 +13,8 @@ export type SellingWizardStep =
   | "pricing"
   | "urgency"
   | "agent_config"
+  | "strategy"
+  | "agent_proposal"
   | "summary"
   | "publishing"
   | "done";
@@ -133,6 +135,8 @@ export const SELLING_STEP_MAP: Record<string, number> = {
   pricing: 2,
   urgency: 2,
   agent_config: 3,
+  strategy: 3,
+  agent_proposal: 3,
   summary: 3,
   publishing: 4,
   done: 4,

@@ -13,6 +13,8 @@ export type BuyingWizardStep =
   | "condition"
   | "features"
   | "agent_config"
+  | "strategy"
+  | "agent_proposal"
   | "summary"
   | "creating"
   | "done";
@@ -109,6 +111,8 @@ export const BUYING_STEP_MAP: Record<string, number> = {
   condition: 2,
   features: 3,
   agent_config: 3,
+  strategy: 3,
+  agent_proposal: 3,
   summary: 4,
   creating: 4,
   done: 4,

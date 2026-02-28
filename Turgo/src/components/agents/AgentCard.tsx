@@ -35,6 +35,7 @@ interface SellingAgentData {
   totalInquiries: number;
   totalOffers: number;
   bestOfferPrice?: number | null;
+  sellingStrategyId?: string | null;
   listing: {
     id: string;
     title: string;
@@ -52,6 +53,7 @@ interface BuyingAgentData {
   maxBudget: number;
   matchCount: number;
   bestMatchScore?: number | null;
+  buyingStrategyId?: string | null;
   actions: { createdAt: Date; description: string }[];
 }
 
@@ -83,6 +85,14 @@ export function AgentCard({ agent, locale, className }: AgentCardProps) {
     isSelling && agent.listing.images[0]?.url
       ? agent.listing.images[0].url
       : null;
+
+  // Resolve strategy label for display
+  const strategyId = isSelling
+    ? (agent as SellingAgentData).sellingStrategyId
+    : (agent as BuyingAgentData).buyingStrategyId;
+  const strategyLabel = strategyId
+    ? tAgent(`strategy.${isSelling ? "selling" : "buying"}.${strategyId}`)
+    : null;
 
   const title = isSelling
     ? agent.listing.title
@@ -138,6 +148,13 @@ export function AgentCard({ agent, locale, className }: AgentCardProps) {
       {/* Content */}
       <CardContent className="space-y-3 p-4">
         <h3 className="truncate text-sm font-semibold">{title}</h3>
+
+        {/* Strategy badge */}
+        {strategyLabel && (
+          <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            {strategyLabel}
+          </span>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
@@ -232,6 +249,14 @@ export function AgentCard({ agent, locale, className }: AgentCardProps) {
             </Button>
           </Link>
         )}
+        <Link
+          href={`/dashboard/agents/${agent.id}`}
+          className={isSelling ? "" : "ml-auto"}
+        >
+          <Button variant="ghost" size="sm">
+            {t("history")}
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

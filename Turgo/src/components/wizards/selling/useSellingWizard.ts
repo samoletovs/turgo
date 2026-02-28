@@ -23,12 +23,15 @@ import {
 import { handleCategoryInput, handleCategoryAction } from "./CategoryStep";
 import { handlePricingInput } from "./PricingStep";
 import { handleUrgencyInput, handleUrgencyAction } from "./UrgencyStep";
+import { handleAgentConfigInput, buildSellingSummary } from "./AgentConfigStep";
 import {
-  handleAgentConfigInput,
-  buildSellingSummary,
   SELLING_STRATEGY_OPTIONS,
-  handleStrategySelection,
-} from "./AgentConfigStep";
+  handleSellingStrategyAction,
+} from "./StrategyStep";
+import {
+  showSellingAgentProposal,
+  handleSellingProposalAction,
+} from "./AgentProposalStep";
 import { handlePublishAction } from "./ReviewStep";
 
 export function useSellingWizard({
@@ -180,6 +183,11 @@ export function useSellingWizard({
       case "agent_config":
         await handleAgentConfigInput(content, ctx);
         break;
+      case "strategy":
+      case "agent_proposal":
+        // These steps are action-button driven, not text-input driven
+        await thinkAndRespond(t("tellMore"));
+        break;
       default:
         await thinkAndRespond(t("tellMore"));
     }
@@ -194,15 +202,15 @@ export function useSellingWizard({
     if (value === "publish") return "Launch my agent!";
     if (value === "draft") return "Save as draft";
     if (value === "keep_my_price") return `Keep my €${data.price}`;
-    if (value === "auto_both") return "Enable both";
+    if (value === "auto_all") return "Enable all automation";
     if (value === "auto_negotiate_only") return "Auto-negotiate only";
     if (value === "auto_boost_only") return "Auto-boost only";
-    if (value === "auto_none") return "No automation";
+    if (value === "no_agent") return "No agent needed";
     if (value.startsWith("strategy_")) {
       const s = SELLING_STRATEGY_OPTIONS.find(
         (o) => o.value === value.replace("strategy_", ""),
       );
-      return s ? s.label : value;
+      return s ? t(s.i18nKey).split(" — ")[0] : value;
     }
     if (value.startsWith("use_ai_price_")) {
       return `Use €${value.replace("use_ai_price_", "")}`;
@@ -220,18 +228,6 @@ export function useSellingWizard({
     }
     if (value.startsWith("goto_")) return "View listing";
     return value;
-  };
-
-  // Show strategy selection prompt (only when autoNegotiate is enabled)
-  const showStrategySelection = async (ctx: SellingStepContext) => {
-    await ctx.thinkAndRespond(
-      ctx.t("chooseSellingStrategy"),
-      SELLING_STRATEGY_OPTIONS.map((s) => ({
-        label: `${s.icon} ${s.label}`,
-        value: `strategy_${s.value}`,
-        desc: s.desc,
-      })),
-    );
   };
 
   // Handle action button clicks
@@ -298,32 +294,36 @@ export function useSellingWizard({
       return;
     }
 
-    // Automation toggle actions (auto-negotiate / auto-boost)
-    if (value === "auto_both") {
-      updateData({ autoNegotiate: true, autoBoost: true });
-      await showStrategySelection(ctx);
-      return;
-    }
-    if (value === "auto_negotiate_only") {
-      updateData({ autoNegotiate: true, autoBoost: false });
-      await showStrategySelection(ctx);
-      return;
-    }
-    if (value === "auto_boost_only") {
-      updateData({ autoNegotiate: false, autoBoost: true });
-      buildSellingSummary(ctx);
-      return;
-    }
-    if (value === "auto_none") {
-      updateData({ autoNegotiate: false, autoBoost: false });
-      buildSellingSummary(ctx);
+    // Strategy selection actions — user picks a strategy, then see proposal
+    if (value.startsWith("strategy_")) {
+      const strategyId = value.replace("strategy_", "") as
+        | "SEALED_BID"
+        | "FIXED_PRICE"
+        | "DUTCH_AUCTION";
+      handleSellingStrategyAction(value, ctx);
+      await showSellingAgentProposal(ctx, strategyId);
       return;
     }
 
-    // Strategy selection actions
-    if (value.startsWith("strategy_")) {
-      handleStrategySelection(value, ctx);
-      buildSellingSummary(ctx);
+    // Agent proposal actions — user picks automation level
+    if (
+      value === "auto_all" ||
+      value === "auto_negotiate_only" ||
+      value === "auto_boost_only" ||
+      value === "no_agent"
+    ) {
+      const { skipAgent } = handleSellingProposalAction(value, ctx);
+      if (skipAgent) {
+        // User chose no agent — show confirmation and skip to publish
+        await thinkAndRespond(t("skipAgentConfirm"), [
+          { label: t("launchAgent"), value: "publish" },
+          { label: t("saveDraft"), value: "draft" },
+          { label: t("changeSomething"), value: "edit" },
+        ]);
+      } else {
+        setCurrentStep("summary");
+        buildSellingSummary(ctx);
+      }
       return;
     }
 
