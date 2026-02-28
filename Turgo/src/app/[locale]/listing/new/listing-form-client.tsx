@@ -144,6 +144,13 @@ export function ManualListingForm({
       errs.description = "Description must be at least 20 characters";
     if (!price || parseFloat(price) <= 0) errs.price = "Enter a valid price";
     if (!effectiveCategoryId) errs.category = "Select a category";
+    if (
+      categoryId &&
+      !subcategoryId &&
+      selectedCategory?.children &&
+      selectedCategory.children.length > 0
+    )
+      errs.category = "Please select a subcategory";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };

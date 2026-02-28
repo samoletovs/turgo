@@ -335,6 +335,7 @@
       "askDescription": "Ir trumpą aprašymą?",
       "pickCategory": "Dabar išsirinkime kategoriją. Kuri iš šių geriausiai tinka jūsų prekei?",
       "whichCategory": "Kuri kategorija tinka geriausiai?",
+      "pickSubcategory": "Gerai, {category}! Dabar pasirinkite tikslesnę subkategoriją:",
       "categorySelected": "{category} — puikus pasirinkimas!\n\nKokią kainą galvojate? Aš palyginsiu su rinkos duomenimis ir pasiūlysiu optimalią pradinę kainą.\n\nTiesiog įrašykite skaičių (EUR).",
       "categoryNotFound": "Neradau kategorijos, atitinkančios \"{input}\". Pasirinkite iš sąrašo:",
       "enterPrice": "Kokią kainą galvojate? Aš išanalizuosiu rinką ir pasiūlysiu optimalią pradinę kainą.\n\nTiesiog įrašykite skaičių (EUR).",
@@ -384,6 +385,9 @@
       "doneAutoNegotiateDesc": "Vertina ir reitinguoja pasiūlymus už jus",
       "tellMore": "Ar galite papasakoti daugiau?",
       "chooseSellingStrategy": "Kaip norite parduoti? Pasirinkite strategiją:",
+      "strategyRecommendedIntro": "Remiantis rinkos duomenimis, rekomenduoju **{strategy}** ({confidence}% tikimybė).",
+      "strategyMarketInfo": "Rinka: {listingCount} skelbimai, mediana €{medianPrice}, {supply} pasiūla, {trend} tendencija.",
+      "strategyOverrideHint": "Jei pageidaujate, galite pasirinkti kitą strategiją žemiau:",
       "strategySealedBid": "🔒 Užantspauduotas pasiūlymas — Akli pasiūlymai, jūs renkate laimėtoją.",
       "strategyFixedPrice": "💲 Fiksuota kaina — Automatinis priėmimas jūsų kaina.",
       "strategyDutchAuction": "📉 Olandiškas aukcionas — Kaina mažėja, kol kas nors perka.",
@@ -463,11 +467,15 @@
       "donePriceTrack": "Kainų sekimas",
       "donePriceTrackDesc": "Pranešimai apie kainų kritimus",
       "chooseBuyingStrategy": "Kaip man derinti jūsų vardu? Pasirinkite strategiją:",
-      "strategyTimeEscalation": "⏳ Laiko eskalacija — Pradėkite žemai, didinkite palaipsniui.",
-      "strategyMaxBid": "💪 Maksimalus pasiūlymas — Iš karto pasiūlykite maksimalų biudžetą.",
-      "strategySniper": "🎯 Snaiperis — Palaukite ir smogkite galiojimo pabaigoje.",
-      "strategyAcceptListed": "✅ Priimti nurodytą kainą — Pasiūlykite tiksliai nurodytą kainą.",
-      "strategyEarlyBird": "🐦 Ankstyvas paukštis — Pasiūlykite anksti 60–70% nurodytos kainos.",
+      "strategyRecommendedIntro": "Remiantis rinkos duomenimis, rekomenduoju **{strategy}** ({confidence}% tikimybė).",
+      "strategyMarketInfo": "Rinka: {listingCount} skelbimai, mediana €{medianPrice}, {supply} pasiūla, {trend} tendencija.",
+      "strategyOverrideHint": "Jei pageidaujate, galite pasirinkti kitą strategiją žemiau:",
+      "strategyLearnMore": "📖 Nežinote, kurią pasirinkti? Peržiūrėkite mūsų detalų strategijų palyginimą",
+      "strategyTimeEscalation": "⏳ Laiko eskalacija — Pradėkite nuo ~70% biudžeto, automatiškai didinkite laikui bėgant.",
+      "strategyMaxBid": "💪 Maksimalus pasiūlymas — Iš karto pasiūlykite visą biudžetą. Vienas bandymas, be tolesnių veiksmų.",
+      "strategySniper": "🎯 Snaiperis — Palaukite kol skelbimas bus pusiau iki galiojimo pabaigos, tada smogkite 85–95% biudžeto.",
+      "strategyAcceptListed": "✅ Priimti nurodytą kainą — Mokėkite pardavėjo prašomą kainą. Automatiškai seka kainos pokyčius.",
+      "strategyEarlyBird": "🐦 Ankstyvas paukštis — Pasiūlykite 60–70% skelbimo kainos tik pirmosiomis dienomis. Be eskalacijos.",
       "proposalTimeEscalation": "**Laiko eskalacija** — pradėsiu žemai ir protingai didinsiu — prisitaikydamas prie pardavėjo reakcijos ir skelbimo aktyvumo.\n\nKą aš už jus nuspręsiu:",
       "proposalMaxBid": "**Maksimaliu pasiūlymu** — greitai užtikrinsiu didelio paklausos prekes — bet pirma analizuosiu sandorio kokybę.\n\nKą aš padarysiu:",
       "proposalSniper": "**Snaiperiu** — stebėsiu skelbimo aktyvumą, analizuosiu pardavėjo elgesį ir smogsiu optimaliu momentu.\n\nKą aš už jus nuspręsiu:",
@@ -1260,6 +1268,7 @@
     "errorDescMin": "Aprašymas turi būti bent 20 simbolių",
     "errorPrice": "Įveskite tinkamą kainą",
     "errorCategory": "Pasirinkite kategoriją",
+    "errorSubcategory": "Prašome pasirinkti subkategoriją",
     "addressLabel": "Adresas",
     "addressCountry": "Šalis",
     "selectCountry": "Pasirinkite šalį",
@@ -1452,6 +1461,29 @@
         "q3": {
           "q": "Ar agentas gali derėtis už mane?",
           "a": "Taip, jei įjungsite automatines derybas."
+        }
+      },
+      "buyingStrategies": {
+        "title": "Pirkimo strategijos paaiškintos",
+        "q1": {
+          "q": "⏳ Laiko eskalacija — Kaip tai veikia?",
+          "a": "Laiko eskalacija skirta kantriems derybininkams. Jūsų agentas pradeda siūlyti nuo ~70% jūsų maksimalaus biudžeto ir palaipsniui didina pagal galios kreivę link jūsų maksimumo. Eskaluoja automatiškai 3%+ žingsniais. Geriausia: lankstiems pirkėjams, norintiems sutaupyti, bet pasirengusiems laikui bėgant mokėti daugiau. Reikia Pro plano."
+        },
+        "q2": {
+          "q": "💪 Maksimalus pasiūlymas — Kuo skiriasi nuo nurodytos kainos priėmimo?",
+          "a": "Maksimalus pasiūlymas iš karto siūlo mažesnę iš jūsų biudžeto arba skelbimo kainos — vienas bandymas, be eskalacijos. Jis skiriasi nuo nurodytos kainos priėmimo tuo, kad naudoja JŪSŲ biudžetą kaip inkaro tašką (kuris gali būti žemesnis nei skelbimo kaina), o nurodytos kainos priėmimas visada siūlo PARDAVĖJO prašomą kainą. Reikia Pro plano."
+        },
+        "q3": {
+          "q": "🎯 Snaiperis — Kada jį naudoti?",
+          "a": "Snaiperis laukia kol skelbimas bus bent 50% savo gyvavimo laiko, tada pateikia vieną apskaičiuotą pasiūlymą 85–95% jūsų biudžeto. Niekada nesiūlo anksti ir niekada neeskaluoja — vienas tikslus smūgis. Geriausia: taktiniams pirkėjams, tikintiems, kad pardavėjai mažina lūkesčius skelbimui senėjant. Reikia Verslo plano."
+        },
+        "q4": {
+          "q": "✅ Priimti nurodytą kainą — Ar vyksta kokios nors derybos?",
+          "a": "Jokių derybų — jūsų agentas tiesiog iš karto siūlo pardavėjo nurodytą kainą. Tačiau unikaliai seka kainos pokyčius: jei pardavėjas pakelia kainą (jūsų biudžeto ribose), jūsų agentas atitinka naują kainą. Jei kaina krenta, jūs automatiškai gaunate naudą. Prieinama visuose planuose, įskaitant nemokamą."
+        },
+        "q5": {
+          "q": "🐦 Ankstyvas paukštis — Kuo skiriasi nuo laiko eskalacijos?",
+          "a": "Ankstyvas paukštis yra priešingas požiūris. Užuot palaipsniui didinęs nuo biudžeto, jis siūlo 60–70% SKELBIMO KAINOS tik per pirmuosius 40% skelbimo gyvavimo laiko. Niekada neeskaluoja ir neseka — imk-arba-palik žemas pasiūlymas. Geriausia: pigių pasiūlymų ieškotojams testuojantiems pardavėjo lankstumą. Prieinama nemokamame plane."
         }
       },
       "payments": {

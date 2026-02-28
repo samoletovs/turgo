@@ -157,12 +157,66 @@ export interface DealScoreBreakdown {
 export interface ScraperCategoryStats {
   categorySlug: string;
   locationSlug?: string;
+  subcategorySlug?: string;
   medianPrice: number;
   avgPrice: number;
   minPrice: number;
   maxPrice: number;
+  priceSpread: number;
   listingCount: number;
   avgDaysToSell?: number;
+}
+
+// ──────────────────────────────────────────────
+// MARKET ANALYSIS TYPES
+// ──────────────────────────────────────────────
+
+/** Trend direction for price movements */
+export type PriceTrendDirection = "rising" | "falling" | "stable";
+
+/** Price trend analysis from historical MarketSnapshot data */
+export interface PriceTrend {
+  direction: PriceTrendDirection;
+  /** Weekly % change: positive = rising, negative = falling */
+  velocityPerWeek: number;
+  /** Coefficient of variation: higher = more volatile */
+  volatility: number;
+  /** Number of data points used */
+  dataPoints: number;
+}
+
+/** Market context assembled from snapshots — drives strategy recommendations */
+export interface MarketContext {
+  /** "high" (>50 listings), "moderate" (20-50), "low" (<20) */
+  supplyLevel: "high" | "moderate" | "low";
+  /** Price range width relative to median: "wide" (>60%), "moderate" (30-60%), "tight" (<30%) */
+  priceSpread: "wide" | "moderate" | "tight";
+  /** Average days currently listed items have been on market */
+  avgDaysToSell: number | null;
+  /** Direction and velocity of price changes */
+  priceTrend: PriceTrend;
+  /** Demand score from -1 (very low) to +1 (very high) */
+  demandScore: number | null;
+  /** Median price in the category/subcategory */
+  medianPrice: number;
+  /** Number of active listings */
+  listingCount: number;
+  /** Subcategory slug if sub-category data was used */
+  subcategorySlug: string | null;
+}
+
+/** Strategy recommendation result */
+export interface StrategyRecommendation<T extends string> {
+  /** Recommended strategy ID */
+  strategyId: T;
+  /** Confidence 0-100 */
+  confidence: number;
+  /** Human-readable explanation */
+  reasoning: string;
+  /** Market data backing the recommendation */
+  marketContext: MarketContext;
+  /** Scores for each strategy (for transparency) */
+  scores: Record<string, number>;
 }
 
 // ──────────────────────────────────────────────

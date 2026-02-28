@@ -20,7 +20,11 @@ import {
   handleConfirmDetailsInput,
   removePhoto,
 } from "./PhotoUploadStep";
-import { handleCategoryInput, handleCategoryAction } from "./CategoryStep";
+import {
+  handleCategoryInput,
+  handleCategoryAction,
+  handleSubcategoryAction,
+} from "./CategoryStep";
 import { handlePricingInput } from "./PricingStep";
 import { handleUrgencyInput, handleUrgencyAction } from "./UrgencyStep";
 import { handleAgentConfigInput, buildSellingSummary } from "./AgentConfigStep";
@@ -215,6 +219,14 @@ export function useSellingWizard({
     if (value.startsWith("use_ai_price_")) {
       return `Use €${value.replace("use_ai_price_", "")}`;
     }
+    if (value.startsWith("subcat_")) {
+      const subId = value.replace("subcat_", "");
+      for (const cat of categories) {
+        const child = cat.children?.find((ch) => ch.id === subId);
+        if (child) return resolveName(child.name, locale, child.slug);
+      }
+      return value;
+    }
     if (value.startsWith("cat_")) {
       const catId = value.replace("cat_", "");
       const cat = categories.find((c) => c.id === catId);
@@ -242,6 +254,11 @@ export function useSellingWizard({
     if (value === "describe_first") {
       setCurrentStep("confirm_details");
       await thinkAndRespond(t("describePrompt"));
+      return;
+    }
+
+    if (value.startsWith("subcat_")) {
+      await handleSubcategoryAction(value, ctx);
       return;
     }
 

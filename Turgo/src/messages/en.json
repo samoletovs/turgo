@@ -366,6 +366,7 @@
       "askDescription": "And a brief description?",
       "pickCategory": "Now let's pick a category. Which of these best fits your item?",
       "whichCategory": "Which category fits best?",
+      "pickSubcategory": "Good, {category}! Now pick a more specific subcategory:",
       "categorySelected": "{category} — great choice!\n\nWhat price did you have in mind? I'll compare against market data and suggest an optimal starting price.\n\nJust type a number (EUR).",
       "categoryNotFound": "I couldn't find a category matching \"{input}\". Please pick one from the list:",
       "enterPrice": "What price are you thinking? I'll analyze the market and suggest an optimal starting price.\n\nJust type a number (in EUR).",
@@ -415,6 +416,9 @@
       "doneAutoNegotiateDesc": "Scores & ranks offers for you",
       "tellMore": "Could you tell me more?",
       "chooseSellingStrategy": "How do you want to sell? Pick a strategy:",
+      "strategyRecommendedIntro": "Based on market data, I recommend **{strategy}** ({confidence}% confidence).",
+      "strategyMarketInfo": "Market: {listingCount} listings, median €{medianPrice}, {supply} supply, {trend} trend.",
+      "strategyOverrideHint": "You can pick a different strategy below if you prefer:",
       "strategySealedBid": "🔒 Sealed Bid — Blind offers, you pick the winner.",
       "strategyFixedPrice": "💲 Fixed Price — Auto-accept at your price.",
       "strategyDutchAuction": "📉 Dutch Auction — Price drops until someone buys.",
@@ -494,11 +498,15 @@
       "donePriceTrack": "Price Tracking",
       "donePriceTrackDesc": "Alerts on price drops",
       "chooseBuyingStrategy": "How should I negotiate for you? Pick a strategy:",
-      "strategyTimeEscalation": "⏳ Time Escalation — Start low, increase over time.",
-      "strategyMaxBid": "💪 Max Bid — Offer max budget immediately.",
-      "strategySniper": "🎯 Sniper — Wait, then strike at expiry.",
-      "strategyAcceptListed": "✅ Accept Listed Price — Offer the listed price directly.",
-      "strategyEarlyBird": "🐦 Early Bird — Bid early at 60–70% of listing price.",
+      "strategyRecommendedIntro": "Based on market data, I recommend **{strategy}** ({confidence}% confidence).",
+      "strategyMarketInfo": "Market: {listingCount} listings, median €{medianPrice}, {supply} supply, {trend} trend.",
+      "strategyOverrideHint": "You can pick a different strategy below if you prefer:",
+      "strategyLearnMore": "📖 Not sure which to pick? See our detailed strategy comparison",
+      "strategyTimeEscalation": "⏳ Time Escalation — Start at ~70% of your budget, automatically increase toward max over time.",
+      "strategyMaxBid": "💪 Max Bid — Offer your full budget immediately. One shot, no follow-up.",
+      "strategySniper": "🎯 Sniper — Wait until the listing is halfway to expiry, then strike once at 85–95% of budget.",
+      "strategyAcceptListed": "✅ Accept Listed Price — Pay the seller's asking price. Tracks price changes automatically.",
+      "strategyEarlyBird": "🐦 Early Bird — Bid 60–70% of listing price in the first days only. No escalation.",
       "proposalTimeEscalation": "With **Time Escalation**, I'll start low and intelligently increase — adapting to seller response patterns and listing engagement.\n\nHere's what I'll decide for you:",
       "proposalMaxBid": "With **Max Bid**, I'll move fast to secure high-demand items — but I'll still analyze the deal quality first.\n\nHere's what I'll handle:",
       "proposalSniper": "With **Sniper**, I'll watch the listing activity, analyze the seller's behavior, and strike at the optimal moment before expiry.\n\nHere's what I'll decide for you:",
@@ -1259,6 +1267,7 @@
     "errorDescMin": "Description must be at least 20 characters",
     "errorPrice": "Enter a valid price",
     "errorCategory": "Select a category",
+    "errorSubcategory": "Please select a subcategory",
     "addressLabel": "Address",
     "addressCountry": "Country",
     "selectCountry": "Select country",
@@ -1451,6 +1460,29 @@
         "q3": {
           "q": "Can the buying agent negotiate for me?",
           "a": "Yes, if you enable auto-negotiate. Set your target price and maximum offer, and the agent will automatically send offers and counter-offers on your behalf. You'll be notified of any accepted deals."
+        }
+      },
+      "buyingStrategies": {
+        "title": "Buying Strategies Explained",
+        "q1": {
+          "q": "\u23f3 Time Escalation \u2014 How does it work?",
+          "a": "Time Escalation is for patient negotiators. Your agent starts bidding at ~70% of your maximum budget and gradually increases on a power curve toward your max as the listing ages. It escalates automatically in 3%+ increments whenever conditions improve. Best for: buyers with flexibility who want to save money but are willing to pay more over time. Requires Pro plan."
+        },
+        "q2": {
+          "q": "\ud83d\udcaa Max Bid \u2014 How does it differ from Accept Listed Price?",
+          "a": "Max Bid immediately offers the lower of your maximum budget or the listing price \u2014 one shot, no escalation. It\u2019s different from Accept Listed Price because Max Bid uses YOUR budget as the anchor (which may be below listing price), while Accept Listed Price always offers the SELLER\u2019S asking price regardless. If your budget is \u20ac500 but the listing is \u20ac800, Max Bid offers \u20ac500; Accept Listed offers \u20ac800. Requires Pro plan."
+        },
+        "q3": {
+          "q": "\ud83c\udfaf Sniper \u2014 When should I use it?",
+          "a": "Sniper waits until the listing is at least 50% through its lifetime, then places a single calculated bid at 85\u201395% of your budget. It never bids early and never escalates \u2014 it\u2019s a single, well-timed strike. Best for: tactical buyers who believe sellers lower expectations as listings age. Requires Business plan."
+        },
+        "q4": {
+          "q": "\u2705 Accept Listed Price \u2014 Is there any negotiation?",
+          "a": "No negotiation \u2014 your agent simply offers the seller\u2019s listed price immediately. However, it uniquely tracks price changes: if the seller raises the price (within your budget), your agent matches the new price. If the price drops, you benefit automatically. Best for: buyers who want a specific item without the risk of losing it to negotiations. Available on all plans including Free."
+        },
+        "q5": {
+          "q": "\ud83d\udc26 Early Bird \u2014 How is it different from Time Escalation?",
+          "a": "Early Bird is the opposite approach. Instead of gradually increasing from your budget, it bids 60\u201370% of the LISTING PRICE during the first 40% of the listing\u2019s lifetime only. It never escalates or follows up \u2014 it\u2019s a take-it-or-leave-it lowball. Time Escalation bids based on your budget over the full lifetime and keeps increasing. Best for: bargain hunters testing seller flexibility on new listings. Available on Free plan."
         }
       },
       "payments": {

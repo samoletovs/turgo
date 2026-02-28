@@ -42,6 +42,18 @@ describe("calculateOptimalPrice", () => {
   };
 
   it("returns suggested price, factors, curve, and reasoning", async () => {
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({
+      medianPrice: 180,
+      listingCount: 15,
+      demandScore: 1.5,
+      avgPrice: 185,
+      minPrice: 100,
+      maxPrice: 300,
+      avgDaysToSell: null,
+      priceSpread: 200,
+      subcategorySlug: null,
+      date: new Date(),
+    });
     mockDb.marketSnapshot.findMany.mockResolvedValue([
       {
         medianPrice: 180,
@@ -62,6 +74,18 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("returns all 10 pricing factors between 0 and 1", async () => {
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({
+      medianPrice: 200,
+      listingCount: 10,
+      demandScore: 1,
+      avgPrice: 200,
+      minPrice: 100,
+      maxPrice: 300,
+      avgDaysToSell: null,
+      priceSpread: 200,
+      subcategorySlug: null,
+      date: new Date(),
+    });
     mockDb.marketSnapshot.findMany.mockResolvedValue([
       { medianPrice: 200, listingCount: 10, demandScore: 1, date: new Date() },
     ]);
@@ -89,6 +113,18 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("generates pricing curve with correct start and end", async () => {
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({
+      medianPrice: 300,
+      listingCount: 5,
+      demandScore: 1,
+      avgPrice: 300,
+      minPrice: 200,
+      maxPrice: 400,
+      avgDaysToSell: null,
+      priceSpread: 200,
+      subcategorySlug: null,
+      date: new Date(),
+    });
     mockDb.marketSnapshot.findMany.mockResolvedValue([
       { medianPrice: 300, listingCount: 5, demandScore: 1, date: new Date() },
     ]);
@@ -108,6 +144,7 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("handles no market data (uses userBasePrice as fallback)", async () => {
+    mockDb.marketSnapshot.findFirst.mockResolvedValue(null);
     mockDb.marketSnapshot.findMany.mockResolvedValue([]);
 
     const result = await calculateOptimalPrice(baseParams);
@@ -117,6 +154,18 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("sets condition factor to 1 for NEW items", async () => {
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({
+      medianPrice: 200,
+      listingCount: 10,
+      demandScore: 1,
+      avgPrice: 200,
+      minPrice: 100,
+      maxPrice: 300,
+      avgDaysToSell: null,
+      priceSpread: 200,
+      subcategorySlug: null,
+      date: new Date(),
+    });
     mockDb.marketSnapshot.findMany.mockResolvedValue([
       { medianPrice: 200, listingCount: 10, demandScore: 1, date: new Date() },
     ]);
@@ -129,6 +178,18 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("sets condition factor to 0.7 for REFURBISHED items", async () => {
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({
+      medianPrice: 200,
+      listingCount: 10,
+      demandScore: 1,
+      avgPrice: 200,
+      minPrice: 100,
+      maxPrice: 300,
+      avgDaysToSell: null,
+      priceSpread: 200,
+      subcategorySlug: null,
+      date: new Date(),
+    });
     mockDb.marketSnapshot.findMany.mockResolvedValue([
       { medianPrice: 200, listingCount: 10, demandScore: 1, date: new Date() },
     ]);
@@ -141,6 +202,18 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("adjusts supply factor for high listing count", async () => {
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({
+      medianPrice: 200,
+      listingCount: 60,
+      demandScore: 1,
+      avgPrice: 200,
+      minPrice: 100,
+      maxPrice: 300,
+      avgDaysToSell: null,
+      priceSpread: 200,
+      subcategorySlug: null,
+      date: new Date(),
+    });
     mockDb.marketSnapshot.findMany.mockResolvedValue([
       { medianPrice: 200, listingCount: 60, demandScore: 1, date: new Date() },
     ]);
@@ -151,6 +224,18 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("handles high urgency (ONE_DAY)", async () => {
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({
+      medianPrice: 200,
+      listingCount: 10,
+      demandScore: 1,
+      avgPrice: 200,
+      minPrice: 100,
+      maxPrice: 300,
+      avgDaysToSell: null,
+      priceSpread: 200,
+      subcategorySlug: null,
+      date: new Date(),
+    });
     mockDb.marketSnapshot.findMany.mockResolvedValue([
       { medianPrice: 200, listingCount: 10, demandScore: 1, date: new Date() },
     ]);
@@ -171,6 +256,7 @@ describe("calculateOptimalPrice", () => {
   });
 
   it("never returns suggestedPrice less than 1", async () => {
+    mockDb.marketSnapshot.findFirst.mockResolvedValue(null);
     mockDb.marketSnapshot.findMany.mockResolvedValue([
       { medianPrice: 0, listingCount: 0, demandScore: 0, date: new Date() },
     ]);

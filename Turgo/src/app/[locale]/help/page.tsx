@@ -31,14 +31,14 @@ export default async function HelpPage({
     "gettingStarted",
     "sellingAgents",
     "buyingAgents",
+    "buyingStrategies",
     "payments",
     "accountPrivacy",
   ] as const;
 
   const faqPairs: { question: string; answer: string }[] = [];
   for (const section of sections) {
-    const keys = ["q1", "q2", "q3"] as const;
-    for (const key of keys) {
+    for (const key of ["q1", "q2", "q3", "q4", "q5"]) {
       try {
         const q = t(`sections.${section}.${key}.q`);
         const a = t(`sections.${section}.${key}.a`);

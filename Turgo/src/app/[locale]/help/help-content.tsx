@@ -13,12 +13,18 @@ import {
   ShoppingCart,
   CreditCard,
   Shield,
+  Target,
 } from "lucide-react";
 
 const SECTIONS = [
   { id: "gettingStarted", icon: Rocket, keys: ["q1", "q2", "q3"] },
   { id: "sellingAgents", icon: TrendingUp, keys: ["q1", "q2", "q3"] },
   { id: "buyingAgents", icon: ShoppingCart, keys: ["q1", "q2", "q3"] },
+  {
+    id: "buyingStrategies",
+    icon: Target,
+    keys: ["q1", "q2", "q3", "q4", "q5"],
+  },
   { id: "payments", icon: CreditCard, keys: ["q1", "q2", "q3"] },
   { id: "accountPrivacy", icon: Shield, keys: ["q1", "q2", "q3"] },
 ] as const;

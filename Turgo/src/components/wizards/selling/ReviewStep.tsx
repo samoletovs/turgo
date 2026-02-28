@@ -15,17 +15,17 @@ export async function handlePublishAction(
 ) {
   // Validate required fields before submission
   const missing: string[] = [];
+  let finalDescription = ctx.data.description?.trim() || "";
   if (!ctx.data.title || ctx.data.title.trim().length < 5)
     missing.push("title (min 5 chars)");
-  if (!ctx.data.description || ctx.data.description.trim().length < 20) {
-    if (ctx.data.title && ctx.data.description.length < 20) {
+  if (finalDescription.length < 20) {
+    if (ctx.data.title) {
       const autoDesc = `${ctx.data.title}. ${ctx.data.categoryName ? `Category: ${ctx.data.categoryName}. ` : ""}Condition: ${ctx.data.condition}. Price: €${ctx.data.price}.`;
-      ctx.updateData({
-        description:
-          autoDesc.length >= 20
-            ? autoDesc
-            : autoDesc + " Contact seller for more details.",
-      });
+      finalDescription =
+        autoDesc.length >= 20
+          ? autoDesc
+          : autoDesc + " Contact seller for more details.";
+      ctx.updateData({ description: finalDescription });
     } else {
       missing.push("description (min 20 chars)");
     }
@@ -73,7 +73,7 @@ export async function handlePublishAction(
     // Create listing via tRPC
     const result = await trpcClient.listing.createFull.mutate({
       title: ctx.data.title.trim(),
-      description: ctx.data.description.trim(),
+      description: finalDescription,
       categoryId: ctx.data.categoryId,
       condition: ctx.data.condition as "NEW" | "USED" | "REFURBISHED",
       locationId: ctx.data.locationId || undefined,

@@ -924,22 +924,25 @@ model SearchLog {
 // ──────────────────────────────────────────────
 
 model MarketSnapshot {
-  id            String   @id @default(cuid())
-  categoryId    String
-  locationId    String?
-  date          DateTime
-  medianPrice   Float?
-  avgPrice      Float?
-  minPrice      Float?
-  maxPrice      Float?
-  listingCount  Int      @default(0)
-  avgDaysToSell Float?
-  demandScore   Float?
+  id               String   @id @default(cuid())
+  categoryId       String
+  locationId       String?
+  subcategorySlug  String?
+  date             DateTime
+  medianPrice      Float?
+  avgPrice         Float?
+  minPrice         Float?
+  maxPrice         Float?
+  listingCount     Int      @default(0)
+  avgDaysToSell    Float?
+  demandScore      Float?
+  priceSpread      Float?   // maxPrice - minPrice (computed on scrape)
 
   category Category  @relation(fields: [categoryId], references: [id])
   location Location? @relation(fields: [locationId], references: [id])
 
-  @@unique([categoryId, locationId, date])
+  @@unique([categoryId, locationId, subcategorySlug, date])
   @@index([categoryId])
   @@index([date])
+  @@index([subcategorySlug])
 }

@@ -335,6 +335,7 @@
       "askDescription": "Ja lühike kirjeldus?",
       "pickCategory": "Nüüd valime kategooria. Milline neist sobib teie esemele kõige paremini?",
       "whichCategory": "Milline kategooria sobib kõige paremini?",
+      "pickSubcategory": "Hea, {category}! Nüüd vali täpsem alamkategooria:",
       "categorySelected": "{category} — suurepärane valik!\n\nMilline hind teil meeles on? Võrdlen turuandmetega ja soovitan optimaalset alghinda.\n\nLihtsalt sisestage number (EUR).",
       "categoryNotFound": "Ei leidnud kategooriat, mis vastaks \"{input}\". Palun valige nimekirjast:",
       "enterPrice": "Millist hinda mõtlete? Analüüsin turgu ja soovitan optimaalset alghinda.\n\nLihtsalt sisestage number (EUR).",
@@ -384,6 +385,9 @@
       "doneAutoNegotiateDesc": "Hindab ja järjestab pakkumisi teie eest",
       "tellMore": "Kas saate rohkem rääkida?",
       "chooseSellingStrategy": "Kuidas soovite müüa? Valige strateegia:",
+      "strategyRecommendedIntro": "Turuandmete põhjal soovitan **{strategy}** ({confidence}% kindlus).",
+      "strategyMarketInfo": "Turg: {listingCount} kuulutust, mediaan €{medianPrice}, {supply} pakkumine, {trend} trend.",
+      "strategyOverrideHint": "Soovi korral saate allpool teise strateegia valida:",
       "strategySealedBid": "🔒 Suletud pakkumine — Pimepakkumised, teie valite võitja.",
       "strategyFixedPrice": "💲 Fikseeritud hind — Automaatne aktsepteerimine teie hinnaga.",
       "strategyDutchAuction": "📉 Hollandi oksjon — Hind langeb, kuni keegi ostab.",
@@ -463,11 +467,15 @@
       "donePriceTrack": "Hinnajälgimine",
       "donePriceTrackDesc": "Teavitused hinnalangetustest",
       "chooseBuyingStrategy": "Kuidas pean teie nimel läbi rääkima? Valige strateegia:",
-      "strategyTimeEscalation": "⏳ Ajaline eskalatsioon — Alustage madalalt, suurendage aja jooksul.",
-      "strategyMaxBid": "💪 Maksimaalne pakkumine — Pakkuge kohe maksimaalne eelarve.",
-      "strategySniper": "🎯 Snaiper — Oodake ja löökige aegumise ajal.",
-      "strategyAcceptListed": "✅ Nõustu hinnaga — Pakkuge otse kirjutatud hinda.",
-      "strategyEarlyBird": "🐦 Varajane lind — Pakkuge varakult 60–70% hinnast.",
+      "strategyRecommendedIntro": "Turuandmete põhjal soovitan **{strategy}** ({confidence}% kindlus).",
+      "strategyMarketInfo": "Turg: {listingCount} kuulutust, mediaan €{medianPrice}, {supply} pakkumine, {trend} trend.",
+      "strategyOverrideHint": "Soovi korral saate allpool teise strateegia valida:",
+      "strategyLearnMore": "📖 Pole kindel, millist valida? Vaadake meie üksikasjalikku strateegiate võrdlust",
+      "strategyTimeEscalation": "⏳ Ajaline eskalatsioon — Alustage ~70% eelarvest, suurendage automaatselt aja jooksul.",
+      "strategyMaxBid": "💪 Maksimaalne pakkumine — Pakkuge kogu eelarve kohe. Üks katse, ilma järeltegevuseta.",
+      "strategySniper": "🎯 Snaiper — Oodake kuni kuulutus on poolel teel aegumiseni, siis löökige 85–95% eelarvega.",
+      "strategyAcceptListed": "✅ Nõustu hinnaga — Makske müüja küsitud hinda. Jälgib hinnamuutusi automaatselt.",
+      "strategyEarlyBird": "🐦 Varajane lind — Pakkuge 60–70% kuulutuse hinnast ainult esimestel päevadel. Ilma eskalatsioonita.",
       "proposalTimeEscalation": "**Ajalise eskalatsiooniga** alustan madalalt ja suurendan nutikalt — kohandudes müüja vastuste ja kuulutuse kaasatuse põhjal.\n\nMida ma teie eest otsustan:",
       "proposalMaxBid": "**Maksimaalse pakkumisega** kindlustan kiiresti suure nõudlusega tooted — aga esmalt analüüsin tehingu kvaliteeti.\n\nMida ma teen:",
       "proposalSniper": "**Snaiperiga** jälgin kuulutuse tegevust, analüüsin müüja käitumist ja löön optimaalsel hetkel.\n\nMida ma teie eest otsustan:",
@@ -1260,6 +1268,7 @@
     "errorDescMin": "Kirjeldus peab olema vähemalt 20 tähemärki",
     "errorPrice": "Sisestage kehtiv hind",
     "errorCategory": "Valige kategooria",
+    "errorSubcategory": "Palun valige alamkategooria",
     "addressLabel": "Aadress",
     "addressCountry": "Riik",
     "selectCountry": "Vali riik",
@@ -1452,6 +1461,29 @@
         "q3": {
           "q": "Kas agent saab minu eest läbi rääkida?",
           "a": "Jah, kui lubate automaatläbirääkimised."
+        }
+      },
+      "buyingStrategies": {
+        "title": "Ostmise strateegiad selgitatud",
+        "q1": {
+          "q": "⏳ Ajaline eskalatsioon — Kuidas see töötab?",
+          "a": "Ajaline eskalatsioon on kannatlikele läbirääkijatele. Teie agent alustab pakkumist ~70% teie maksimaalsest eelarvest ja suurendab järk-järgult võimsuskõvera järgi teie maksimumi suunas. Eskaleerib automaatselt 3%+ sammudega. Parim: paindlikele ostjatele, kes soovivad säästa, kuid on valmis aja jooksul rohkem maksma. Vajab Pro plaani."
+        },
+        "q2": {
+          "q": "💪 Maksimaalne pakkumine — Mille poolest erineb hinnaga nõustumisest?",
+          "a": "Maksimaalne pakkumine pakub kohe väiksemat teie eelarvest või kuulutuse hinnast — üks katse, ilma eskalatsioonita. See erineb hinnaga nõustumisest, sest kasutab TEIE eelarvet ankruna (mis võib olla kuulutuse hinnast madalam), samas kui hinnaga nõustumine pakub alati MÜÜJA küsitud hinda. Vajab Pro plaani."
+        },
+        "q3": {
+          "q": "🎯 Snaiper — Millal seda kasutada?",
+          "a": "Snaiper ootab kuni kuulutus on vähemalt 50% oma elueast läbinud, seejärel teeb ühe arvestatud pakkumise 85–95% teie eelarvest. Ei paku kunagi vara ega eskaleeri — üks hästi ajastatud löök. Parim: taktikalistele ostjatele, kes usuvad, et müüjad langetavad ootusi kuulutuse vananedes. Vajab Äriplaani."
+        },
+        "q4": {
+          "q": "✅ Hinnaga nõustumine — Kas toimub mingi läbirääkimine?",
+          "a": "Ei mingit läbirääkimist — teie agent pakub lihtsalt müüja küsitud hinda kohe. Aga jälgib unikaalselt hinnamuutusi: kui müüja tõstab hinda (teie eelarve piires), teie agent vastab uuele hinnale. Kui hind langeb, saate automaatselt kasu. Saadaval kõigis plaanides, sealhulgas tasuta."
+        },
+        "q5": {
+          "q": "🐦 Varajane lind — Mille poolest erineb ajalisest eskalatsioonist?",
+          "a": "Varajane lind on vastupidine lähenemine. Selle asemel, et eelarvest järk-järgult suurendada, pakub 60–70% KUULUTUSE HINNAST ainult esimese 40% kuulutuse elueast. Ei eskaleeri ega järgi kunagi — võta-või-jäta madal pakkumine. Parim: sooduspakkumiste otsijatele uute kuulutuste puhul. Saadaval tasuta plaanis."
         }
       },
       "payments": {

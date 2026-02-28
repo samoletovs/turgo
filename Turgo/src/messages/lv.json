@@ -335,6 +335,7 @@
       "askDescription": "Un īsu aprakstu?",
       "pickCategory": "Tagad izvēlēsimies kategoriju. Kura no šīm vislabāk atbilst jūsu precei?",
       "whichCategory": "Kura kategorija atbilst vislabāk?",
+      "pickSubcategory": "Labi, {category}! Tagad izvēlieties precīzāku apakškategoriju:",
       "categorySelected": "{category} — lieliska izvēle!\n\nKāda cena jums ir prātā? Es salīdzināšu ar tirgus datiem un ieteikšu optimālu sākuma cenu.\n\nVienkārši ierakstiet skaitli (EUR).",
       "categoryNotFound": "Nevarēju atrast kategoriju, kas atbilst \"{input}\". Lūdzu, izvēlieties no saraksta:",
       "enterPrice": "Kādu cenu jūs domājat? Es analizēšu tirgu un ieteikšu optimālu sākuma cenu.\n\nVienkārši ierakstiet skaitli (EUR).",
@@ -384,6 +385,9 @@
       "doneAutoNegotiateDesc": "Vērtē un sarindo piedāvājumus jūsu vietā",
       "tellMore": "Vai varat pastāstīt vairāk?",
       "chooseSellingStrategy": "Kā vēlaties pārdot? Izvēlieties stratēģiju:",
+      "strategyRecommendedIntro": "Pamatojoties uz tirgus datiem, iesaku **{strategy}** ({confidence}% pārliecība).",
+      "strategyMarketInfo": "Tirgus: {listingCount} sludinājumi, mediāna €{medianPrice}, {supply} piedāvājums, {trend} tendence.",
+      "strategyOverrideHint": "Vēlaties, varat izvēlēties citu stratēģiju zemāk:",
       "strategySealedBid": "🔒 Slēgts piedāvājums — Akli piedāvājumi, jūs izvēlaties uzvarētāju.",
       "strategyFixedPrice": "💲 Fiksēta cena — Automātisks apstiprinājums par jūsu cenu.",
       "strategyDutchAuction": "📉 Holandiešu izsole — Cena samazinās, līdz kāds pērk.",
@@ -463,11 +467,15 @@
       "donePriceTrack": "Cenu sekošana",
       "donePriceTrackDesc": "Brīdinājumi par cenu kritumiem",
       "chooseBuyingStrategy": "Kā man sarunāt jūsu vārdā? Izvēlieties stratēģiju:",
-      "strategyTimeEscalation": "⏳ Laika eskalācija — Sāciet zemu, palieliniet pakāpeniski.",
-      "strategyMaxBid": "💪 Maksimālais piedāvājums — Uzreiz piedāvājiet maksimālo budžetu.",
-      "strategySniper": "🎯 Snaiperis — Gaidiet un sitiet termiņa beigās.",
-      "strategyAcceptListed": "✅ Pieņemt norādīto cenu — Piedāvājiet tieši norādīto cenu.",
-      "strategyEarlyBird": "🐦 Agrais putns — Piedāvājiet agri 60–70% no norādītās cenas.",
+      "strategyRecommendedIntro": "Pamatojoties uz tirgus datiem, iesaku **{strategy}** ({confidence}% pārliecība).",
+      "strategyMarketInfo": "Tirgus: {listingCount} sludinājumi, mediāna €{medianPrice}, {supply} piedāvājums, {trend} tendence.",
+      "strategyOverrideHint": "Vēlaties, varat izvēlēties citu stratēģiju zemāk:",
+      "strategyLearnMore": "📖 Nezināt, kuru izvēlēties? Skatiet mūsu detalizēto stratēģiju salīdzinājumu",
+      "strategyTimeEscalation": "⏳ Laika eskalācija — Sāciet ar ~70% budžeta, automātiski palieliniet laika gaitā.",
+      "strategyMaxBid": "💪 Maksimālais piedāvājums — Uzreiz piedāvājiet visu budžetu. Viens mēģinājums, bez turpinājuma.",
+      "strategySniper": "🎯 Snaiperis — Gaidiet līdz sludinājums ir pusceļā uz termiņa beigām, tad sitiet ar 85–95% budžeta.",
+      "strategyAcceptListed": "✅ Pieņemt norādīto cenu — Maksājiet pārdevēja prasīto cenu. Automātiski seko cenas izmaiņām.",
+      "strategyEarlyBird": "🐦 Agrais putns — Piedāvājiet 60–70% no sludinājuma cenas tikai pirmajās dienās. Bez eskalācijas.",
       "proposalTimeEscalation": "**Laika eskalācija** — sākšu zemu un gudri paaugstināšu — pielāgojoties pārdevēja reakcijai un sludinājuma aktivitātei.\n\nKo es jūsu vietā izlēmšu:",
       "proposalMaxBid": "**Maksimālo piedāvājumu** — ātri nodrošināšu augsta pieprasījuma preces — bet vispirms analizēšu darījuma kvalitāti.\n\nKo es darīšu:",
       "proposalSniper": "**Snaiperis** — sekošu sludinājuma aktivitātei, analizēšu pārdevēja uzvedību un sitiši optimālā brīdī.\n\nKo es jūsu vietā izlēmšu:",
@@ -1259,6 +1267,7 @@
     "errorDescMin": "Aprakstam jābūt vismaz 20 rakstzīmēm",
     "errorPrice": "Ievadiet derīgu cenu",
     "errorCategory": "Izvēlieties kategoriju",
+    "errorSubcategory": "Lūdzu, izvēlieties apakškategoriju",
     "addressLabel": "Adrese",
     "addressCountry": "Valsts",
     "selectCountry": "Izvēlieties valsti",
@@ -1451,6 +1460,29 @@
         "q3": {
           "q": "Vai pirkšanas aģents var sarunāties manā vietā?",
           "a": "Jā, ja iespējojat automātiskās sarunas."
+        }
+      },
+      "buyingStrategies": {
+        "title": "Pirkšanas stratēģijas izskaidrotas",
+        "q1": {
+          "q": "⏳ Laika eskalācija — Kā tā darbojas?",
+          "a": "Laika eskalācija ir pacietīgiem sarunu vedējiem. Jūsu aģents sāk piedāvāt ~70% no jūsu maksimālā budžeta un pakāpeniski palielina pa jaudas līkni uz jūsu maksimumu. Eskalē automātiski ar 3%+ soļiem. Labākais: elastīgiem pircējiem, kuri vēlas ietaupīt, bet ir gatavi laika gaitā maksāt vairāk. Nepieciešams Pro plāns."
+        },
+        "q2": {
+          "q": "💪 Maksimālais piedāvājums — Kā tas atšķiras no norādītās cenas pieņemšanas?",
+          "a": "Maksimālais piedāvājums uzreiz piedāvā mazāko no jūsu budžeta vai sludinājuma cenas — viens mēģinājums, bez eskalācijas. Tas atšķiras no norādītās cenas pieņemšanas, jo izmanto JŪSU budžetu kā enkuru (kas var būt zemāks par sludinājuma cenu), kamēr norādītās cenas pieņemšana vienmēr piedāvā PĀRDEVĒJA prasīto cenu. Nepieciešams Pro plāns."
+        },
+        "q3": {
+          "q": "🎯 Snaiperis — Kad to izmantot?",
+          "a": "Snaiperis gaida līdz sludinājums ir vismaz 50% no tā dzīves laika, tad veic vienu aprēķinātu piedāvājumu 85–95% no jūsu budžeta. Nekad nepiedāvā agri un nekad neeskalē — viens precīzs sitiens. Labākais: taktiskiem pircējiem, kuri tic, ka pārdevēji pazemina gaidas sludinājumam novecojot. Nepieciešams Biznesa plāns."
+        },
+        "q4": {
+          "q": "✅ Pieņemt norādīto cenu — Vai notiek kādas sarunas?",
+          "a": "Nekādas sarunas — jūsu aģents vienkārši uzreiz piedāvā pārdevēja norādīto cenu. Tomēr unikāli seko cenas izmaiņām: ja pārdevējs paaugstina cenu (jūsu budžeta robežās), jūsu aģents atbilst jaunajai cenai. Ja cena krītas, jūs automātiski iegūstat labumu. Pieejams visos plānos, ieskaitot bezmaksas."
+        },
+        "q5": {
+          "q": "🐦 Agrais putns — Kā tas atšķiras no laika eskalācijas?",
+          "a": "Agrais putns ir pretēja pieeja. Tā vietā, lai pakāpeniski palielinātu no budžeta, tas piedāvā 60–70% no SLUDINĀJUMA CENAS tikai pirmajos 40% no sludinājuma dzīves laika. Nekad neeskalē un neseko — ņem-vai-atstāj zems piedāvājums. Labākais: izdevīgu darījumu meklētājiem, kas testē pārdevēja elastību. Pieejams bezmaksas plānā."
         }
       },
       "payments": {

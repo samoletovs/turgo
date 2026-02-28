@@ -21,6 +21,7 @@ export async function calculateDealScore(params: {
   targetPrice: number;
   maxBudget: number;
   locationId?: string;
+  subcategorySlug?: string;
 }): Promise<DealScoreBreakdown> {
   const listing = await db.listing.findUnique({
     where: { id: params.listingId },
@@ -43,11 +44,23 @@ export async function calculateDealScore(params: {
     };
   }
 
-  // Get market data
-  const snapshot = await db.marketSnapshot.findFirst({
-    where: { categoryId: params.categoryId },
-    orderBy: { date: "desc" },
-  });
+  // Get market data — prefer subcategory snapshot for more accurate scoring
+  let snapshot = params.subcategorySlug
+    ? await db.marketSnapshot.findFirst({
+        where: {
+          categoryId: params.categoryId,
+          subcategorySlug: params.subcategorySlug,
+        },
+        orderBy: { date: "desc" },
+      })
+    : null;
+
+  if (!snapshot) {
+    snapshot = await db.marketSnapshot.findFirst({
+      where: { categoryId: params.categoryId },
+      orderBy: { date: "desc" },
+    });
+  }
 
   const medianPrice = snapshot?.medianPrice ?? Number(listing.price);
 

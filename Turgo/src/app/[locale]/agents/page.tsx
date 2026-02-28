@@ -73,7 +73,11 @@ export default async function AgentsPage({ params }: AgentsPageProps) {
             },
           },
         },
-        _count: { select: { matches: true } },
+        actions: {
+          orderBy: { createdAt: "desc" },
+          take: 3,
+        },
+        _count: { select: { matches: true, actions: true } },
       },
     }),
   ]);
@@ -279,7 +283,34 @@ export default async function AgentsPage({ params }: AgentsPageProps) {
                       <Badge variant="outline">
                         {agent._count.matches} matches
                       </Badge>
+                      <span className="flex items-center gap-1 text-muted-foreground">
+                        <Eye className="h-3.5 w-3.5" />
+                        {agent._count.actions} actions
+                      </span>
                     </div>
+
+                    {/* Recent Actions */}
+                    {agent.actions.length > 0 && (
+                      <div className="space-y-1 rounded-lg bg-muted p-3">
+                        <p className="text-xs font-medium">
+                          {t("recentActivity")}
+                        </p>
+                        {agent.actions.map(
+                          (action: (typeof agent.actions)[number]) => (
+                            <p
+                              key={action.id}
+                              className="text-xs text-muted-foreground"
+                            >
+                              {action.actionType}:{" "}
+                              {action.description?.slice(0, 60)}...
+                              <span className="ml-1 opacity-60">
+                                {formatRelativeTime(action.createdAt)}
+                              </span>
+                            </p>
+                          ),
+                        )}
+                      </div>
+                    )}
 
                     {/* Recent Matches */}
                     {agent.matches.length > 0 && (
@@ -304,6 +335,13 @@ export default async function AgentsPage({ params }: AgentsPageProps) {
                         )}
                       </div>
                     )}
+
+                    <div className="flex gap-2">
+                      <AgentStatusButton
+                        agentId={agent.id}
+                        initialStatus={agent.status}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
               );

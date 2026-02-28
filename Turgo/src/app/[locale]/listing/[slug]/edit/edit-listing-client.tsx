@@ -161,6 +161,13 @@ export function EditListingClient({
     if (description.trim().length < 20) errs.description = t("errorDescMin");
     if (!price || parseFloat(price) <= 0) errs.price = t("errorPrice");
     if (!effectiveCategoryId) errs.category = t("errorCategory");
+    if (
+      categoryId &&
+      !subcategoryId &&
+      selectedCategory?.children &&
+      selectedCategory.children.length > 0
+    )
+      errs.category = t("errorSubcategory");
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };

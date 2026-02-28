@@ -8,6 +8,7 @@ import { aiComplete, createMessages } from "./ai";
 import { URGENCY_HOURS } from "@/lib/constants";
 import type { PricingFactors, PricingCurvePoint } from "@/types";
 import { getSellingStrategy } from "./strategies/registry";
+import { getPriceTrend, getMarketStats } from "./agent-pricing";
 import type {
   OfferContext,
   SellingAgentContext,
@@ -19,10 +20,11 @@ import type {
 } from "./strategies/types";
 import type { SellingStrategyId } from "@prisma/client";
 
-/** Calculate optimal starting price based on 10 factors */
+/** Calculate optimal starting price based on 10 factors, now enhanced with market trend data */
 export async function calculateOptimalPrice(params: {
   categoryId: string;
   locationId?: string;
+  subcategorySlug?: string;
   condition: string;
   userBasePrice: number;
   urgency: string;
@@ -32,29 +34,61 @@ export async function calculateOptimalPrice(params: {
   curve: PricingCurvePoint[];
   reasoning: string;
 }> {
-  // Fetch market data
-  const snapshots = await db.marketSnapshot.findMany({
-    where: {
-      categoryId: params.categoryId,
-      ...(params.locationId ? { locationId: params.locationId } : {}),
-    },
-    orderBy: { date: "desc" },
-    take: 30,
-  });
+  // Fetch market data — prefer sub-category when available
+  const stats = await getMarketStats(
+    params.categoryId,
+    params.locationId,
+    params.subcategorySlug,
+  );
+  const trend = await getPriceTrend(
+    params.categoryId,
+    params.locationId,
+    params.subcategorySlug,
+  );
 
-  const latest = snapshots[0];
-  const medianPrice = latest?.medianPrice ?? params.userBasePrice;
-  const listingCount = latest?.listingCount ?? 0;
-  const demandScore = latest?.demandScore ?? 1;
+  const medianPrice = stats?.medianPrice ?? params.userBasePrice;
+  const listingCount = stats?.listingCount ?? 0;
+  const demandScore = stats?.demandScore ?? 1;
+  const avgDaysToSell = stats?.avgDaysToSell ?? null;
 
   // Calculate pricing factors (0-1 scale)
   const urgencyHours = URGENCY_HOURS[params.urgency] || 168;
   const urgencyFactor = Math.max(0, 1 - urgencyHours / 2160); // Higher urgency = lower factor
 
+  // Market supply: data-driven from listing count
+  const marketSupply = listingCount > 50 ? 0.3 : listingCount > 20 ? 0.5 : 0.8;
+
+  // Market demand: now uses real demandScore from scraper when available
+  const marketDemand =
+    demandScore !== null
+      ? Math.max(0, Math.min(1, 0.5 + demandScore * 0.5)) // Map -1..+1 → 0..1
+      : 0.5;
+
+  // Competition age: data-driven from avgDaysToSell
+  const competitionAge =
+    avgDaysToSell !== null
+      ? Math.max(0, Math.min(1, 1 - avgDaysToSell / 60)) // Faster turnover = higher score
+      : 0.5;
+
+  // Price elasticity: derived from price spread — wide spread = more elastic
+  const priceSpread = stats?.priceSpread ?? null;
+  const priceElasticity =
+    priceSpread !== null && medianPrice > 0
+      ? Math.max(0, Math.min(1, priceSpread / medianPrice))
+      : 0.5;
+
+  // Trend modifier: rising prices → higher pricing confidence, falling → lower
+  const trendModifier =
+    trend.direction === "rising"
+      ? Math.min(0.15, trend.velocityPerWeek * 0.03)
+      : trend.direction === "falling"
+        ? Math.max(-0.15, trend.velocityPerWeek * 0.03)
+        : 0;
+
   const factors: PricingFactors = {
     urgency: urgencyFactor,
-    marketSupply: listingCount > 50 ? 0.3 : listingCount > 20 ? 0.5 : 0.8,
-    marketDemand: Math.min(1, (demandScore ?? 1) / 2),
+    marketSupply,
+    marketDemand,
     seasonality: getSeasonalityFactor(new Date().getMonth()),
     condition:
       params.condition === "NEW"
@@ -62,11 +96,11 @@ export async function calculateOptimalPrice(params: {
         : params.condition === "REFURBISHED"
           ? 0.7
           : 0.5,
-    locationDemand: 0.6, // Default — would be calculated from location data
+    locationDemand: 0.6, // Default — would be calculated from location-specific data
     postingTiming: getPostingTimeFactor(),
-    competitionAge: 0.5, // Default
-    priceElasticity: 0.5, // Default
-    sellerReputation: 0.5, // Default
+    competitionAge,
+    priceElasticity,
+    sellerReputation: 0.5, // Default — would be calculated from user data
   };
 
   // Weighted composite score
@@ -88,8 +122,8 @@ export async function calculateOptimalPrice(params: {
     compositeScore += factors[key as keyof PricingFactors] * weight;
   }
 
-  // Starting price: user's base ± adjustment based on composite score
-  const priceMultiplier = 0.8 + compositeScore * 0.4; // Range: 0.8x to 1.2x
+  // Apply trend modifier to the price (not the composite score)
+  const priceMultiplier = 0.8 + compositeScore * 0.4 + trendModifier; // Range: ~0.65x to 1.35x
   const suggestedPrice = Math.round(medianPrice * priceMultiplier);
 
   // Generate pricing curve based on urgency
@@ -99,11 +133,18 @@ export async function calculateOptimalPrice(params: {
     urgencyHours / 24, // days
   );
 
+  // Build data-rich reasoning
+  const trendNote =
+    trend.direction !== "stable"
+      ? ` Prices ${trend.direction} at ${Math.abs(trend.velocityPerWeek)}%/wk.`
+      : " Prices are stable.";
+  const subNote = params.subcategorySlug ? ` (${params.subcategorySlug})` : "";
+
   return {
     suggestedPrice: Math.max(suggestedPrice, 1),
     factors,
     curve,
-    reasoning: `Based on ${listingCount} similar listings. Market median: €${medianPrice.toFixed(0)}. Adjusted for ${params.urgency.replace("_", " ").toLowerCase()} urgency and ${params.condition.toLowerCase()} condition.`,
+    reasoning: `Based on ${listingCount} similar${subNote} listings. Market median: €${medianPrice.toFixed(0)}.${trendNote} Adjusted for ${params.urgency.replace("_", " ").toLowerCase()} urgency and ${params.condition.toLowerCase()} condition.`,
   };
 }
 
