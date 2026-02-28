@@ -1,6 +1,7 @@
 "use client";
 
 import { Bot, Check, Send, User, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +15,7 @@ export function BuyingAgentWizard({
   categories = [],
   locations = [],
 }: BuyingAgentWizardProps) {
+  const t = useTranslations("buy.chat");
   const {
     messages,
     currentStep,
@@ -27,6 +29,9 @@ export function BuyingAgentWizard({
     handleAction,
   } = useBuyingWizard({ locale, categories, locations });
   const currentStepIndex = BUYING_STEP_MAP[currentStep] ?? 0;
+  const lastActionMsgId = messages
+    .filter((m) => m.role === "agent" && m.actions && m.actions.length > 0)
+    .at(-1)?.id;
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -68,13 +73,13 @@ export function BuyingAgentWizard({
                 <Search className="h-5 w-5 text-blue-500" />
               </div>
               <div>
-                <p className="text-sm font-semibold">Buying Agent</p>
+                <p className="text-sm font-semibold">{t("agentName")}</p>
                 <div className="flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
                   <span className="text-[11px] text-muted-foreground">
                     {currentStep === "done"
-                      ? "Monitoring marketplace for you"
-                      : "Setting up your search agent"}
+                      ? t("statusActive")
+                      : t("statusHelping")}
                   </span>
                 </div>
               </div>
@@ -115,16 +120,58 @@ export function BuyingAgentWizard({
                         )}
                     </div>
                     {msg.actions && msg.actions.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5">
-                        {msg.actions.map((action, i) => (
-                          <button
-                            key={i}
-                            onClick={() => handleAction(action.value)}
-                            className="rounded-full border bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent hover:border-blue-500"
-                          >
-                            {action.label}
-                          </button>
-                        ))}
+                      <div
+                        className={`flex gap-1.5 ${
+                          msg.actions.some((a) => a.desc)
+                            ? "flex-col"
+                            : "flex-wrap"
+                        }`}
+                      >
+                        {msg.actions.map((action, i) => {
+                          const isLatest = msg.id === lastActionMsgId;
+                          const hasDesc = !!action.desc;
+                          return hasDesc ? (
+                            <button
+                              key={i}
+                              onClick={() =>
+                                isLatest && handleAction(action.value)
+                              }
+                              disabled={!isLatest}
+                              className={`flex items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-left transition-all ${
+                                isLatest
+                                  ? "bg-background hover:bg-accent hover:border-blue-500 hover:shadow-sm cursor-pointer"
+                                  : "bg-muted/50 text-muted-foreground cursor-default opacity-60"
+                              }`}
+                            >
+                              <span className="text-xl leading-none">
+                                {action.label.split(" ")[0]}
+                              </span>
+                              <span className="flex flex-col">
+                                <span className="text-sm font-semibold">
+                                  {action.label.split(" ").slice(1).join(" ")}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {action.desc}
+                                </span>
+                              </span>
+                            </button>
+                          ) : (
+                            <button
+                              key={i}
+                              onClick={() =>
+                                isLatest && handleAction(action.value)
+                              }
+                              disabled={!isLatest}
+                              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                                isLatest
+                                  ? "bg-background hover:bg-accent hover:border-blue-500 cursor-pointer"
+                                  : "bg-muted/50 text-muted-foreground cursor-default opacity-60"
+                              }`}
+                            >
+                              {action.label}
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -154,7 +201,7 @@ export function BuyingAgentWizard({
                       </div>
                       {isSubmitting && (
                         <span className="text-xs text-muted-foreground ml-2">
-                          Creating your agent...
+                          {t("creating")}
                         </span>
                       )}
                     </div>
@@ -179,10 +226,10 @@ export function BuyingAgentWizard({
                   onChange={(e) => setInput(e.target.value)}
                   placeholder={
                     currentStep === "budget"
-                      ? "e.g. max 500, ideal 350"
+                      ? t("inputBudget")
                       : currentStep === "describe_want"
-                        ? "Describe what you want..."
-                        : "Type a message..."
+                        ? t("inputDescribe")
+                        : t("inputDefault")
                   }
                   disabled={
                     isThinking || isSubmitting || currentStep === "done"

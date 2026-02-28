@@ -27,7 +27,7 @@ app.prepare().then(async () => {
   const httpServer = createServer(handler);
 
   // Initialize Socket.IO on the same HTTP server
-  initSocketServer(httpServer);
+  await initSocketServer(httpServer);
 
   // Initialize search index (Meilisearch)
   await initSearchIndex();

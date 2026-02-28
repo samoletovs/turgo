@@ -171,7 +171,7 @@ export default async function SearchPage({
     id: listing.id,
     title: listing.title,
     slug: listing.slug,
-    price: listing.price,
+    price: Number(listing.price),
     currency: listing.currency,
     condition: listing.condition,
     description: listing.description?.slice(0, 150) || "",

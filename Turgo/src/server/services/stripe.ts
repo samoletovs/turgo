@@ -11,8 +11,13 @@ let _stripe: Stripe | null = null;
 export function getStripe(): Stripe {
   if (!_stripe) {
     const key = process.env.STRIPE_SECRET_KEY;
+    if (!key && process.env.NODE_ENV === "production") {
+      throw new Error("STRIPE_SECRET_KEY must be set in production");
+    }
     if (!key) {
-      console.warn("[Stripe] STRIPE_SECRET_KEY not set — Stripe is disabled");
+      console.warn(
+        "[Stripe] STRIPE_SECRET_KEY not set — using dev placeholder",
+      );
     }
     _stripe = new Stripe(key || "sk_test_placeholder", {
       // @ts-expect-error Stripe SDK expects its bundled LatestApiVersion but we pin to a specific version for stability

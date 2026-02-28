@@ -11,6 +11,12 @@ vi.mock("@/server/services/agent-selling", () => ({
     message: "How about €170?",
     reasoning: "Counter at €170",
   }),
+  processIncomingOffer: vi.fn().mockResolvedValue({
+    offerId: "offer-1",
+    message:
+      "Your offer has been submitted. The seller will review it and respond.",
+    status: "PENDING",
+  }),
   generateDailySummary: vi.fn().mockResolvedValue({
     agentId: "agent-1",
     listingTitle: "Widget",
@@ -329,119 +335,84 @@ describe("agent.updateStatus", () => {
 });
 
 // ──────────────────────────────────────────────
-// agent.handleOffer
+// agent.submitOffer (strategy-based offer submission)
 // ──────────────────────────────────────────────
-describe("agent.handleOffer", () => {
+describe("agent.submitOffer", () => {
   const validInput = {
-    agentId: validCuid,
+    sellingAgentId: validCuid,
+    listingId: validCuid,
     offerPrice: 150,
-    roundNumber: 0,
+    message: "I'm interested!",
   };
 
-  it("processes an offer through evaluateOffer and logs action", async () => {
-    mockDb.sellingAgent.findFirst.mockResolvedValue({
-      id: validCuid,
-      userId: "user-1",
-      autoNegotiate: true,
+  it("submits an offer and returns a BuyerOfferAck", async () => {
+    mockDb.sellingAgent.findUnique.mockResolvedValue({
+      id: "sa-1",
+      sellingStrategyId: "SEALED_BID",
+      strategyConfig: null,
       minimumPrice: 100,
-      autoAcceptAbove: 190,
-      listing: { title: "Widget", description: "A widget", price: 200 },
+      currentPrice: null,
+      urgency: "ONE_WEEK",
+      totalInquiries: 0,
+      listing: {
+        id: validCuid,
+        title: "Test Listing",
+        price: 200,
+        currency: "EUR",
+        viewCount: 10,
+        createdAt: new Date(),
+        expiresAt: null,
+      },
     });
-    mockDb.agentAction.create.mockResolvedValue({});
+    mockDb.offer.findFirst.mockResolvedValue(null);
+    mockDb.offer.create.mockResolvedValue({
+      id: "offer-1",
+      price: 150,
+      status: "PENDING",
+      createdAt: new Date(),
+    });
 
     const caller = createCaller(authedCtx());
-    const result = await caller.agent.handleOffer(validInput);
+    const result = await caller.agent.submitOffer(validInput);
 
-    expect(result).toHaveProperty("action");
+    expect(result).toHaveProperty("offerId");
     expect(result).toHaveProperty("message");
-    expect(result).toHaveProperty("reasoning");
-    expect(mockDb.agentAction.create).toHaveBeenCalledOnce();
-  });
-
-  it("throws when agent not found", async () => {
-    mockDb.sellingAgent.findFirst.mockResolvedValue(null);
-
-    const caller = createCaller(authedCtx());
-    await expect(caller.agent.handleOffer(validInput)).rejects.toThrow(
-      "Agent not found",
-    );
-  });
-
-  it("throws when autoNegotiate is disabled", async () => {
-    mockDb.sellingAgent.findFirst.mockResolvedValue({
-      id: validCuid,
-      userId: "user-1",
-      autoNegotiate: false,
-      listing: { title: "Widget", description: "A widget", price: 200 },
-    });
-
-    const caller = createCaller(authedCtx());
-    await expect(caller.agent.handleOffer(validInput)).rejects.toThrow(
-      "Auto-negotiate is not enabled",
-    );
+    expect(result).toHaveProperty("status");
   });
 
   it("throws UNAUTHORIZED without session", async () => {
     const caller = createCaller(anonCtx());
-    await expect(caller.agent.handleOffer(validInput)).rejects.toThrow(
+    await expect(caller.agent.submitOffer(validInput)).rejects.toThrow(
       /UNAUTHORIZED/,
     );
   });
 
-  it("rejects non-positive offerPrice", async () => {
+  it("rejects non-positive amount", async () => {
     const caller = createCaller(authedCtx());
     await expect(
-      caller.agent.handleOffer({ ...validInput, offerPrice: -10 }),
+      caller.agent.submitOffer({ ...validInput, offerPrice: -10 }),
     ).rejects.toThrow();
   });
+});
 
-  it("accepts optional buyerMessage", async () => {
-    mockDb.sellingAgent.findFirst.mockResolvedValue({
-      id: validCuid,
-      userId: "user-1",
-      autoNegotiate: true,
-      minimumPrice: 100,
-      autoAcceptAbove: 190,
-      listing: { title: "Widget", description: "A widget", price: 200 },
-    });
-    mockDb.agentAction.create.mockResolvedValue({});
-
-    const caller = createCaller(authedCtx());
-    const result = await caller.agent.handleOffer({
-      ...validInput,
-      buyerMessage: "I can pick up today!",
-    });
-
-    expect(result).toHaveProperty("action");
+// ──────────────────────────────────────────────
+// agent.acceptOffer / agent.declineOffer
+// ──────────────────────────────────────────────
+describe("agent.acceptOffer", () => {
+  it("throws UNAUTHORIZED without session", async () => {
+    const caller = createCaller(anonCtx());
+    await expect(
+      caller.agent.acceptOffer({ offerId: validCuid }),
+    ).rejects.toThrow(/UNAUTHORIZED/);
   });
+});
 
-  it("logs negotiation metadata in agentAction", async () => {
-    mockDb.sellingAgent.findFirst.mockResolvedValue({
-      id: validCuid,
-      userId: "user-1",
-      autoNegotiate: true,
-      minimumPrice: 100,
-      autoAcceptAbove: 190,
-      listing: { title: "Widget", description: "A widget", price: 200 },
-    });
-    mockDb.agentAction.create.mockResolvedValue({});
-
-    const caller = createCaller(authedCtx());
-    await caller.agent.handleOffer(validInput);
-
-    expect(mockDb.agentAction.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          sellingAgentId: validCuid,
-          agentType: "SELLING",
-          actionType: "AUTO_NEGOTIATE",
-          metadata: expect.objectContaining({
-            offerPrice: 150,
-            roundNumber: 0,
-          }),
-        }),
-      }),
-    );
+describe("agent.declineOffer", () => {
+  it("throws UNAUTHORIZED without session", async () => {
+    const caller = createCaller(anonCtx());
+    await expect(
+      caller.agent.declineOffer({ offerId: validCuid }),
+    ).rejects.toThrow(/UNAUTHORIZED/);
   });
 });
 

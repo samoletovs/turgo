@@ -14,14 +14,17 @@ import {
   isStripeConfigured,
 } from "@/server/services/stripe";
 import { APP_URL, BOOST_PRICES } from "@/lib/constants";
+import { cachedQuery, CACHE_KEYS, CACHE_TTL } from "@/server/services/cache";
 
 export const subscriptionRouter = createTRPCRouter({
-  /** Get available plans (public for pricing page) */
+  /** Get available plans (public for pricing page, cached 30 min) */
   getPlans: publicProcedure.query(async ({ ctx }) => {
-    return ctx.db.plan.findMany({
-      where: { isActive: true },
-      orderBy: { price: "asc" },
-    });
+    return cachedQuery(CACHE_KEYS.PLANS, CACHE_TTL.PLANS, () =>
+      ctx.db.plan.findMany({
+        where: { isActive: true },
+        orderBy: { price: "asc" },
+      }),
+    );
   }),
 
   /** Get my current subscription + plan details */

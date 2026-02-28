@@ -5,7 +5,7 @@
 
 import { db } from "@/server/db";
 import type { Prisma, MessageType } from "@prisma/client";
-import { generateAutoResponse, evaluateOffer } from "./agent-selling";
+import { generateAutoResponse, processIncomingOffer } from "./agent-selling";
 import {
   emitMessage,
   emitPendingApproval,
@@ -114,7 +114,7 @@ export async function processAutoRespond(params: {
   if (isAvailabilityQuestion(messageContent)) {
     const isAvailable = sellingAgent.listing.status === "ACTIVE";
     const response = isAvailable
-      ? `Yes, this item is still available! The current price is €${sellingAgent.listing.price}. Feel free to ask any questions or make an offer.`
+      ? `Yes, this item is still available! The current price is €${Number(sellingAgent.listing.price)}. Feel free to ask any questions or make an offer.`
       : `Sorry, this item is no longer available.`;
 
     await sendAgentMessage({
@@ -194,12 +194,14 @@ export async function processAutoRespond(params: {
 }
 
 // ──────────────────────────────────────────────
-// AUTO-NEGOTIATE
+// AUTO-NEGOTIATE  (sealed-bid / strategy-based)
 // ──────────────────────────────────────────────
 
 /**
  * Process incoming message for auto-negotiation by selling agent.
- * Detects offers, evaluates them, and sends counter-offers or accepts/rejects.
+ * Detects offers, delegates to processIncomingOffer (strategy-based),
+ * and sends a generic acknowledgement to the buyer — never reveals
+ * price decisions or minimum thresholds.
  */
 export async function processAutoNegotiate(params: {
   conversationId: string;
@@ -223,135 +225,35 @@ export async function processAutoNegotiate(params: {
       userId: receiverId,
     },
     include: {
-      listing: { select: { title: true, description: true, price: true } },
       user: { select: { id: true, name: true, avatar: true } },
-      actions: {
-        where: { actionType: "AUTO_NEGOTIATE" },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      },
     },
   });
 
   if (!sellingAgent) return false;
 
-  // Count existing negotiation rounds in this conversation
-  const negotiationRounds = await db.message.count({
-    where: {
-      conversationId,
-      isAgentMessage: true,
-      messageType: { in: ["COUNTER_OFFER", "OFFER"] },
-    },
+  // Delegate to new strategy-based offer processing
+  const ack = await processIncomingOffer({
+    sellingAgentId: sellingAgent.id,
+    listingId,
+    buyerId: senderId,
+    offerPrice: offerAmount,
+    message: messageContent,
   });
 
-  // Evaluate the offer
-  const result = await evaluateOffer({
-    offerPrice: offerAmount,
-    currentPrice: sellingAgent.listing.price,
-    rules: {
-      minPrice: sellingAgent.minimumPrice,
-      autoAcceptAbove:
-        sellingAgent.autoAcceptAbove ?? sellingAgent.listing.price * 0.95,
-      maxCounterRounds: 3,
-      concessionRate: 0.3,
-    },
-    roundNumber: negotiationRounds,
-    listingTitle: sellingAgent.listing.title,
-    buyerMessage: messageContent,
-  });
-
-  // Determine message type and whether it needs approval
-  let messageType: string;
-  let requiresApproval = false;
-
-  switch (result.action) {
-    case "accept":
-      messageType = "ACCEPTANCE";
-      break;
-    case "reject":
-      messageType = "REJECTION";
-      break;
-    case "counter":
-      messageType = "COUNTER_OFFER";
-      break;
-    case "escalate":
-      messageType = "COUNTER_OFFER";
-      requiresApproval = true;
-      break;
-    default:
-      messageType = "TEXT";
-  }
-
-  const metadata = {
-    offerPrice: offerAmount,
-    counterPrice: result.counterPrice,
-    action: result.action,
-    reasoning: result.reasoning,
-    roundNumber: negotiationRounds + 1,
-  };
-
-  if (requiresApproval) {
-    // Create draft message and notify user for approval
-    const draftMessage = await db.message.create({
-      data: {
-        conversationId,
-        senderId: receiverId,
-        receiverId: senderId,
-        listingId,
-        content: result.message,
-        messageType: messageType as MessageType,
-        isAgentMessage: true,
-        requiresApproval: true,
-        metadata: metadata as Prisma.InputJsonValue,
-      },
-    });
-
-    // Notify seller for approval
-    emitPendingApproval(receiverId, {
-      messageId: draftMessage.id,
-      conversationId,
-      content: result.message,
-      messageType,
-      agentType: "SELLING",
-      metadata,
-    });
-
-    emitAgentAction(receiverId, {
-      agentId: sellingAgent.id,
-      agentType: "SELLING",
-      actionType: "AUTO_NEGOTIATE",
-      description: `Negotiation escalated: Buyer offered €${offerAmount}. ${result.reasoning}`,
-      metadata,
-      requiresApproval: true,
-    });
-  } else {
-    // Send message directly
-    await sendAgentMessage({
-      conversationId,
-      senderId: receiverId,
-      receiverId: senderId,
-      listingId,
-      content: result.message,
-      messageType,
-      isAgentMessage: true,
-      requiresApproval: false,
-      metadata,
-      agentId: sellingAgent.id,
-      agentType: "SELLING",
-      senderInfo: sellingAgent.user,
-    });
-  }
-
-  // Log agent action
-  await db.agentAction.create({
-    data: {
-      sellingAgentId: sellingAgent.id,
-      agentType: "SELLING",
-      actionType: "AUTO_NEGOTIATE",
-      description: `${result.action}: Buyer offered €${offerAmount}. ${result.reasoning}`,
-      metadata: metadata as Prisma.InputJsonValue,
-      requiresApproval,
-    },
+  // Send generic acknowledgement to buyer — no price info leaked
+  await sendAgentMessage({
+    conversationId,
+    senderId: receiverId,
+    receiverId: senderId,
+    listingId,
+    content: ack.message,
+    messageType: "OFFER" as MessageType,
+    isAgentMessage: true,
+    requiresApproval: false,
+    metadata: { offerId: ack.offerId, status: ack.status },
+    agentId: sellingAgent.id,
+    agentType: "SELLING",
+    senderInfo: sellingAgent.user,
   });
 
   // Update agent stats

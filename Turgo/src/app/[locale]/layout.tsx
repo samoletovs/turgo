@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { LOCALES } from "@/lib/constants";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
-import { ConciergeChat } from "@/components/concierge-chat";
 import { BottomNav } from "@/components/bottom-nav";
 import { Providers } from "@/components/providers";
 import { CookieConsentBanner } from "@/components/cookie-consent";
@@ -18,6 +17,7 @@ import {
 } from "@/lib/seo";
 import { auth } from "@/lib/auth";
 import type { Metadata } from "next";
+import { ConciergeChatLoader } from "@/components/concierge-chat-loader";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -87,10 +87,10 @@ export default async function LocaleLayout({
           <main id="main-content" className="flex-1 pb-16 md:pb-0" role="main">
             <ErrorBoundary>{children}</ErrorBoundary>
           </main>
-          <Footer locale={locale} />
+          <Footer />
         </div>
-        <BottomNav locale={locale} />
-        <ConciergeChat locale={locale} />
+        <BottomNav />
+        <ConciergeChatLoader locale={locale} />
         <CookieConsentBanner />
       </Providers>
     </NextIntlClientProvider>

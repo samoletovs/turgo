@@ -18,11 +18,10 @@ vi.mock("@/server/services/ai", () => ({
 
 import {
   calculateOptimalPrice,
-  evaluateOffer,
+  processIncomingOffer,
   generateDailySummary,
   shouldAdjustPrice,
   shouldBoost,
-  type NegotiationRules,
 } from "@/server/services/agent-selling";
 
 // ─── Reset mocks ────────────────────────────────────────────
@@ -185,104 +184,108 @@ describe("calculateOptimalPrice", () => {
 });
 
 // ──────────────────────────────────────────────
-// evaluateOffer (accept/reject/counter logic)
+// processIncomingOffer (strategy-based offer processing)
 // ──────────────────────────────────────────────
-describe("evaluateOffer", () => {
-  const defaultRules: NegotiationRules = {
-    minPrice: 50,
-    autoAcceptAbove: 180,
-    maxCounterRounds: 3,
-    concessionRate: 0.3,
+describe("processIncomingOffer", () => {
+  const baseOffer = {
+    sellingAgentId: "sa-1",
+    listingId: "listing-1",
+    buyerId: "buyer-1",
+    offerPrice: 150,
+    message: "I'm interested!",
   };
 
-  const baseParams = {
-    currentPrice: 200,
-    rules: defaultRules,
-    roundNumber: 0,
-    listingTitle: "Test Widget",
-  };
-
-  it("auto-accepts offers at or above autoAcceptAbove", async () => {
-    const result = await evaluateOffer({ ...baseParams, offerPrice: 200 });
-    expect(result.action).toBe("accept");
-    expect(result.message).toContain("200");
-    expect(result.reasoning).toContain("auto-accept");
-  });
-
-  it("auto-accepts offers exactly at threshold", async () => {
-    const result = await evaluateOffer({ ...baseParams, offerPrice: 180 });
-    expect(result.action).toBe("accept");
-  });
-
-  it("rejects offers below minimum price", async () => {
-    const result = await evaluateOffer({ ...baseParams, offerPrice: 30 });
-    expect(result.action).toBe("reject");
-    expect(result.reasoning).toContain("minimum");
-  });
-
-  it("escalates when max counter rounds exceeded", async () => {
-    const result = await evaluateOffer({
-      ...baseParams,
-      offerPrice: 100,
-      roundNumber: 3,
+  it("returns a BuyerOfferAck with generic message (no price leak)", async () => {
+    mockDb.sellingAgent.findUnique.mockResolvedValue({
+      id: "sa-1",
+      sellingStrategyId: "SEALED_BID",
+      strategyConfig: null,
+      minimumPrice: 100,
+      currentPrice: null,
+      urgency: "ONE_WEEK",
+      totalInquiries: 0,
+      listing: {
+        id: "listing-1",
+        title: "Test Listing",
+        price: 200,
+        currency: "EUR",
+        viewCount: 10,
+        createdAt: new Date(),
+        expiresAt: null,
+      },
     });
-    expect(result.action).toBe("escalate");
-    expect(result.reasoning).toContain("Max negotiation rounds");
-  });
-
-  it("counter-offers when between min and autoAccept", async () => {
-    const result = await evaluateOffer({ ...baseParams, offerPrice: 100 });
-    expect(result.action).toBe("counter");
-    expect(result.counterPrice).toBeDefined();
-    expect(result.counterPrice!).toBeGreaterThanOrEqual(defaultRules.minPrice);
-    expect(result.counterPrice!).toBeLessThanOrEqual(baseParams.currentPrice);
-  });
-
-  it("counter price never falls below minimum", async () => {
-    const result = await evaluateOffer({
-      ...baseParams,
-      offerPrice: 55,
-      roundNumber: 2,
-      rules: { ...defaultRules, concessionRate: 0.9 },
+    mockDb.offer.findFirst.mockResolvedValue(null);
+    mockDb.offer.create.mockResolvedValue({
+      id: "offer-1",
+      price: 150,
+      status: "PENDING",
+      createdAt: new Date(),
     });
-    if (result.action === "counter") {
-      expect(result.counterPrice!).toBeGreaterThanOrEqual(
-        defaultRules.minPrice,
-      );
-    }
+
+    const result = await processIncomingOffer(baseOffer);
+
+    expect(result).toHaveProperty("offerId");
+    expect(result).toHaveProperty("message");
+    expect(result).toHaveProperty("status");
+    // Should NOT reveal price info in the buyer ack
+    expect(result.message).not.toContain("150");
+    expect(result.message).not.toContain("minimum");
   });
 
-  it("accepts when counter would be within 2% of offer", async () => {
-    // If the gap between counter and offer is < 2% currentPrice, accept
-    const result = await evaluateOffer({
-      ...baseParams,
-      offerPrice: 179,
-      rules: { ...defaultRules, autoAcceptAbove: 200, concessionRate: 0.95 },
+  it("supersedes previous PENDING offers from same buyer", async () => {
+    mockDb.sellingAgent.findUnique.mockResolvedValue({
+      id: "sa-1",
+      sellingStrategyId: "SEALED_BID",
+      strategyConfig: null,
+      minimumPrice: 100,
+      currentPrice: null,
+      urgency: "ONE_WEEK",
+      totalInquiries: 0,
+      listing: {
+        id: "listing-1",
+        title: "Test Listing",
+        price: 200,
+        currency: "EUR",
+        viewCount: 10,
+        createdAt: new Date(),
+        expiresAt: null,
+      },
     });
-    // With very high concession and offer close to current, should accept
-    expect(["accept", "counter"]).toContain(result.action);
-  });
-
-  it("includes buyerMessage context in reasoning when provided", async () => {
-    const result = await evaluateOffer({
-      ...baseParams,
-      offerPrice: 120,
-      buyerMessage: "I can pick up today!",
+    mockDb.offer.findFirst.mockResolvedValue({
+      id: "offer-old",
+      price: 150,
+      status: "PENDING",
     });
-    // Should use AI path which receives the buyerMessage
-    expect(result.message).toBeTruthy();
-  });
+    mockDb.offer.create.mockResolvedValue({
+      id: "offer-2",
+      price: 160,
+      status: "PENDING",
+      createdAt: new Date(),
+    });
+    mockDb.offer.update.mockResolvedValue({
+      id: "offer-old",
+      status: "SUPERSEDED",
+    });
 
-  it("falls back to template message when AI fails", async () => {
-    // Make AI fail
-    const ai = await import("@/server/services/ai");
-    (ai.aiComplete as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-      new Error("AI down"),
+    await processIncomingOffer({ ...baseOffer, offerPrice: 160 });
+
+    expect(mockDb.offer.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          listingId: "listing-1",
+          buyerId: "buyer-1",
+          status: "PENDING",
+        }),
+      }),
     );
-
-    const result = await evaluateOffer({ ...baseParams, offerPrice: 120 });
-    expect(result.action).toBe("counter");
-    expect(result.message).toContain("€");
+    expect(mockDb.offer.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "offer-old" },
+        data: expect.objectContaining({
+          status: "SUPERSEDED",
+        }),
+      }),
+    );
   });
 });
 

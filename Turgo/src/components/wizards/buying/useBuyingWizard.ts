@@ -12,12 +12,18 @@ import type {
   LocationItem,
   BuyingStepContext,
 } from "./types";
+import { resolveName } from "./types";
 import { handleSearchInput } from "./SearchStep";
 import { handleCategoryInput, handleCategoryAction } from "./CategoryStep";
 import { handleBudgetInput } from "./BudgetStep";
 import { handleLocationInput, handleLocationAction } from "./LocationStep";
 import { handleConditionInput, handleConditionAction } from "./ConditionStep";
-import { handleAgentConfigInput, buildBuyingSummary } from "./AgentConfigStep";
+import {
+  handleAgentConfigInput,
+  buildBuyingSummary,
+  BUYING_STRATEGY_OPTIONS,
+  handleBuyingStrategySelection,
+} from "./AgentConfigStep";
 
 export function useBuyingWizard({
   locale,
@@ -28,7 +34,8 @@ export function useBuyingWizard({
   categories: CategoryItem[];
   locations: LocationItem[];
 }) {
-  const _t = useTranslations("agent");
+  const t = useTranslations("buy.chat");
+  const utils = trpc.useUtils();
 
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [currentStep, setCurrentStep] = useState<BuyingWizardStep>("greeting");
@@ -37,6 +44,7 @@ export function useBuyingWizard({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const greetedRef = useRef(false);
 
   const [data, setData] = useState<BuyingWizardData>({
     searchQuery: "",
@@ -52,6 +60,7 @@ export function useBuyingWizard({
     autoOffer: false,
     autoNegotiate: false,
     dealScoreThreshold: 70,
+    buyingStrategyId: "TIME_ESCALATION",
   });
 
   const updateData = useCallback(
@@ -108,44 +117,34 @@ export function useBuyingWizard({
     onSuccess: (agent) => {
       setCurrentStep("done");
       addAgentMessage(
-        "Your buying agent is live! Here's what happens next:\n\n" +
-          "✅ Scanning marketplace every " +
-          data.monitorFrequency +
-          " minutes\n" +
-          "✅ Scoring deals with 7-factor analysis\n" +
-          "✅ Instant alerts for great matches (70+ score)\n" +
-          "✅ Price drop tracking on top matches\n\n" +
-          "I'll message you the moment I find something good. 🎯",
+        t("agentLive", { frequency: String(data.monitorFrequency) }),
         [
-          { label: "View my agent", value: `goto_/agents/${agent.id}` },
-          { label: "View all agents", value: "goto_/agents" },
-          { label: "Create another", value: "reset" },
+          { label: t("viewAgent"), value: `goto_/agents/${agent.id}` },
+          { label: t("viewAllAgents"), value: "goto_/agents" },
+          { label: t("createAnother"), value: "reset" },
         ],
       );
     },
     onError: (error) => {
-      addAgentMessage(
-        `Something went wrong: **${error.message}**\n\nPlease try again.`,
-        [{ label: "🔄 Retry", value: "create_agent" }],
-      );
+      addAgentMessage(t("createError", { error: error.message }), [
+        { label: t("retryCreate"), value: "create_agent" },
+      ]);
     },
     onSettled: () => {
       setIsSubmitting(false);
     },
   });
 
-  // Initial greeting
+  // Initial greeting (ref guard prevents Strict Mode double-fire)
   useEffect(() => {
-    if (messages.length === 0) {
-      addAgentMessage(
-        "Hi! I'm your buying agent. I'll continuously scan the marketplace for exactly what you want and alert you the moment a great deal appears.\n\nWhat are you looking for?",
-        [
-          { label: "🚗 A vehicle", value: "want_vehicle" },
-          { label: "🏠 An apartment", value: "want_apartment" },
-          { label: "📱 Electronics", value: "want_electronics" },
-          { label: "🔍 Something else", value: "want_other" },
-        ],
-      );
+    if (!greetedRef.current && messages.length === 0) {
+      greetedRef.current = true;
+      addAgentMessage(t("greeting"), [
+        { label: t("wantVehicle"), value: "want_vehicle" },
+        { label: t("wantApartment"), value: "want_apartment" },
+        { label: t("wantElectronics"), value: "want_electronics" },
+        { label: t("wantOther"), value: "want_other" },
+      ]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -165,6 +164,8 @@ export function useBuyingWizard({
     categories,
     locations,
     createBuyingAgent,
+    trpcUtils: utils,
+    t,
   };
 
   // Handle text input – dispatch to current step handler
@@ -195,13 +196,13 @@ export function useBuyingWizard({
         await handleAgentConfigInput(content, ctx);
         break;
       default:
-        await thinkAndRespond("I didn't catch that. Could you clarify?");
+        await thinkAndRespond(t("unclearInput"));
     }
   };
 
-  // Handle action button clicks
-  const handleAction = async (value: string) => {
-    const labelMap: Record<string, string> = {
+  // Resolve a user-friendly label for action button clicks
+  const resolveActionLabel = (value: string): string => {
+    const staticMap: Record<string, string> = {
       want_vehicle: "I'm looking for a vehicle",
       want_apartment: "Looking for an apartment",
       want_electronics: "Looking for electronics",
@@ -209,9 +210,48 @@ export function useBuyingWizard({
       loc_any: "Anywhere is fine",
       create_agent: "Start monitoring!",
       edit: "Let me adjust",
+      reset: "Create another",
     };
+    if (staticMap[value]) return staticMap[value];
+    if (value.startsWith("cat_")) {
+      const catId = value.replace("cat_", "");
+      const cat = categories.find((c) => c.id === catId);
+      return cat ? resolveName(cat.name, locale, cat.slug) : value;
+    }
+    if (value.startsWith("loc_")) {
+      const locId = value.replace("loc_", "");
+      const loc = locations.find((l) => l.id === locId);
+      return loc ? resolveName(loc.name, locale, loc.slug) : value;
+    }
+    if (value.startsWith("cond_")) {
+      const condMap: Record<string, string> = {
+        ANY: "Any condition",
+        NEW: "New only",
+        USED: "Used is fine",
+      };
+      return condMap[value.replace("cond_", "")] || value;
+    }
+    if (value.startsWith("freq_")) {
+      const freqMap: Record<string, string> = {
+        "5": "Every 5 min",
+        "15": "Every 15 min",
+        "60": "Hourly",
+        "1440": "Daily digest",
+      };
+      return freqMap[value.replace("freq_", "")] || value;
+    }
+    if (value.startsWith("strategy_")) {
+      const sid = value.replace("strategy_", "");
+      const opt = BUYING_STRATEGY_OPTIONS.find((o) => o.value === sid);
+      return opt ? opt.label : value;
+    }
+    if (value.startsWith("goto_")) return "View agent";
+    return value;
+  };
 
-    addUserMessage(labelMap[value] || value);
+  // Handle action button clicks
+  const handleAction = async (value: string) => {
+    addUserMessage(resolveActionLabel(value));
 
     // Quick category shortcuts
     if (value.startsWith("want_")) {
@@ -224,14 +264,14 @@ export function useBuyingWizard({
       if (query) {
         updateData({ searchQuery: query });
         setCurrentStep("describe_want");
-        await thinkAndRespond(
-          `What kind of ${query}? Give me some details — brand, model, features, year, etc.`,
-        );
+        const detailsKey = `${query}Details` as
+          | "vehicleDetails"
+          | "apartmentDetails"
+          | "electronicsDetails";
+        await thinkAndRespond(t(detailsKey));
       } else {
         setCurrentStep("describe_want");
-        await thinkAndRespond(
-          "Describe what you're looking for. Be as specific as you can — it helps me find better matches.",
-        );
+        await thinkAndRespond(t("otherDetails"));
       }
       return;
     }
@@ -255,6 +295,25 @@ export function useBuyingWizard({
       updateData({
         monitorFrequency: parseInt(value.replace("freq_", ""), 10),
       });
+      if (data.autoNegotiate) {
+        // Show strategy selection before summary when auto-negotiate is on
+        await thinkAndRespond(
+          "How should your agent negotiate offers?",
+          BUYING_STRATEGY_OPTIONS.map((o) => ({
+            label: `${o.icon} ${o.label}`,
+            value: `strategy_${o.value}`,
+            desc: o.desc,
+          })),
+        );
+      } else {
+        setCurrentStep("summary");
+        await buildBuyingSummary(ctx);
+      }
+      return;
+    }
+
+    if (value.startsWith("strategy_")) {
+      handleBuyingStrategySelection(value, ctx);
       setCurrentStep("summary");
       await buildBuyingSummary(ctx);
       return;
@@ -280,15 +339,14 @@ export function useBuyingWizard({
         maxAutoOfferPrice: data.autoOffer ? data.idealPrice : undefined,
         notifyPush: true,
         notifyEmail: true,
+        buyingStrategyId: data.buyingStrategyId,
       });
       return;
     }
 
     if (value === "edit") {
       setCurrentStep("describe_want");
-      await thinkAndRespond(
-        "What would you like to change? You can update the search, budget, location, or monitoring frequency.",
-      );
+      await thinkAndRespond(t("editPrompt"));
       return;
     }
 
@@ -314,14 +372,15 @@ export function useBuyingWizard({
         autoOffer: false,
         autoNegotiate: false,
         dealScoreThreshold: 70,
+        buyingStrategyId: "TIME_ESCALATION",
       });
       // Re-trigger greeting
       setTimeout(() => {
-        addAgentMessage("Welcome back! What are you looking for this time?", [
-          { label: "🚗 A vehicle", value: "want_vehicle" },
-          { label: "🏠 An apartment", value: "want_apartment" },
-          { label: "📱 Electronics", value: "want_electronics" },
-          { label: "🔍 Something else", value: "want_other" },
+        addAgentMessage(t("welcomeBack"), [
+          { label: t("wantVehicle"), value: "want_vehicle" },
+          { label: t("wantApartment"), value: "want_apartment" },
+          { label: t("wantElectronics"), value: "want_electronics" },
+          { label: t("wantOther"), value: "want_other" },
         ]);
       }, 100);
       return;

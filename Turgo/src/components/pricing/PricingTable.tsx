@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { SubscriptionCard } from "./SubscriptionCard";
 import { cn } from "@/lib/utils";
 import { PLAN_LIMITS, PLAN_PRICES } from "@/lib/constants";
+import { trpc } from "@/lib/trpc/client";
 
 type PlanName = "FREE" | "PRO" | "BUSINESS";
 
@@ -29,17 +30,17 @@ export function PricingTable({
   const tFeatures = useTranslations("pricing.features");
   const [interval, setInterval] = useState<"monthly" | "yearly">("monthly");
 
-  const handleSubscribe = useCallback(async (planId: string) => {
-    const res = await fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ planId }),
-    });
-    const data = await res.json();
-    if (data.checkoutUrl) {
-      window.location.href = data.checkoutUrl;
-    }
-  }, []);
+  const checkoutMutation = trpc.subscription.createCheckout.useMutation();
+
+  const handleSubscribe = useCallback(
+    async (planId: string) => {
+      const data = await checkoutMutation.mutateAsync({ planId });
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      }
+    },
+    [checkoutMutation],
+  );
 
   const planConfigs: {
     key: PlanName;

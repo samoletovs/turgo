@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import type { Prisma } from "@prisma/client";
 import {
   createTRPCRouter,
@@ -29,9 +30,10 @@ export const agentRouter = createTRPCRouter({
 
       const maxAgents = user?.subscription?.plan?.maxSellingAgents ?? 1;
       if (activeCount >= maxAgents) {
-        throw new Error(
-          `You can have at most ${maxAgents} active selling agents. Upgrade your plan for more.`,
-        );
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `You can have at most ${maxAgents} active selling agents. Upgrade your plan for more.`,
+        });
       }
 
       const agent = await ctx.db.sellingAgent.create({
@@ -46,7 +48,9 @@ export const agentRouter = createTRPCRouter({
           autoRespond: input.autoRespond,
           autoNegotiate: input.autoNegotiate,
           autoBoost: input.autoBoost,
-          autoAcceptAbove: input.autoAcceptAbove,
+          sellingStrategyId: input.sellingStrategyId,
+          strategyConfig:
+            (input.strategyConfig as Prisma.InputJsonValue) ?? undefined,
           status: "ACTIVE",
         },
       });
@@ -90,9 +94,10 @@ export const agentRouter = createTRPCRouter({
 
       const maxAgents = user?.subscription?.plan?.maxBuyingAgents ?? 1;
       if (activeCount >= maxAgents) {
-        throw new Error(
-          `You can have at most ${maxAgents} active buying agents. Upgrade your plan for more.`,
-        );
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `You can have at most ${maxAgents} active buying agents. Upgrade your plan for more.`,
+        });
       }
 
       return ctx.db.buyingAgent.create({
@@ -106,6 +111,9 @@ export const agentRouter = createTRPCRouter({
           maxAutoOfferPrice: input.maxAutoOfferPrice,
           notifyPush: input.notifyPush,
           notifyEmail: input.notifyEmail,
+          buyingStrategyId: input.buyingStrategyId,
+          strategyConfig:
+            (input.strategyConfig as Prisma.InputJsonValue) ?? undefined,
           status: "ACTIVE",
         },
       });
@@ -276,65 +284,81 @@ export const agentRouter = createTRPCRouter({
     };
   }),
 
-  /** Handle an incoming negotiation offer */
-  handleOffer: protectedProcedure
+  /** Submit an offer via strategy-based negotiation */
+  submitOffer: protectedProcedure
     .input(
       z.object({
-        agentId: z.string().cuid(),
+        sellingAgentId: z.string().cuid(),
+        listingId: z.string().cuid(),
         offerPrice: z.number().positive(),
-        buyerMessage: z.string().optional(),
-        roundNumber: z.number().int().min(0).default(0),
+        message: z.string().max(500).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const agent = await ctx.db.sellingAgent.findFirst({
-        where: { id: input.agentId, userId: ctx.session.user.id! },
-        include: {
-          listing: { select: { title: true, description: true, price: true } },
-        },
-      });
+      const { processIncomingOffer } =
+        await import("@/server/services/agent-selling");
 
-      if (!agent) throw new Error("Agent not found");
-      if (!agent.autoNegotiate) {
-        throw new Error("Auto-negotiate is not enabled for this agent");
-      }
-
-      // Dynamic import to avoid circular deps
-      const { evaluateOffer } = await import("@/server/services/agent-selling");
-
-      const result = await evaluateOffer({
+      return processIncomingOffer({
+        sellingAgentId: input.sellingAgentId,
+        listingId: input.listingId,
+        buyerId: ctx.session.user.id!,
         offerPrice: input.offerPrice,
-        currentPrice: agent.listing.price,
-        rules: {
-          minPrice: agent.minimumPrice ?? agent.listing.price * 0.7,
-          autoAcceptAbove: agent.autoAcceptAbove ?? agent.listing.price * 0.95,
-          maxCounterRounds: 3,
-          concessionRate: 0.3,
-        },
-        roundNumber: input.roundNumber,
-        listingTitle: agent.listing.title,
-        buyerMessage: input.buyerMessage,
+        message: input.message,
       });
-
-      // Log the negotiation action
-      await ctx.db.agentAction.create({
-        data: {
-          sellingAgentId: agent.id,
-          agentType: "SELLING",
-          actionType: "AUTO_NEGOTIATE",
-          description: result.message,
-          metadata: {
-            action: result.action,
-            offerPrice: input.offerPrice,
-            counterPrice: result.counterPrice,
-            roundNumber: input.roundNumber,
-            reasoning: result.reasoning,
-          },
-        },
-      });
-
-      return result;
     }),
+
+  /** List pending offers for a seller's agent */
+  listOffers: protectedProcedure
+    .input(
+      z.object({
+        agentId: z.string().cuid(),
+        status: z
+          .enum([
+            "PENDING",
+            "ACCEPTED",
+            "REJECTED",
+            "EXPIRED",
+            "CANCELLED",
+            "SUPERSEDED",
+          ])
+          .optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { getSellerOffers } =
+        await import("@/server/services/agent-selling");
+
+      return getSellerOffers(input.agentId);
+    }),
+
+  /** Accept a pending offer */
+  acceptOffer: protectedProcedure
+    .input(z.object({ offerId: z.string().cuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { acceptOffer } = await import("@/server/services/agent-selling");
+
+      return acceptOffer(input.offerId, ctx.session.user.id!);
+    }),
+
+  /** Decline a pending offer */
+  declineOffer: protectedProcedure
+    .input(z.object({ offerId: z.string().cuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { declineOffer } = await import("@/server/services/agent-selling");
+
+      return declineOffer(input.offerId, ctx.session.user.id!);
+    }),
+
+  /** Get strategy metadata (available strategies + plan requirements) */
+  getStrategyMetas: protectedProcedure.query(async () => {
+    const { getSellingStrategyMetas, getBuyingStrategyMetas } =
+      await import("@/server/services/strategies/registry");
+
+    return {
+      selling: getSellingStrategyMetas(),
+      buying: getBuyingStrategyMetas(),
+    };
+  }),
 
   /** Get daily summary for a selling agent */
   getDailySummary: protectedProcedure

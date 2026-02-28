@@ -11,8 +11,12 @@ import {
   updateListingSchema,
   listingFilterSchema,
 } from "@/lib/validators";
-import { RATE_LIMITS } from "@/lib/constants";
+import { RATE_LIMITS, URGENCY_HOURS } from "@/lib/constants";
 import { incrementViewCount } from "@/server/services/view-counter";
+import { TRPCError } from "@trpc/server";
+import { cachedQuery, CACHE_KEYS, CACHE_TTL } from "@/server/services/cache";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { geocodeAddress } from "@/lib/geocode";
 
 export const listingRouter = createTRPCRouter({
   /** Get a single listing by ID */
@@ -117,17 +121,35 @@ export const listingRouter = createTRPCRouter({
   create: createRateLimitedProcedure(RATE_LIMITS.LISTING_CREATE)
     .input(createListingSchema)
     .mutation(async ({ ctx, input }) => {
+      // Sanitize user-generated text fields
+      const sanitizedTitle = sanitizeHtml(input.title);
+      const sanitizedDescription = sanitizeHtml(input.description);
+
       // Generate slug from title
-      const baseSlug = input.title
+      const baseSlug = sanitizedTitle
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
       const slug = `${baseSlug}-${Date.now().toString(36)}`;
 
+      // Auto-geocode if address provided but no coordinates
+      let { latitude, longitude } = input;
+      if (input.address && !latitude && !longitude) {
+        const geo = await geocodeAddress(input.address);
+        if (geo) {
+          latitude = geo.latitude;
+          longitude = geo.longitude;
+        }
+      }
+
       const listing = await ctx.db.listing.create({
         data: {
           ...input,
+          title: sanitizedTitle,
+          description: sanitizedDescription,
           slug,
+          latitude,
+          longitude,
           userId: ctx.session.user.id!,
           status: "DRAFT",
         },
@@ -137,7 +159,7 @@ export const listingRouter = createTRPCRouter({
       await ctx.db.priceHistory.create({
         data: {
           listingId: listing.id,
-          price: listing.price,
+          price: Number(listing.price),
         },
       });
 
@@ -161,13 +183,33 @@ export const listingRouter = createTRPCRouter({
         throw new Error("Listing not found or unauthorized");
       }
 
+      // Sanitize user-generated text fields if present
+      const sanitizedData = { ...input.data };
+      if (sanitizedData.title)
+        sanitizedData.title = sanitizeHtml(sanitizedData.title);
+      if (sanitizedData.description)
+        sanitizedData.description = sanitizeHtml(sanitizedData.description);
+
+      // Auto-geocode if address changed but no coordinates provided
+      if (
+        sanitizedData.address &&
+        !sanitizedData.latitude &&
+        !sanitizedData.longitude
+      ) {
+        const geo = await geocodeAddress(sanitizedData.address);
+        if (geo) {
+          sanitizedData.latitude = geo.latitude;
+          sanitizedData.longitude = geo.longitude;
+        }
+      }
+
       const listing = await ctx.db.listing.update({
         where: { id: input.id },
-        data: input.data,
+        data: sanitizedData,
       });
 
       // Track price changes
-      if (input.data.price && input.data.price !== existing.price) {
+      if (input.data.price && input.data.price !== Number(existing.price)) {
         await ctx.db.priceHistory.create({
           data: {
             listingId: listing.id,
@@ -259,24 +301,175 @@ export const listingRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  /** Get featured / boosted listings for homepage */
+  /** Get featured / boosted listings for homepage (cached 5 min) */
   featured: publicProcedure
     .input(z.object({ limit: z.number().int().min(1).max(20).default(8) }))
     .query(async ({ ctx, input }) => {
-      const now = new Date();
-      return ctx.db.listing.findMany({
-        where: {
-          status: "ACTIVE",
-          boosts: { some: { startAt: { lte: now }, endAt: { gte: now } } },
-        },
-        take: input.limit,
-        orderBy: { createdAt: "desc" },
-        include: {
-          images: { where: { isPrimary: true }, take: 1 },
-          location: true,
-          category: true,
+      const cacheKey = `${CACHE_KEYS.FEATURED}:${input.limit}`;
+      return cachedQuery(cacheKey, CACHE_TTL.FEATURED, () => {
+        const now = new Date();
+        return ctx.db.listing.findMany({
+          where: {
+            status: "ACTIVE",
+            boosts: { some: { startAt: { lte: now }, endAt: { gte: now } } },
+          },
+          take: input.limit,
+          orderBy: { createdAt: "desc" },
+          include: {
+            images: { where: { isPrimary: true }, take: 1 },
+            location: true,
+            category: true,
+          },
+        });
+      });
+    }),
+
+  /** Create a full listing with images and optional selling agent (wizard flow) */
+  createFull: createRateLimitedProcedure(RATE_LIMITS.LISTING_CREATE)
+    .input(
+      z.object({
+        title: z.string().min(5).max(200),
+        description: z.string().min(20).max(5000),
+        price: z.number().positive(),
+        currency: z.string().default("EUR"),
+        negotiable: z.boolean().default(true),
+        condition: z.enum(["NEW", "USED", "REFURBISHED"]).default("USED"),
+        categoryId: z.string().min(1),
+        locationId: z.string().optional(),
+        contactPhone: z.string().optional(),
+        contactEmail: z.string().email().optional(),
+        address: z.string().max(500).optional(),
+        status: z.enum(["DRAFT", "ACTIVE"]).default("DRAFT"),
+        imageUrls: z
+          .array(
+            z.object({
+              url: z.string(),
+              thumbnailUrl: z.string().optional(),
+            }),
+          )
+          .optional(),
+        agent: z
+          .object({
+            enabled: z.boolean(),
+            autoRespond: z.boolean().default(true),
+            autoNegotiate: z.boolean().default(true),
+            autoBoost: z.boolean().default(false),
+            urgency: z
+              .enum([
+                "ONE_DAY",
+                "THREE_DAYS",
+                "ONE_WEEK",
+                "TWO_WEEKS",
+                "ONE_MONTH",
+                "NO_RUSH",
+              ])
+              .default("ONE_WEEK"),
+            minPrice: z.number().positive().optional(),
+            sellingStrategyId: z
+              .enum(["SEALED_BID", "FIXED_PRICE", "DUTCH_AUCTION"])
+              .default("SEALED_BID"),
+          })
+          .optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Verify category exists
+      const categoryExists = await ctx.db.category.findUnique({
+        where: { id: input.categoryId },
+        select: { id: true },
+      });
+      if (!categoryExists) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Selected category not found. Database may need seeding.",
+        });
+      }
+
+      // Generate slug
+      const baseSlug = input.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      const slug = `${baseSlug}-${Date.now().toString(36)}`;
+
+      // Auto-geocode address if provided without coordinates
+      let latitude: number | undefined;
+      let longitude: number | undefined;
+      if (input.address) {
+        const geo = await geocodeAddress(input.address);
+        if (geo) {
+          latitude = geo.latitude;
+          longitude = geo.longitude;
+        }
+      }
+
+      // Create listing
+      const listing = await ctx.db.listing.create({
+        data: {
+          title: input.title,
+          slug,
+          description: input.description,
+          price: input.price,
+          currency: input.currency,
+          negotiable: input.negotiable,
+          condition: input.condition,
+          status: input.status,
+          categoryId: input.categoryId,
+          locationId: input.locationId || undefined,
+          contactPhone: input.contactPhone || undefined,
+          contactEmail: input.contactEmail || undefined,
+          address: input.address || undefined,
+          latitude,
+          longitude,
+          userId: ctx.session.user.id!,
+          managedByAgent: input.agent?.enabled ?? false,
+          expiresAt:
+            input.status === "ACTIVE"
+              ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+              : undefined,
         },
       });
+
+      // Record initial price
+      await ctx.db.priceHistory.create({
+        data: { listingId: listing.id, price: Number(listing.price) },
+      });
+
+      // Create image records if provided
+      if (input.imageUrls?.length) {
+        await ctx.db.listingImage.createMany({
+          data: input.imageUrls.map((img, i) => ({
+            listingId: listing.id,
+            url: img.url,
+            thumbnailUrl: img.thumbnailUrl,
+            sortOrder: i,
+            isPrimary: i === 0,
+          })),
+        });
+      }
+
+      // Create SellingAgent if enabled
+      if (input.agent?.enabled) {
+        const urgencyHours = URGENCY_HOURS[input.agent.urgency] || 168;
+        await ctx.db.sellingAgent.create({
+          data: {
+            userId: ctx.session.user.id!,
+            listingId: listing.id,
+            urgency: input.agent.urgency,
+            startingPrice: input.price,
+            currentPrice: input.price,
+            minimumPrice: input.agent.minPrice ?? input.price * 0.7,
+            autoRespond: input.agent.autoRespond,
+            autoNegotiate: input.agent.autoNegotiate,
+            autoBoost: input.agent.autoBoost,
+            sellingStrategyId: input.agent.sellingStrategyId,
+            deadline: new Date(Date.now() + urgencyHours * 60 * 60 * 1000),
+            status: "ACTIVE",
+          },
+        });
+      }
+
+      return { id: listing.id, slug: listing.slug, status: listing.status };
     }),
 
   /** Report a listing */

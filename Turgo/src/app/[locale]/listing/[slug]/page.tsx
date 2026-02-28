@@ -28,7 +28,28 @@ import {
 } from "./client-components";
 import { ImageGallery } from "@/components/image-gallery";
 import { ListingJsonLd, BreadcrumbJsonLd } from "@/components/json-ld";
-import { APP_URL } from "@/lib/constants";
+import { LocationMap } from "@/components/maps/LocationMap";
+import { APP_URL, LOCALES } from "@/lib/constants";
+
+/** ISR: revalidate every 5 minutes */
+export const revalidate = 300;
+
+/** Pre-generate top 100 most-viewed listing slugs */
+export async function generateStaticParams() {
+  try {
+    const listings = await db.listing.findMany({
+      where: { status: "ACTIVE" },
+      orderBy: { viewCount: "desc" },
+      take: 100,
+      select: { slug: true },
+    });
+    return LOCALES.flatMap((locale) =>
+      listings.map((l) => ({ locale, slug: l.slug })),
+    );
+  } catch {
+    return [];
+  }
+}
 
 interface ListingPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -96,7 +117,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
       <ListingJsonLd
         name={listing.title}
         description={listing.description}
-        price={listing.price}
+        price={Number(listing.price)}
         currency={listing.currency}
         image={listing.images[0]?.url}
         url={`${APP_URL}/${locale}/listing/${listing.slug}`}
@@ -181,7 +202,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                 </Button>
               </div>
             </div>
-            <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               {listing.location && (
                 <span className="flex items-center gap-1">
                   <MapPin className="h-4 w-4" />
@@ -228,6 +249,28 @@ export default async function ListingPage({ params }: ListingPageProps) {
               {listing.description}
             </div>
           </div>
+
+          {/* Map */}
+          {listing.latitude != null && listing.longitude != null && (
+            <div>
+              <h2 className="mb-3 text-lg font-semibold flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                {t("locationOnMap")}
+              </h2>
+              {listing.address && (
+                <p className="mb-2 text-sm text-muted-foreground">
+                  {listing.address}
+                </p>
+              )}
+              <LocationMap
+                latitude={listing.latitude}
+                longitude={listing.longitude}
+                markerLabel={listing.title}
+                address={listing.address ?? undefined}
+                className="rounded-xl border"
+              />
+            </div>
+          )}
         </div>
 
         {/* Sidebar */}

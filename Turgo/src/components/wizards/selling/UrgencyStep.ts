@@ -19,9 +19,7 @@ export async function handleUrgencyInput(
     ctx.updateData({ urgency: urgencyMatch.value });
   }
   ctx.setCurrentStep("agent_config");
-  await ctx.thinkAndRespond(
-    `I'll base my pricing strategy on that timeline.\n\nNow, what's the absolute **minimum price** you'd accept? I won't go below this, even under deadline pressure.\n\nType a number (EUR), or say "no minimum" if price is flexible.`,
-  );
+  await ctx.thinkAndRespond(ctx.t("urgencyFromText"));
 }
 
 // ──────────────────────────────────────────────
@@ -37,6 +35,9 @@ export async function handleUrgencyAction(
   ctx.updateData({ urgency: urgencyVal });
   ctx.setCurrentStep("agent_config");
   await ctx.thinkAndRespond(
-    `**${urgency?.label}** — ${urgency?.desc}.\n\nNow, what's the absolute **minimum price** you'd accept? I'll never go below this.\n\nType a number (EUR).`,
+    ctx.t("urgencySelected", {
+      label: urgency?.label || urgencyVal,
+      desc: urgency?.desc || "",
+    }),
   );
 }

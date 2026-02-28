@@ -105,7 +105,7 @@ export default async function EditListingPage({
     slug: listing.slug,
     title: listing.title,
     description: listing.description,
-    price: listing.price,
+    price: Number(listing.price),
     currency: listing.currency,
     negotiable: listing.negotiable,
     condition: listing.condition,
@@ -115,6 +115,7 @@ export default async function EditListingPage({
     sublocationId: listing.location?.parentId ? (listing.locationId ?? "") : "",
     contactPhone: listing.contactPhone ?? "",
     contactEmail: listing.contactEmail ?? "",
+    address: listing.address ?? "",
     status: listing.status,
     images: listing.images.map((img) => ({
       id: img.id,

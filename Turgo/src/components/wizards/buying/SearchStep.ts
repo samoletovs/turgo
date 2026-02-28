@@ -1,5 +1,5 @@
 import type { BuyingStepContext } from "./types";
-import { resolveName } from "./types";
+import { buildCategoryActions } from "./types";
 
 // ──────────────────────────────────────────────
 // GREETING / DESCRIBE WANT INPUT HANDLER
@@ -12,10 +12,7 @@ export async function handleSearchInput(
   ctx.updateData({ searchQuery: content });
   ctx.setCurrentStep("category");
   await ctx.thinkAndRespond(
-    `Got it — searching for: "${content}"\n\nWhich category should I focus on?`,
-    ctx.categories.slice(0, 6).map((c) => {
-      const name = resolveName(c.name, ctx.locale, c.slug);
-      return { label: name, value: `cat_${c.id}` };
-    }),
+    ctx.t("searchConfirm", { query: content }),
+    buildCategoryActions(ctx.categories, content, ctx.locale),
   );
 }

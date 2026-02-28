@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { trpc } from "@/lib/trpc/client";
 
 interface PricingCheckoutButtonProps {
   planId: string;
@@ -10,19 +11,18 @@ interface PricingCheckoutButtonProps {
   isPro: boolean;
 }
 
-export function PricingCheckoutButton({ planId, planName, isPro }: PricingCheckoutButtonProps) {
+export function PricingCheckoutButton({
+  planId,
+  planName,
+  isPro,
+}: PricingCheckoutButtonProps) {
   const [loading, setLoading] = useState(false);
+  const checkoutMutation = trpc.subscription.createCheckout.useMutation();
 
   async function handleCheckout() {
     setLoading(true);
     try {
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId }),
-      });
-
-      const data = await response.json();
+      const data = await checkoutMutation.mutateAsync({ planId });
 
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;

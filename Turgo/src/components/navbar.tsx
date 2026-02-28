@@ -13,6 +13,7 @@ import {
   Bot,
   Globe,
   Settings,
+  ShoppingBag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,25 +70,12 @@ export function Navbar({ locale, user }: NavbarProps) {
 
         {/* Search bar (desktop) */}
         <div className="hidden flex-1 md:flex max-w-xl">
-          <form
-            className="relative flex w-full"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (searchQuery.trim()) {
-                router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
-              }
-            }}
-          >
-            <Input
-              placeholder={t("searchPlaceholder")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="rounded-r-none"
-            />
-            <Button type="submit" size="icon" className="rounded-l-none">
-              <Search className="h-4 w-4" />
-            </Button>
-          </form>
+          <NavSearchForm
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            placeholder={t("searchPlaceholder")}
+            onSubmit={(q) => router.push(`/search?q=${encodeURIComponent(q)}`)}
+          />
         </div>
 
         {/* Desktop nav */}
@@ -96,6 +84,12 @@ export function Navbar({ locale, user }: NavbarProps) {
             <Link href="/sell">
               <Plus className="h-4 w-4 mr-1" />
               {t("sell")}
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/buy">
+              <ShoppingBag className="h-4 w-4 mr-1" />
+              {t("buy")}
             </Link>
           </Button>
 
@@ -171,31 +165,28 @@ export function Navbar({ locale, user }: NavbarProps) {
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="border-t p-4 md:hidden">
-          <form
-            className="relative mb-4 flex"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (searchQuery.trim()) {
-                router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
-              }
-            }}
-          >
-            <Input
+          <div className="mb-4">
+            <NavSearchForm
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
               placeholder={t("searchPlaceholder")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="rounded-r-none"
+              onSubmit={(q) =>
+                router.push(`/search?q=${encodeURIComponent(q)}`)
+              }
             />
-            <Button type="submit" size="icon" className="rounded-l-none">
-              <Search className="h-4 w-4" />
-            </Button>
-          </form>
+          </div>
 
           <div className="flex flex-col gap-2">
             <Button variant="default" asChild className="w-full justify-start">
               <Link href="/sell">
                 <Plus className="h-4 w-4 mr-2" />
                 {t("sell")}
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="w-full justify-start">
+              <Link href="/buy">
+                <ShoppingBag className="h-4 w-4 mr-2" />
+                {t("buy")}
               </Link>
             </Button>
 
@@ -274,5 +265,40 @@ export function Navbar({ locale, user }: NavbarProps) {
         </div>
       )}
     </header>
+  );
+}
+
+/* ── Shared search form sub-component ── */
+function NavSearchForm({
+  searchQuery,
+  setSearchQuery,
+  placeholder,
+  onSubmit,
+}: {
+  searchQuery: string;
+  setSearchQuery: (v: string) => void;
+  placeholder: string;
+  onSubmit: (query: string) => void;
+}) {
+  return (
+    <form
+      className="relative flex w-full"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+          onSubmit(searchQuery);
+        }
+      }}
+    >
+      <Input
+        placeholder={placeholder}
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="rounded-r-none"
+      />
+      <Button type="submit" size="icon" className="rounded-l-none">
+        <Search className="h-4 w-4" />
+      </Button>
+    </form>
   );
 }

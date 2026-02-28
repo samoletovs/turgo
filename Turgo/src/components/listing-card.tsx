@@ -17,15 +17,16 @@ const BLUR_DATA_URL =
  * Format price with tabular-nums style: "849 EUR" instead of "€849"
  */
 function formatCardPrice(
-  price: number,
+  price: number | { toNumber(): number } | string,
   currency = "EUR",
   locale = "en",
 ): { amount: string; suffix: string } {
+  const numericPrice = typeof price === "number" ? price : Number(price);
   const formatted = new Intl.NumberFormat(locale, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
     useGrouping: true,
-  }).format(price);
+  }).format(numericPrice);
   return { amount: formatted, suffix: currency };
 }
 

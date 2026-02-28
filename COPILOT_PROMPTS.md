@@ -34,7 +34,7 @@ I need to build a revolutionary AGENT-FIRST classifieds platform called Turgo. T
 - **State Management**: Zustand for client state, TanStack Query v5 for server state
 - **File Upload**: Azure Blob Storage (or local filesystem for dev)
 - **AI (Dev/Test)**: **GitHub Copilot CLI / GitHub Models API** as primary LLM — free with Copilot subscription, used for agent reasoning, text generation, descriptions, NL search during development
-- **AI (Free tier)**: CLIP via Transformers.js for image categorization, all-MiniLM-L6-v2 embeddings, GitHub Models (rate-limited) or Ollama fallback
+- **AI (Free tier)**: CLIP via Transformers.js for image categorization, all-MiniLM-L6-v2 embeddings, GitHub Models (rate-limited)
 - **AI (Paid tier production)**: Azure OpenAI GPT-4o for premium agent AI, Azure AI Vision for image analysis
 - **Market Data**: SsLvScraper — aggregates public market data from ss.lv (prices, durations, categories) to bootstrap pricing engine. Respects robots.txt, collects statistics only (no personal data, no verbatim text). Phased out once own data is sufficient.
 - **Real-time**: Socket.io for messaging
@@ -179,7 +179,6 @@ src/
 │   ├── db/
 │   │   └── index.ts                   # Prisma client singleton
 │   └── services/
-│       ├── ai-free.ts                 # Free tier AI (CLIP, embeddings, GitHub Models rate-limited)
 │       ├── ai-premium.ts             # Paid tier AI (Azure OpenAI, Vision) — production only
 │       ├── ai-dev.ts                  # Dev/test AI provider: GitHub Copilot CLI / GitHub Models API
 │       ├── ai.ts                      # AI router: delegates to dev, free, or premium based on env + tier
@@ -570,7 +569,6 @@ Provide a docker-compose.yml that starts:
 - PostgreSQL 16 with pgvector extension
 - Redis 7
 - Meilisearch
-- Ollama with llama3.1:8b model (optional, for free-tier AI testing)
 - Mailpit (local email testing)
 
 ## Implementation Priority (AGENT-FIRST)
@@ -725,14 +723,13 @@ Implement the subscription system and AI provider routing:
 1. Create a unified AI service that routes based on AI_PROVIDER env var + user tier:
    - AI_PROVIDER="github" → use GitHub Models API (dev/test, free with Copilot)
    - AI_PROVIDER="azure" + paid user → use Azure OpenAI GPT-4o (production)
-   - AI_PROVIDER="ollama" or free user in prod → use Ollama self-hosted fallback
+   - AI_PROVIDER="azure" → use Azure OpenAI GPT-4o (production)
 2. Build server/services/ai-dev.ts: GitHub Copilot CLI / GitHub Models integration
    - Use GITHUB_TOKEN and GITHUB_MODELS_ENDPOINT
    - Implement chat completions compatible API (same interface as Azure OpenAI)
    - All agents use this during development — zero Azure costs
-3. Build server/services/ai-free.ts: CLIP client-side, all-MiniLM embeddings, Ollama fallback
-4. Build server/services/ai-premium.ts: Azure OpenAI GPT-4o, Azure AI Vision
-5. Agents automatically use the correct provider — all have the same interface
+3. Build server/services/ai-premium.ts: Azure OpenAI GPT-4o, Azure AI Vision
+4. Agents automatically use the correct provider — all have the same interface
 
 **SS.lv Market Data Scraper (server/services/scraper-sslv.ts):**
 1. Build scraper that collects AGGREGATED statistics only from ss.lv public pages:
@@ -749,7 +746,7 @@ Implement the subscription system and AI provider routing:
 **Stripe Integration:**
 1. Create Plan and Subscription models, seed 3 plans (Free, Pro €4.99/mo, Business €19.99/mo)
 2. Set up Stripe webhooks, tier enforcement middleware in tRPC
-3. Agent tier gating: free agents use ai-free, paid agents use ai-premium
+3. Agent tier gating: free agents use github models, paid agents use ai-premium
 4. Build Pricing page, Subscription dashboard, ListingBoost purchase
 ```
 
@@ -840,7 +837,7 @@ Add internationalization, legal compliance, and final polish:
 17. Onboarding flow for new users (/onboarding)
 18. PWA manifest for mobile add-to-homescreen
 19. Health check endpoint: /api/health (DB, Redis, Meilisearch, BullMQ status)
-20. docker-compose.yml for local dev (PostgreSQL+pgvector, Redis, Meilisearch, Ollama, Mailpit)
+20. docker-compose.yml for local dev (PostgreSQL+pgvector, Redis, Meilisearch, Mailpit)
 ```
 
 ---
@@ -865,7 +862,7 @@ STRIPE_PRO_PRICE_ID="price_..."
 STRIPE_BUSINESS_PRICE_ID="price_..."
 
 # AI Provider Selection
-AI_PROVIDER="github"  # "github" for dev/test, "azure" for production paid tier, "ollama" for self-hosted fallback
+AI_PROVIDER="github"  # "github" for dev/test, "azure" for production
 
 # GitHub Copilot / GitHub Models (Dev/Test LLM — free with Copilot subscription)
 GITHUB_TOKEN=""  # Your GitHub personal access token with Copilot access
@@ -884,10 +881,6 @@ AZURE_VISION_ENDPOINT=""
 # Azure Blob Storage
 AZURE_STORAGE_CONNECTION_STRING=""
 AZURE_STORAGE_CONTAINER_NAME="listings"
-
-# Ollama (Self-hosted fallback for free tier in production)
-OLLAMA_BASE_URL="http://localhost:11434"
-OLLAMA_MODEL="llama3.1:8b"
 
 # SS.lv Scraper (Market data bootstrap)
 SSLV_SCRAPER_ENABLED="true"  # Set to "false" once own data is sufficient

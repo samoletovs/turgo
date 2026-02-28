@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Link } from "@/i18n/navigation";
+import { trpcClient } from "@/lib/trpc/client";
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -79,6 +80,9 @@ export function ManualListingForm({
   const [sublocationId, setSublocationId] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const [addressCountry, setAddressCountry] = useState("Latvia");
+  const [addressCity, setAddressCity] = useState("");
+  const [addressStreet, setAddressStreet] = useState("");
 
   // Photos
   const [photos, setPhotos] = useState<File[]>([]);
@@ -88,7 +92,9 @@ export function ManualListingForm({
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
   const [submitError, setSubmitError] = useState("");
 
   // Derived
@@ -132,7 +138,8 @@ export function ManualListingForm({
   // Validate
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
-    if (title.trim().length < 5) errs.title = "Title must be at least 5 characters";
+    if (title.trim().length < 5)
+      errs.title = "Title must be at least 5 characters";
     if (description.trim().length < 20)
       errs.description = "Description must be at least 20 characters";
     if (!price || parseFloat(price) <= 0) errs.price = "Enter a valid price";
@@ -150,44 +157,62 @@ export function ManualListingForm({
     setSubmitError("");
 
     try {
-      const formData = new FormData();
-      formData.append("title", title.trim());
-      formData.append("description", description.trim());
-      formData.append("price", price);
-      formData.append("currency", currency);
-      formData.append("negotiable", String(negotiable));
-      formData.append("condition", condition);
-      formData.append("categoryId", effectiveCategoryId);
-      if (effectiveLocationId) formData.append("locationId", effectiveLocationId);
-      if (contactPhone) formData.append("contactPhone", contactPhone);
-      if (contactEmail) formData.append("contactEmail", contactEmail);
-      formData.append("status", status);
+      // Upload photos first via /api/upload (kept as REST for multipart)
+      let imageUrls: { url: string; thumbnailUrl?: string }[] = [];
+      if (photos.length > 0) {
+        const uploadFormData = new FormData();
+        photos.forEach((photo) => uploadFormData.append("files", photo));
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: uploadFormData,
+        });
+        if (!uploadRes.ok) {
+          const err = await uploadRes.json().catch(() => null);
+          throw new Error(err?.error || "Failed to upload images");
+        }
+        const uploadData = await uploadRes.json();
+        imageUrls = (uploadData.uploaded || []).map(
+          (u: { url: string; thumbnailUrl: string }) => ({
+            url: u.url,
+            thumbnailUrl: u.thumbnailUrl,
+          }),
+        );
+      }
 
-      photos.forEach((photo) => formData.append("photos", photo));
-
-      const response = await fetch("/api/listings", {
-        method: "POST",
-        body: formData,
+      // Create listing via tRPC
+      const result = await trpcClient.listing.createFull.mutate({
+        title: title.trim(),
+        description: description.trim(),
+        price: parseFloat(price),
+        currency,
+        negotiable,
+        condition: condition as "NEW" | "USED" | "REFURBISHED",
+        categoryId: effectiveCategoryId,
+        locationId: effectiveLocationId || undefined,
+        contactPhone: contactPhone || undefined,
+        contactEmail: contactEmail || undefined,
+        address:
+          [addressStreet, addressCity, addressCountry]
+            .filter(Boolean)
+            .join(", ") || undefined,
+        status,
+        imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        setSubmitStatus("success");
-        setTimeout(() => {
-          router.push(
-            `/${locale}/listing/${result.slug || result.id}`,
-          );
-        }, 1000);
-      } else if (response.status === 401) {
+      setSubmitStatus("success");
+      setTimeout(() => {
+        router.push(`/${locale}/listing/${result.slug || result.id}`);
+      }, 1000);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Network error. Please check your connection and try again.";
+      if (message.includes("UNAUTHORIZED")) {
         setSubmitError("UNAUTHORIZED");
-        setSubmitStatus("error");
       } else {
-        const errorData = await response.json().catch(() => null);
-        setSubmitError(errorData?.error || `Server error (${response.status}). Please try again.`);
-        setSubmitStatus("error");
+        setSubmitError(message);
       }
-    } catch {
-      setSubmitError("Network error. Please check your connection and try again.");
       setSubmitStatus("error");
     } finally {
       setIsSubmitting(false);
@@ -225,10 +250,14 @@ export function ManualListingForm({
             <CardContent className="flex items-center gap-3 p-3">
               <Bot className="h-5 w-5 shrink-0 text-primary" />
               <p className="flex-1 text-xs text-muted-foreground">
-                <strong className="text-foreground">Tip:</strong> Our AI selling agent can
-                create your listing from just a photo.{" "}
-                <Link href="/sell" className="font-medium text-primary hover:underline">
-                  Try the agent instead <ArrowRight className="inline h-3 w-3" />
+                <strong className="text-foreground">Tip:</strong> Our AI selling
+                agent can create your listing from just a photo.{" "}
+                <Link
+                  href="/sell"
+                  className="font-medium text-primary hover:underline"
+                >
+                  Try the agent instead{" "}
+                  <ArrowRight className="inline h-3 w-3" />
                 </Link>
               </p>
             </CardContent>
@@ -247,7 +276,9 @@ export function ManualListingForm({
                   </p>
                   <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
                     The database may need to be initialized. Run{" "}
-                    <code className="bg-yellow-100 dark:bg-yellow-900 px-1 rounded">npx prisma db seed</code>{" "}
+                    <code className="bg-yellow-100 dark:bg-yellow-900 px-1 rounded">
+                      npx prisma db seed
+                    </code>{" "}
                     to populate categories and locations.
                   </p>
                 </div>
@@ -352,7 +383,9 @@ export function ManualListingForm({
                   className={cn("mt-1", errors.description && "border-red-500")}
                 />
                 {errors.description && (
-                  <p className="mt-1 text-xs text-red-500">{errors.description}</p>
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.description}
+                  </p>
                 )}
                 <p className="mt-0.5 text-[11px] text-muted-foreground">
                   {description.length}/5000 characters
@@ -371,8 +404,16 @@ export function ManualListingForm({
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <Label>Category</Label>
-                <Select value={categoryId} onValueChange={(v) => { setCategoryId(v); setSubcategoryId(""); }}>
-                  <SelectTrigger className={cn("mt-1", errors.category && "border-red-500")}>
+                <Select
+                  value={categoryId}
+                  onValueChange={(v) => {
+                    setCategoryId(v);
+                    setSubcategoryId("");
+                  }}
+                >
+                  <SelectTrigger
+                    className={cn("mt-1", errors.category && "border-red-500")}
+                  >
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -388,23 +429,27 @@ export function ManualListingForm({
                 )}
               </div>
 
-              {selectedCategory?.children && selectedCategory.children.length > 0 && (
-                <div>
-                  <Label>Subcategory</Label>
-                  <Select value={subcategoryId} onValueChange={setSubcategoryId}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select subcategory" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {selectedCategory.children.map((sub) => (
-                        <SelectItem key={sub.id} value={sub.id}>
-                          {getName(sub.name)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              {selectedCategory?.children &&
+                selectedCategory.children.length > 0 && (
+                  <div>
+                    <Label>Subcategory</Label>
+                    <Select
+                      value={subcategoryId}
+                      onValueChange={setSubcategoryId}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select subcategory" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {selectedCategory.children.map((sub) => (
+                          <SelectItem key={sub.id} value={sub.id}>
+                            {getName(sub.name)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
             </div>
           </section>
 
@@ -478,7 +523,13 @@ export function ManualListingForm({
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <Label>Country / Region</Label>
-                <Select value={locationId} onValueChange={(v) => { setLocationId(v); setSublocationId(""); }}>
+                <Select
+                  value={locationId}
+                  onValueChange={(v) => {
+                    setLocationId(v);
+                    setSublocationId("");
+                  }}
+                >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select location" />
                   </SelectTrigger>
@@ -492,23 +543,77 @@ export function ManualListingForm({
                 </Select>
               </div>
 
-              {selectedLocation?.children && selectedLocation.children.length > 0 && (
-                <div>
-                  <Label>City / Area</Label>
-                  <Select value={sublocationId} onValueChange={setSublocationId}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select area" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {selectedLocation.children.map((sub) => (
-                        <SelectItem key={sub.id} value={sub.id}>
-                          {getName(sub.name)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              {selectedLocation?.children &&
+                selectedLocation.children.length > 0 && (
+                  <div>
+                    <Label>City / Area</Label>
+                    <Select
+                      value={sublocationId}
+                      onValueChange={setSublocationId}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select area" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {selectedLocation.children.map((sub) => (
+                          <SelectItem key={sub.id} value={sub.id}>
+                            {getName(sub.name)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+            </div>
+          </section>
+
+          {/* ── Address ── */}
+          <section>
+            <div className="mb-3 flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold">Address</h2>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="addressCountry">Country</Label>
+                <Select
+                  value={addressCountry}
+                  onValueChange={setAddressCountry}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Latvia">Latvia</SelectItem>
+                    <SelectItem value="Lithuania">Lithuania</SelectItem>
+                    <SelectItem value="Estonia">Estonia</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="addressCity">City</Label>
+                <Input
+                  id="addressCity"
+                  value={addressCity}
+                  onChange={(e) => setAddressCity(e.target.value)}
+                  placeholder="e.g., Rīga"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            <div className="mt-3">
+              <Label htmlFor="addressStreet">Street address (optional)</Label>
+              <Input
+                id="addressStreet"
+                value={addressStreet}
+                onChange={(e) => setAddressStreet(e.target.value)}
+                placeholder="e.g., Brīvības iela 100, LV-1001"
+                className="mt-1"
+              />
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                The full address will be shown on the map. Coordinates are
+                resolved automatically.
+              </p>
             </div>
           </section>
 
@@ -580,7 +685,11 @@ export function ManualListingForm({
                   <Button
                     variant="default"
                     size="sm"
-                    onClick={() => router.push(`/${locale}/auth/signin?callbackUrl=/${locale}/listing/new`)}
+                    onClick={() =>
+                      router.push(
+                        `/${locale}/auth/signin?callbackUrl=/${locale}/listing/new`,
+                      )
+                    }
                   >
                     Sign in to continue
                   </Button>

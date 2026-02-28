@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { cn, formatPrice } from "@/lib/utils";
 import { BOOST_PRICES } from "@/lib/constants";
 import { Zap, Star, ArrowUp, Loader2, Check } from "lucide-react";
+import { trpc } from "@/lib/trpc/client";
 
 type BoostType = "FEATURED" | "HIGHLIGHTED" | "TOP";
 
@@ -48,16 +49,16 @@ export function BoostSelector({ listingId, className }: BoostSelectorProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [purchased, setPurchased] = useState<BoostType | null>(null);
 
+  const boostMutation = trpc.subscription.createBoostCheckout.useMutation();
+
   const handlePurchase = useCallback(
     async (boostType: BoostType) => {
       setIsLoading(true);
       try {
-        const res = await fetch("/api/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ listingId, boostType }),
+        const data = await boostMutation.mutateAsync({
+          listingId,
+          boostType,
         });
-        const data = await res.json();
         if (data.checkoutUrl) {
           window.location.href = data.checkoutUrl;
         } else {
@@ -67,7 +68,7 @@ export function BoostSelector({ listingId, className }: BoostSelectorProps) {
         setIsLoading(false);
       }
     },
-    [listingId],
+    [listingId, boostMutation],
   );
 
   const boostOptions: {

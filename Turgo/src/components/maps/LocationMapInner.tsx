@@ -1,6 +1,6 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useRef, useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -29,21 +29,42 @@ export default function LocationMapInner({
   zoom,
   markerLabel,
 }: LocationMapInnerProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Create map instance
+    const map = L.map(containerRef.current, {
+      center: [latitude, longitude],
+      zoom,
+      scrollWheelZoom: false,
+    });
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    L.marker([latitude, longitude], { icon: defaultIcon })
+      .addTo(map)
+      .bindPopup(markerLabel);
+
+    mapRef.current = map;
+
+    // Proper cleanup — removes Leaflet's internal reference to the DOM node
+    return () => {
+      map.remove();
+      mapRef.current = null;
+    };
+  }, [latitude, longitude, zoom, markerLabel]);
+
   return (
-    <MapContainer
-      center={[latitude, longitude]}
-      zoom={zoom}
-      scrollWheelZoom={false}
+    <div
+      ref={containerRef}
       className="h-full w-full rounded-xl"
       style={{ minHeight: 300 }}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <Marker position={[latitude, longitude]} icon={defaultIcon}>
-        <Popup>{markerLabel}</Popup>
-      </Marker>
-    </MapContainer>
+    />
   );
 }

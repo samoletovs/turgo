@@ -26,7 +26,7 @@ export async function getMarketStats(categoryId: string, locationId?: string) {
 
     if (listings.length === 0) return null;
 
-    const prices = listings.map((l) => l.price).sort((a, b) => a - b);
+    const prices = listings.map((l) => Number(l.price)).sort((a, b) => a - b);
     const medianIdx = Math.floor(prices.length / 2);
 
     return {
@@ -46,7 +46,7 @@ export async function getMarketStats(categoryId: string, locationId?: string) {
 export function generatePriceCurve(
   startPrice: number,
   minPrice: number,
-  urgency: string
+  urgency: string,
 ): PricingCurvePoint[] {
   const totalHours = URGENCY_HOURS[urgency] || 168;
   const totalDays = totalHours / 24;
@@ -55,13 +55,26 @@ export function generatePriceCurve(
   // Determine curve steepness based on urgency
   let exponent: number;
   switch (urgency) {
-    case "ONE_DAY": exponent = 2.5; break;
-    case "THREE_DAYS": exponent = 2.0; break;
-    case "ONE_WEEK": exponent = 1.5; break;
-    case "TWO_WEEKS": exponent = 1.3; break;
-    case "ONE_MONTH": exponent = 1.1; break;
-    case "NO_RUSH": exponent = 0.8; break;
-    default: exponent = 1.5;
+    case "ONE_DAY":
+      exponent = 2.5;
+      break;
+    case "THREE_DAYS":
+      exponent = 2.0;
+      break;
+    case "ONE_WEEK":
+      exponent = 1.5;
+      break;
+    case "TWO_WEEKS":
+      exponent = 1.3;
+      break;
+    case "ONE_MONTH":
+      exponent = 1.1;
+      break;
+    case "NO_RUSH":
+      exponent = 0.8;
+      break;
+    default:
+      exponent = 1.5;
   }
 
   const steps = Math.min(Math.ceil(totalDays), 15);
@@ -86,7 +99,8 @@ export function generatePriceCurve(
 
 /** Get human-readable reason for price change */
 function getPriceChangeReason(progress: number, urgency: string): string {
-  if (progress === 0) return "Starting price — optimized for maximum initial interest";
+  if (progress === 0)
+    return "Starting price — optimized for maximum initial interest";
   if (progress < 0.2) return "Testing market response at premium price";
   if (progress < 0.4) return "Slight adjustment to increase visibility";
   if (progress < 0.6) return "Competitive pricing — attracting more inquiries";
@@ -103,16 +117,47 @@ export function getOptimalPostingTime(categorySlug: string): {
   reasoning: string;
 } {
   // Category-specific posting patterns (would be data-driven in production)
-  const categoryPatterns: Record<string, { day: number; hour: number; reason: string }> = {
-    cars: { day: 0, hour: 19, reason: "Car buyers are most active Sunday evenings" },
-    apartments: { day: 1, hour: 9, reason: "Real estate searches peak Monday mornings" },
-    electronics: { day: 4, hour: 18, reason: "Electronics shoppers browse Thursday/Friday evenings" },
-    clothing: { day: 5, hour: 11, reason: "Fashion shoppers peak on Saturday mornings" },
-    default: { day: 0, hour: 19, reason: "Sunday evening has the highest overall marketplace traffic" },
+  const categoryPatterns: Record<
+    string,
+    { day: number; hour: number; reason: string }
+  > = {
+    cars: {
+      day: 0,
+      hour: 19,
+      reason: "Car buyers are most active Sunday evenings",
+    },
+    apartments: {
+      day: 1,
+      hour: 9,
+      reason: "Real estate searches peak Monday mornings",
+    },
+    electronics: {
+      day: 4,
+      hour: 18,
+      reason: "Electronics shoppers browse Thursday/Friday evenings",
+    },
+    clothing: {
+      day: 5,
+      hour: 11,
+      reason: "Fashion shoppers peak on Saturday mornings",
+    },
+    default: {
+      day: 0,
+      hour: 19,
+      reason: "Sunday evening has the highest overall marketplace traffic",
+    },
   };
 
   const pattern = categoryPatterns[categorySlug] || categoryPatterns.default;
-  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
 
   return {
     bestDay: days[pattern.day],
@@ -125,10 +170,14 @@ export function getOptimalPostingTime(categorySlug: string): {
 export function generatePriceAdjustSchedule(
   startPrice: number,
   minPrice: number,
-  urgency: string
+  urgency: string,
 ): Array<{ dayOffset: number; targetPrice: number; dropPercent: number }> {
   const curve = generatePriceCurve(startPrice, minPrice, urgency);
-  const schedule: Array<{ dayOffset: number; targetPrice: number; dropPercent: number }> = [];
+  const schedule: Array<{
+    dayOffset: number;
+    targetPrice: number;
+    dropPercent: number;
+  }> = [];
 
   for (let i = 1; i < curve.length; i++) {
     const prev = curve[i - 1];

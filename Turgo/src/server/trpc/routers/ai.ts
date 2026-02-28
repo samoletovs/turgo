@@ -92,13 +92,26 @@ ${input.attributes ? `Attributes: ${JSON.stringify(input.attributes)}` : ""}`,
       });
 
       if (snapshots.length === 0) {
+        // Count active listings in this category to give a better reason
+        const listingCount = await ctx.db.listing.count({
+          where: {
+            categoryId: input.categoryId,
+            status: "ACTIVE",
+          },
+        });
+
+        const reason =
+          listingCount === 0
+            ? "No similar listings found in this category yet. You'll be one of the first!"
+            : `Found ${listingCount} listing${listingCount > 1 ? "s" : ""} in this category, but not enough price history to suggest a reliable price.`;
+
         return {
           suggestedPrice: 0,
           minPrice: 0,
           maxPrice: 0,
           confidence: 0,
-          reasoning: "No market data available yet for this category.",
-          comparableListings: 0,
+          reasoning: reason,
+          comparableListings: listingCount,
         };
       }
 
@@ -204,5 +217,75 @@ Respond in JSON: {"suggestedPrice": number, "reasoning": "string", "confidence":
           : "free";
 
     return getAiProviderInfo(tier);
+  }),
+
+  /** Diagnostic status — checks AI provider connectivity (Azure OpenAI etc.) */
+  diagnosticStatus: protectedProcedure.query(async () => {
+    const providerInfo = getAiProviderInfo();
+
+    const azureConfig = {
+      endpoint: process.env.AZURE_OPENAI_ENDPOINT ? "SET" : "MISSING",
+      apiKey: process.env.AZURE_OPENAI_API_KEY ? "SET" : "MISSING",
+      deployment: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4o-mini",
+      apiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-12-01-preview",
+    };
+
+    let azureStatus = "not_tested";
+    let azureError: string | null = null;
+    let azureResponse: string | undefined;
+    let azureModel: string | undefined;
+
+    if (
+      providerInfo.envProvider === "azure" &&
+      process.env.AZURE_OPENAI_ENDPOINT &&
+      process.env.AZURE_OPENAI_API_KEY
+    ) {
+      try {
+        const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
+        const deployment =
+          process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4o-mini";
+        const apiVersion =
+          process.env.AZURE_OPENAI_API_VERSION || "2024-12-01-preview";
+
+        const response = await fetch(
+          `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "api-key": process.env.AZURE_OPENAI_API_KEY!,
+            },
+            body: JSON.stringify({
+              messages: [{ role: "user", content: "Say 'OK' in one word." }],
+              max_tokens: 5,
+              temperature: 0,
+            }),
+          },
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          azureStatus = "connected";
+          azureResponse = data.choices?.[0]?.message?.content;
+          azureModel = data.model;
+        } else {
+          const errorText = await response.text();
+          azureStatus = "error";
+          azureError = `HTTP ${response.status}: ${errorText.slice(0, 200)}`;
+        }
+      } catch (e) {
+        azureStatus = "unreachable";
+        azureError = e instanceof Error ? e.message : String(e);
+      }
+    }
+
+    return {
+      ...providerInfo,
+      azureConfig,
+      azureStatus,
+      azureError,
+      azureResponse,
+      azureModel,
+    };
   }),
 });

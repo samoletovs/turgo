@@ -43,7 +43,7 @@ export async function handlePricingInput(
       {
         id: skeletonMsgId,
         role: "agent" as const,
-        content: `Your price: **€${priceNum}**\nAnalyzing market data...`,
+        content: `${ctx.t("priceYours", { price: String(priceNum) })}\n${ctx.t("analyzing")}`,
         timestamp: new Date(),
         component: <PricingSkeleton />,
       },
@@ -55,6 +55,7 @@ export async function handlePricingInput(
     let confidence = 0;
     let comparableListings = 0;
     let aiSuccess = false;
+    let noDataReason = "";
 
     try {
       const result = await ctx.trpcUtils.ai.suggestPrice.fetch({
@@ -70,32 +71,65 @@ export async function handlePricingInput(
         confidence = result.confidence;
         comparableListings = result.comparableListings;
         aiSuccess = true;
+      } else {
+        // Server returned 0 — capture the reason
+        noDataReason = result.reasoning || "";
       }
     } catch {
-      // AI call failed — will use fallback
+      // Network/auth error
+      noDataReason =
+        "Could not connect to the pricing service. Please check your connection and try again.";
     }
 
     // Remove skeleton message
     ctx.setMessages((prev) => prev.filter((m) => m.id !== skeletonMsgId));
     ctx.setIsThinking(false);
 
-    ctx.setCurrentStep("urgency");
-
-    if (aiSuccess && suggested !== null) {
+    if (aiSuccess && suggested !== null && suggested !== priceNum) {
       ctx.updateData({ aiSuggestedPrice: suggested });
       const confidenceLabel =
         confidence >= 0.8 ? "High" : confidence >= 0.5 ? "Medium" : "Low";
+      const confidenceColor =
+        confidence >= 0.8 ? "🟢" : confidence >= 0.5 ? "🟡" : "🔴";
+
+      // Show price comparison with actionable buttons
       ctx.addAgentMessage(
-        `Your price: **€${priceNum}**\nMarket analysis suggests: **€${suggested}** (${confidenceLabel} confidence)${reasoning ? `\n\n💡 ${reasoning}` : ""}${comparableListings ? `\n📊 Based on ${comparableListings} comparable listings` : ""}\n\nNow, how quickly do you want to sell? This affects my pricing strategy:`,
-        URGENCY_OPTIONS.map((u) => ({
-          label: `${u.label}`,
-          value: `urgency_${u.value}`,
-        })),
+        ctx.t("priceSuggestion", {
+          price: String(priceNum),
+          confidence: confidenceColor,
+          suggested: String(suggested),
+          confidenceLabel,
+          reasoning: reasoning ? `\n\n💡 ${reasoning}` : "",
+          comparable: comparableListings
+            ? `\n📊 Based on ${comparableListings} comparable listings`
+            : "",
+        }),
+        [
+          {
+            label: ctx.t("useAiPrice", { price: String(suggested) }),
+            value: `use_ai_price_${suggested}`,
+          },
+          {
+            label: ctx.t("keepMyPrice", { price: String(priceNum) }),
+            value: "keep_my_price",
+          },
+        ],
       );
     } else {
       ctx.updateData({ aiSuggestedPrice: null });
+      ctx.setCurrentStep("urgency");
+
+      // Build an informative explanation for why pricing data isn't available
+      const explanation = noDataReason
+        ? `\n\n📊 ${noDataReason}`
+        : aiSuccess
+          ? ""
+          : `\n\n📊 I don't have enough market data for "${ctx.data.categoryName || "this category"}" yet. As more listings are added, pricing suggestions will become available.`;
+
       ctx.addAgentMessage(
-        `Your price: **€${priceNum}**\n⚠️ AI pricing unavailable — I'll use your entered price.\n\nHow quickly do you want to sell? This affects my pricing strategy:`,
+        aiSuccess
+          ? ctx.t("priceMatch", { price: String(priceNum) })
+          : `Your price: **€${priceNum}** — noted! ✅${explanation}\n\nHow quickly do you want to sell? This affects my pricing strategy:`,
         URGENCY_OPTIONS.map((u) => ({
           label: `${u.label}`,
           value: `urgency_${u.value}`,
@@ -103,8 +137,6 @@ export async function handlePricingInput(
       );
     }
   } else {
-    await ctx.thinkAndRespond(
-      "I need a valid price in euros. Just type a number like 150 or 29.99",
-    );
+    await ctx.thinkAndRespond(ctx.t("invalidPrice"));
   }
 }

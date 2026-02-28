@@ -4,7 +4,11 @@
  * bulk sync, geo-search, and saved-search notification helpers.
  */
 
-import { MeiliSearch, type SearchParams, type SearchResponse } from "meilisearch";
+import {
+  MeiliSearch,
+  type SearchParams,
+  type SearchResponse,
+} from "meilisearch";
 
 // ─── Singleton client ────────────────────────────────────
 
@@ -12,9 +16,13 @@ let _client: MeiliSearch | null = null;
 
 function getClient(): MeiliSearch {
   if (!_client) {
+    const apiKey = process.env.MEILISEARCH_API_KEY;
+    if (!apiKey && process.env.NODE_ENV === "production") {
+      throw new Error("MEILISEARCH_API_KEY must be set in production");
+    }
     _client = new MeiliSearch({
       host: process.env.MEILISEARCH_HOST || "http://localhost:7700",
-      apiKey: process.env.MEILISEARCH_API_KEY || "masterKey",
+      apiKey: apiKey || "masterKey",
     });
   }
   return _client;
@@ -151,7 +159,7 @@ export function toSearchDocument(listing: {
     title: listing.title,
     slug: listing.slug,
     description: listing.description,
-    price: listing.price,
+    price: Number(listing.price),
     currency: listing.currency ?? "EUR",
     condition: listing.condition,
     status: listing.status,
@@ -183,7 +191,9 @@ export function toSearchDocument(listing: {
 }
 
 /** Index a single listing */
-export async function indexListing(listing: Parameters<typeof toSearchDocument>[0]) {
+export async function indexListing(
+  listing: Parameters<typeof toSearchDocument>[0],
+) {
   try {
     const index = getClient().index(LISTINGS_INDEX);
     await index.addDocuments([toSearchDocument(listing)]);
@@ -193,7 +203,9 @@ export async function indexListing(listing: Parameters<typeof toSearchDocument>[
 }
 
 /** Bulk-index listings (for full re-sync) */
-export async function bulkIndexListings(listings: Parameters<typeof toSearchDocument>[0][]) {
+export async function bulkIndexListings(
+  listings: Parameters<typeof toSearchDocument>[0][],
+) {
   try {
     const index = getClient().index(LISTINGS_INDEX);
     const docs = listings.map(toSearchDocument);
@@ -239,8 +251,10 @@ export interface SearchListingsParams {
 function buildFilter(params: SearchListingsParams): string {
   const parts: string[] = ['status = "ACTIVE"'];
 
-  if (params.categorySlug) parts.push(`categorySlug = "${params.categorySlug}"`);
-  if (params.locationSlug) parts.push(`locationSlug = "${params.locationSlug}"`);
+  if (params.categorySlug)
+    parts.push(`categorySlug = "${params.categorySlug}"`);
+  if (params.locationSlug)
+    parts.push(`locationSlug = "${params.locationSlug}"`);
   if (params.condition) parts.push(`condition = "${params.condition}"`);
   if (params.countryCode) parts.push(`countryCode = "${params.countryCode}"`);
   if (params.minPrice != null) parts.push(`price >= ${params.minPrice}`);
@@ -248,7 +262,7 @@ function buildFilter(params: SearchListingsParams): string {
 
   if (params.geo) {
     parts.push(
-      `_geoRadius(${params.geo.lat}, ${params.geo.lng}, ${params.geo.radiusM})`
+      `_geoRadius(${params.geo.lat}, ${params.geo.lng}, ${params.geo.radiusM})`,
     );
   }
 
@@ -371,12 +385,18 @@ export function savedSearchMatchesListing(
   filters: Record<string, unknown>,
   listing: SearchDocument,
 ): boolean {
-  if (filters.categorySlug && filters.categorySlug !== listing.categorySlug) return false;
-  if (filters.locationSlug && filters.locationSlug !== listing.locationSlug) return false;
-  if (filters.condition && filters.condition !== listing.condition) return false;
-  if (filters.minPrice != null && listing.price < (filters.minPrice as number)) return false;
-  if (filters.maxPrice != null && listing.price > (filters.maxPrice as number)) return false;
-  if (filters.countryCode && filters.countryCode !== listing.countryCode) return false;
+  if (filters.categorySlug && filters.categorySlug !== listing.categorySlug)
+    return false;
+  if (filters.locationSlug && filters.locationSlug !== listing.locationSlug)
+    return false;
+  if (filters.condition && filters.condition !== listing.condition)
+    return false;
+  if (filters.minPrice != null && listing.price < (filters.minPrice as number))
+    return false;
+  if (filters.maxPrice != null && listing.price > (filters.maxPrice as number))
+    return false;
+  if (filters.countryCode && filters.countryCode !== listing.countryCode)
+    return false;
   if (filters.query) {
     const q = (filters.query as string).toLowerCase();
     if (

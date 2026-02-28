@@ -1,10 +1,18 @@
 /**
- * Buying Agent Service — Monitor listings, score deals, auto-negotiate
+ * Buying Agent Service — Monitor listings, score deals, strategy-aware bidding
  */
 
 import { db } from "@/server/db";
 import type { Prisma } from "@prisma/client";
 import type { DealScoreBreakdown } from "@/types";
+import { getBuyingStrategy } from "./strategies/registry";
+import { processIncomingOffer } from "./agent-selling";
+import type {
+  BuyingAgentContext,
+  ListingContext,
+  OfferContext,
+} from "./strategies/types";
+import { URGENCY_HOURS } from "@/lib/constants";
 
 /** Calculate deal score (0-100) for a listing match */
 export async function calculateDealScore(params: {
@@ -41,10 +49,10 @@ export async function calculateDealScore(params: {
     orderBy: { date: "desc" },
   });
 
-  const medianPrice = snapshot?.medianPrice ?? listing.price;
+  const medianPrice = snapshot?.medianPrice ?? Number(listing.price);
 
   // 1. Price vs Market (0-30 points)
-  const priceRatio = listing.price / medianPrice;
+  const priceRatio = Number(listing.price) / medianPrice;
   const priceVsMarket = Math.round(
     Math.max(0, Math.min(30, (1.3 - priceRatio) * 30)),
   );
@@ -72,9 +80,9 @@ export async function calculateDealScore(params: {
 
   // 7. Condition vs Price (0-10 points)
   let conditionVsPrice = 5;
-  if (listing.condition === "NEW" && listing.price < medianPrice)
+  if (listing.condition === "NEW" && Number(listing.price) < medianPrice)
     conditionVsPrice = 10;
-  if (listing.condition === "USED" && listing.price < medianPrice * 0.7)
+  if (listing.condition === "USED" && Number(listing.price) < medianPrice * 0.7)
     conditionVsPrice = 8;
 
   const total = Math.min(
@@ -182,7 +190,7 @@ export async function monitorForMatches(
           description: `Found match: "${listing.title}" — Deal Score: ${score.total}/100`,
           metadata: {
             listingId: listing.id,
-            price: listing.price,
+            price: Number(listing.price),
             dealScore: score.total,
           },
         },
@@ -201,4 +209,229 @@ export async function monitorForMatches(
   }
 
   return newMatches;
+}
+// ──────────────────────────────────────────────
+// STRATEGY-AWARE BIDDING
+// ──────────────────────────────────────────────
+
+/** Build a BuyingAgentContext from a DB record */
+function buildBuyingAgentContext(agent: {
+  id: string;
+  maxBudget: number;
+  targetPrice: number | null;
+  strategyConfig: unknown;
+  createdAt: Date;
+}): BuyingAgentContext {
+  return {
+    id: agent.id,
+    maxBudget: agent.maxBudget,
+    targetPrice: agent.targetPrice,
+    strategyConfig: agent.strategyConfig as Record<string, unknown> | null,
+    createdAt: agent.createdAt,
+  };
+}
+
+/** Build a ListingContext from a DB record */
+function buildListingContext(listing: {
+  id: string;
+  title: string;
+  price: unknown;
+  createdAt: Date;
+  expiresAt: Date | null;
+  viewCount: number;
+  currency: string;
+  sellingAgent?: {
+    urgency: string;
+    currentPrice: number | null;
+    minimumPrice: number;
+    totalInquiries: number | null;
+  } | null;
+}): ListingContext {
+  const urgency = listing.sellingAgent?.urgency ?? "ONE_WEEK";
+  return {
+    id: listing.id,
+    title: listing.title,
+    price: Number(listing.price),
+    minimumPrice: listing.sellingAgent?.minimumPrice ?? Number(listing.price),
+    currentPrice: listing.sellingAgent?.currentPrice ?? Number(listing.price),
+    urgency,
+    createdAt: listing.createdAt,
+    expiresAt: listing.expiresAt,
+    currency: listing.currency,
+    totalViews: listing.viewCount ?? 0,
+    totalInquiries: listing.sellingAgent?.totalInquiries ?? 0,
+  };
+}
+
+/**
+ * Execute strategy-based bidding for a buying agent on its matches.
+ * Called after monitorForMatches finds new matches.
+ */
+export async function executeBuyingStrategy(
+  buyingAgentId: string,
+): Promise<number> {
+  const agent = await db.buyingAgent.findUnique({
+    where: { id: buyingAgentId },
+    include: {
+      matches: {
+        where: { status: "NEW", autoOfferSent: false },
+        include: {
+          listing: {
+            include: {
+              sellingAgent: {
+                select: {
+                  id: true,
+                  urgency: true,
+                  currentPrice: true,
+                  minimumPrice: true,
+                  totalInquiries: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!agent || agent.status !== "ACTIVE") return 0;
+
+  const strategy = getBuyingStrategy(agent.buyingStrategyId);
+  const agentCtx = buildBuyingAgentContext(agent);
+
+  let offersSent = 0;
+
+  for (const match of agent.matches) {
+    const listingCtx = buildListingContext(match.listing);
+
+    const bid = strategy.calculateBid(agentCtx, listingCtx, match.dealScore);
+    if (!bid) continue;
+
+    // Only bid if there's a selling agent to receive it
+    if (!match.listing.sellingAgent) continue;
+
+    // Submit the offer through the selling agent's strategy
+    await processIncomingOffer({
+      sellingAgentId: match.listing.sellingAgent.id,
+      listingId: match.listingId,
+      buyerId: agent.userId,
+      buyingAgentId: agent.id,
+      offerPrice: bid.price,
+      message: bid.message,
+    });
+
+    // Mark match as offer sent
+    await db.agentMatch.update({
+      where: { id: match.id },
+      data: {
+        autoOfferSent: true,
+        offerPrice: bid.price,
+        status: "OFFERED",
+      },
+    });
+
+    // Log
+    await db.agentAction.create({
+      data: {
+        buyingAgentId: agent.id,
+        agentType: "BUYING",
+        actionType: "AUTO_NEGOTIATE",
+        description: bid.reasoning,
+        metadata: {
+          listingId: match.listingId,
+          offerPrice: bid.price,
+          dealScore: match.dealScore,
+          strategyId: agent.buyingStrategyId,
+        },
+      },
+    });
+
+    offersSent++;
+  }
+
+  return offersSent;
+}
+
+/**
+ * Check if any existing offers from buying agents should be escalated.
+ * Called periodically by cron.
+ */
+export async function escalateBuyingOffers(): Promise<number> {
+  const agents = await db.buyingAgent.findMany({
+    where: { status: "ACTIVE" },
+    include: {
+      offers: {
+        where: { status: "PENDING" },
+        include: {
+          listing: {
+            include: {
+              sellingAgent: {
+                select: {
+                  id: true,
+                  urgency: true,
+                  currentPrice: true,
+                  minimumPrice: true,
+                  totalInquiries: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  let escalations = 0;
+
+  for (const agent of agents) {
+    const strategy = getBuyingStrategy(agent.buyingStrategyId);
+    if (!strategy.shouldEscalate) continue;
+
+    const agentCtx = buildBuyingAgentContext(agent);
+
+    for (const offer of agent.offers) {
+      const listingCtx = buildListingContext(offer.listing);
+      const offerCtx: OfferContext = {
+        id: offer.id,
+        price: offer.price,
+        buyerId: offer.buyerId,
+        buyingAgentId: offer.buyingAgentId,
+        message: offer.message,
+        createdAt: offer.createdAt,
+      };
+
+      const decision = strategy.shouldEscalate(agentCtx, listingCtx, offerCtx);
+      if (!decision?.shouldEscalate || !decision.newPrice) continue;
+
+      // Submit a new (escalated) offer — this will auto-supersede the old one
+      if (offer.listing.sellingAgent) {
+        await processIncomingOffer({
+          sellingAgentId: offer.listing.sellingAgent.id,
+          listingId: offer.listingId,
+          buyerId: offer.buyerId,
+          buyingAgentId: agent.id,
+          offerPrice: decision.newPrice,
+        });
+
+        await db.agentAction.create({
+          data: {
+            buyingAgentId: agent.id,
+            agentType: "BUYING",
+            actionType: "AUTO_NEGOTIATE",
+            description: decision.reasoning,
+            metadata: {
+              listingId: offer.listingId,
+              oldPrice: offer.price,
+              newPrice: decision.newPrice,
+              strategyId: agent.buyingStrategyId,
+            },
+          },
+        });
+
+        escalations++;
+      }
+    }
+  }
+
+  return escalations;
 }

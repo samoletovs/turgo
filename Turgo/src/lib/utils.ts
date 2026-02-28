@@ -6,14 +6,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Format price with currency symbol */
-export function formatPrice(price: number, currency = "EUR"): string {
+/** Format price with currency symbol (handles Prisma Decimal) */
+export function formatPrice(
+  price: number | { toNumber(): number } | string,
+  currency = "EUR",
+): string {
+  const numericPrice = typeof price === "number" ? price : Number(price);
   return new Intl.NumberFormat("en-EU", {
     style: "currency",
     currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(price);
+  }).format(numericPrice);
 }
 
 /** Format relative time (e.g., "2 hours ago") */
@@ -66,7 +70,7 @@ export function delay(ms: number): Promise<void> {
 export function getLocalizedName(
   name: unknown,
   locale: string,
-  fallbackLocale = "en"
+  fallbackLocale = "en",
 ): string {
   if (typeof name === "string") return name;
   if (name && typeof name === "object") {

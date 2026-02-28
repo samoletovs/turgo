@@ -28,23 +28,7 @@ export type AgentJobType =
   | "selling-agent-daily-summary"
   | "buying-agent-monitor"
   | "buying-agent-auto-negotiate"
-  | "moderation-review"
-  | "moderation-antifraud"
-  | "support-ticket"
-  | "scraper-sslv"
-  | "quality-check"
-  | "quality-daily"
-  | "engagement-email"
-  | "engagement-daily"
-  | "analytics-snapshot"
-  | "analytics-weekly"
-  | "seo-optimization"
-  | "liquidation-price-adjust"
-  | "liquidation-batch-check"
-  | "watchdog-duplicate-check"
-  | "watchdog-message-scan"
-  | "timing-snapshot"
-  | "swap-matching";
+  | "scraper-sslv";
 
 const queues = new Map<string, Queue>();
 
@@ -218,59 +202,11 @@ export async function initializeOrchestrator() {
     "*/5 * * * *",
   );
 
-  // Daily quality check at 6 AM (full quality pipeline)
-  await scheduleRecurring("quality", "quality-daily", {}, "0 6 * * *");
-
-  // Basic quality check for recent listings at noon
-  await scheduleRecurring("quality", "quality-check", {}, "0 12 * * *");
-
-  // Daily engagement emails at 10 AM
-  await scheduleRecurring("engagement", "engagement-daily", {}, "0 10 * * *");
-
-  // Daily analytics snapshot at 1 AM
-  await scheduleRecurring("analytics", "analytics-snapshot", {}, "0 1 * * *");
-
-  // Weekly analytics summary every Monday at 9 AM
-  await scheduleRecurring("analytics", "analytics-weekly", {}, "0 9 * * 1");
-
-  // SEO optimization daily at 4 AM
-  await scheduleRecurring("seo", "seo-optimization", {}, "0 4 * * *");
-
   // SS.lv scraper (if enabled)
   if (process.env.SSLV_SCRAPER_ENABLED === "true") {
     const cron = process.env.SSLV_SCRAPER_CRON || "0 3 * * *";
     await scheduleRecurring("scraper", "scraper-sslv", {}, cron);
   }
-
-  // Liquidation batch pricing adjustments every hour
-  await scheduleRecurring(
-    "liquidation",
-    "liquidation-price-adjust",
-    {},
-    "0 */1 * * *",
-  );
-
-  // Liquidation batch completion check every 30 minutes
-  await scheduleRecurring(
-    "liquidation",
-    "liquidation-batch-check",
-    {},
-    "*/30 * * * *",
-  );
-
-  // Watchdog message scan every 15 minutes
-  await scheduleRecurring(
-    "watchdog",
-    "watchdog-message-scan",
-    {},
-    "*/15 * * * *",
-  );
-
-  // Timing data snapshot daily at 2 AM (after analytics snapshot)
-  await scheduleRecurring("timing", "timing-snapshot", {}, "0 2 * * *");
-
-  // Swap matching daily at 11 AM
-  await scheduleRecurring("swap", "swap-matching", {}, "0 11 * * *");
 
   console.log(
     "[Agent Orchestrator] Initialized — workers registered, CRON jobs scheduled",

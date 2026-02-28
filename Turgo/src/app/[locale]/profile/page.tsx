@@ -164,7 +164,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           <Card>
             <CardContent className="space-y-1 pt-6">
               <Link
-                href="/profile/settings"
+                href="/dashboard/settings"
                 className="flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
               >
                 <Settings className="h-4 w-4" /> Account Settings
@@ -215,7 +215,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                   listing={{
                     id: listing.id,
                     title: listing.title,
-                    price: listing.price,
+                    price: Number(listing.price),
                     currency: listing.currency,
                     location: listing.location
                       ? getLocalizedName(listing.location.name, locale)

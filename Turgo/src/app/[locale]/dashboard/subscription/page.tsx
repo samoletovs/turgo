@@ -158,7 +158,9 @@ export default async function SubscriptionPage({
             <span>
               AI Provider:{" "}
               <strong>
-                {planName === "FREE" ? "Basic (Ollama)" : "Premium (GPT-4o)"}
+                {planName === "FREE"
+                  ? "Basic (GPT-4o-mini)"
+                  : "Premium (GPT-4o)"}
               </strong>
             </span>
           </div>

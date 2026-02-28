@@ -5,16 +5,18 @@
  *
  * Authentication: JWT from the NextAuth session cookie (or handshake.auth.token)
  * is verified in the io.use() middleware. Only authenticated users may connect.
+ *
+ * Horizontal Scaling: Uses @socket.io/redis-streams-adapter so multiple
+ * server instances share room membership and broadcast events via Redis Streams.
  */
 
 import { Server as SocketIOServer } from "socket.io";
 import type { Server as HTTPServer } from "http";
 import { decode } from "next-auth/jwt";
+import { createAdapter } from "@socket.io/redis-streams-adapter";
+import { REDIS_URL } from "@/lib/redis";
 
 let io: SocketIOServer | null = null;
-
-/** User ID → Set of socket IDs */
-const userSockets = new Map<string, Set<string>>();
 
 /**
  * Possible NextAuth session-cookie names (v5 "authjs" prefix + legacy "next-auth").
@@ -91,7 +93,9 @@ export interface NotificationPayload {
 }
 
 /** Initialize Socket.IO server */
-export function initSocketServer(httpServer: HTTPServer): SocketIOServer {
+export async function initSocketServer(
+  httpServer: HTTPServer,
+): Promise<SocketIOServer> {
   if (io) return io;
 
   io = new SocketIOServer(httpServer, {
@@ -105,6 +109,24 @@ export function initSocketServer(httpServer: HTTPServer): SocketIOServer {
     pingInterval: 25000,
     pingTimeout: 20000,
   });
+
+  // ── Redis Streams adapter for horizontal scaling ─────────
+  try {
+    const { default: Redis } = await import("ioredis");
+    const redisClient = new Redis(REDIS_URL, {
+      maxRetriesPerRequest: null, // required by the adapter
+      connectTimeout: 5000,
+      lazyConnect: true,
+    });
+    await redisClient.connect();
+    io.adapter(createAdapter(redisClient));
+    console.log("[Socket] Redis Streams adapter connected");
+  } catch (err) {
+    console.warn(
+      "[Socket] Redis adapter unavailable — falling back to in-memory adapter:",
+      err instanceof Error ? err.message : err,
+    );
+  }
 
   // ── Authentication middleware ────────────────────────────
   // Verifies the NextAuth JWT before allowing a connection.
@@ -163,15 +185,10 @@ export function initSocketServer(httpServer: HTTPServer): SocketIOServer {
     // userId is guaranteed to be set by the auth middleware above
     const userId = socket.data.userId as string;
 
-    // Register user socket
-    if (!userSockets.has(userId)) {
-      userSockets.set(userId, new Set());
-    }
-    userSockets.get(userId)!.add(socket.id);
-
     console.log(`[Socket] User ${userId} connected (socket: ${socket.id})`);
 
     // Join user's personal room for direct notifications
+    // (the Redis adapter propagates room membership across instances)
     socket.join(`user:${userId}`);
 
     // Join conversation rooms
@@ -206,13 +223,6 @@ export function initSocketServer(httpServer: HTTPServer): SocketIOServer {
 
     // Handle disconnect
     socket.on("disconnect", () => {
-      const sockets = userSockets.get(userId);
-      if (sockets) {
-        sockets.delete(socket.id);
-        if (sockets.size === 0) {
-          userSockets.delete(userId);
-        }
-      }
       console.log(`[Socket] User ${userId} disconnected`);
     });
   });
@@ -226,9 +236,11 @@ export function getIO(): SocketIOServer | null {
   return io;
 }
 
-/** Check if a user is currently online */
-export function isUserOnline(userId: string): boolean {
-  return userSockets.has(userId) && userSockets.get(userId)!.size > 0;
+/** Check if a user is currently online (via Socket.IO room membership) */
+export async function isUserOnline(userId: string): Promise<boolean> {
+  if (!io) return false;
+  const sockets = await io.in(`user:${userId}`).fetchSockets();
+  return sockets.length > 0;
 }
 
 /** Emit a new message to conversation participants */
@@ -289,7 +301,10 @@ export function emitPendingApproval(
   io.to(`user:${userId}`).emit("message:pending-approval", payload);
 }
 
-/** Get count of online users */
-export function getOnlineUserCount(): number {
-  return userSockets.size;
+/** Get count of online users (connected to this instance) */
+export async function getOnlineUserCount(): Promise<number> {
+  if (!io) return 0;
+  const sockets = await io.fetchSockets();
+  const uniqueUsers = new Set(sockets.map((s) => s.data.userId as string));
+  return uniqueUsers.size;
 }

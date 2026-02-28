@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Eye, Target, TrendingDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 
 // ──────────────────────────────────────────────
@@ -7,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 // ──────────────────────────────────────────────
 
 export function BuyingDonePanel() {
+  const t = useTranslations("buy.chat");
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -19,10 +21,8 @@ export function BuyingDonePanel() {
             <Eye className="h-4 w-4 text-blue-500" />
           </div>
           <div>
-            <p className="text-sm font-medium">24/7 Monitoring</p>
-            <p className="text-xs text-muted-foreground">
-              Continuous marketplace scanning
-            </p>
+            <p className="text-sm font-medium">{t("done24x7")}</p>
+            <p className="text-xs text-muted-foreground">{t("done24x7Desc")}</p>
           </div>
         </CardContent>
       </Card>
@@ -32,9 +32,9 @@ export function BuyingDonePanel() {
             <Target className="h-4 w-4 text-green-500" />
           </div>
           <div>
-            <p className="text-sm font-medium">Deal Scoring</p>
+            <p className="text-sm font-medium">{t("doneDealScore")}</p>
             <p className="text-xs text-muted-foreground">
-              7-factor analysis (0–100)
+              {t("doneDealScoreDesc")}
             </p>
           </div>
         </CardContent>
@@ -45,9 +45,9 @@ export function BuyingDonePanel() {
             <TrendingDown className="h-4 w-4 text-purple-500" />
           </div>
           <div>
-            <p className="text-sm font-medium">Price Tracking</p>
+            <p className="text-sm font-medium">{t("donePriceTrack")}</p>
             <p className="text-xs text-muted-foreground">
-              Alerts on price drops
+              {t("donePriceTrackDesc")}
             </p>
           </div>
         </CardContent>

@@ -59,6 +59,7 @@ export const createListingSchema = z.object({
   locationId: z.string().cuid().optional(),
   contactPhone: z.string().optional(),
   contactEmail: z.string().email().optional(),
+  address: z.string().max(500).optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
 });
@@ -100,7 +101,10 @@ export const createSellingAgentSchema = z.object({
   autoRespond: z.boolean().default(true),
   autoNegotiate: z.boolean().default(false),
   autoBoost: z.boolean().default(false),
-  autoAcceptAbove: z.number().positive().optional(),
+  sellingStrategyId: z
+    .enum(["SEALED_BID", "FIXED_PRICE", "DUTCH_AUCTION"])
+    .default("SEALED_BID"),
+  strategyConfig: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const createBuyingAgentSchema = z.object({
@@ -119,6 +123,16 @@ export const createBuyingAgentSchema = z.object({
   maxAutoOfferPrice: z.number().positive().optional(),
   notifyPush: z.boolean().default(true),
   notifyEmail: z.boolean().default(true),
+  buyingStrategyId: z
+    .enum([
+      "TIME_ESCALATION",
+      "MAX_BID",
+      "SNIPER",
+      "ACCEPT_LISTED",
+      "EARLY_BIRD",
+    ])
+    .default("TIME_ESCALATION"),
+  strategyConfig: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const updateAgentStatusSchema = z.object({

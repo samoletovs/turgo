@@ -3,11 +3,7 @@ import { useTranslations } from "next-intl";
 import { Bot } from "lucide-react";
 import { APP_NAME } from "@/lib/constants";
 
-interface FooterProps {
-  locale: string;
-}
-
-export function Footer({ locale: _locale }: FooterProps) {
+export function Footer() {
   const t = useTranslations("footer");
   const year = new Date().getFullYear();
 
@@ -17,13 +13,14 @@ export function Footer({ locale: _locale }: FooterProps) {
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {/* Brand */}
           <div>
-            <Link href="/" className="flex items-center gap-2 font-bold text-lg">
+            <Link
+              href="/"
+              className="flex items-center gap-2 font-bold text-lg"
+            >
               <Bot className="h-5 w-5 text-primary" />
               {APP_NAME}
             </Link>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {t("tagline")}
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">{t("tagline")}</p>
           </div>
 
           {/* Links */}

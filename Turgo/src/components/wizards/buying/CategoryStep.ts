@@ -18,9 +18,7 @@ export async function handleCategoryInput(
     ctx.updateData({ categoryId: matchedCat.id, categoryName: catName });
   }
   ctx.setCurrentStep("budget");
-  await ctx.thinkAndRespond(
-    "What's your budget? Tell me:\n\n1. **Maximum** you'd pay\n2. **Ideal** price you'd love to pay\n\nFor example: \"max 500, ideal 350\"",
-  );
+  await ctx.thinkAndRespond(ctx.t("budgetPrompt"));
 }
 
 // ──────────────────────────────────────────────
@@ -36,7 +34,5 @@ export async function handleCategoryAction(
   const catName = cat ? resolveName(cat.name, ctx.locale, cat.slug) : "";
   ctx.updateData({ categoryId: catId, categoryName: catName });
   ctx.setCurrentStep("budget");
-  await ctx.thinkAndRespond(
-    "What's your budget?\n\nTell me the **maximum** you'd spend, and optionally your **ideal** price.\n\nExample: \"max 500, ideal 350\"",
-  );
+  await ctx.thinkAndRespond(ctx.t("budgetPrompt"));
 }

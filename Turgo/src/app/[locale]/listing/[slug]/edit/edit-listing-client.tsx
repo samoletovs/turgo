@@ -67,6 +67,7 @@ interface ListingData {
   sublocationId: string;
   contactPhone: string;
   contactEmail: string;
+  address: string;
   status: string;
   images: ListingImage[];
 }
@@ -100,6 +101,23 @@ export function EditListingClient({
   const [sublocationId, setSublocationId] = useState(listing.sublocationId);
   const [contactPhone, setContactPhone] = useState(listing.contactPhone);
   const [contactEmail, setContactEmail] = useState(listing.contactEmail);
+
+  // Parse existing address into structured parts
+  const parseAddress = (addr: string) => {
+    const parts = addr.split(",").map((s) => s.trim());
+    const countries = ["Latvia", "Lithuania", "Estonia"];
+    const country = parts.find((p) => countries.includes(p)) || "Latvia";
+    const remaining = parts.filter((p) => !countries.includes(p));
+    // Last non-country part is city, rest is street
+    const city = remaining.length > 0 ? remaining[remaining.length - 1] : "";
+    const street =
+      remaining.length > 1 ? remaining.slice(0, -1).join(", ") : "";
+    return { country, city, street };
+  };
+  const parsed = parseAddress(listing.address);
+  const [addressCountry, setAddressCountry] = useState(parsed.country);
+  const [addressCity, setAddressCity] = useState(parsed.city);
+  const [addressStreet, setAddressStreet] = useState(parsed.street);
 
   // UI state
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -163,6 +181,10 @@ export function EditListingClient({
         locationId: sublocationId || locationId || undefined,
         contactPhone: contactPhone || undefined,
         contactEmail: contactEmail || undefined,
+        address:
+          [addressStreet, addressCity, addressCountry]
+            .filter(Boolean)
+            .join(", ") || undefined,
       },
     });
   };
@@ -452,6 +474,53 @@ export function EditListingClient({
                     </Select>
                   </div>
                 )}
+            </div>
+          </section>
+
+          {/* ── Address ── */}
+          <section>
+            <div className="mb-3 flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold">{t("addressLabel")}</h2>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label>{t("addressCountry")}</Label>
+                <Select
+                  value={addressCountry}
+                  onValueChange={setAddressCountry}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder={t("selectCountry")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Latvia">Latvia</SelectItem>
+                    <SelectItem value="Lithuania">Lithuania</SelectItem>
+                    <SelectItem value="Estonia">Estonia</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>{t("addressCityLabel")}</Label>
+                <Input
+                  value={addressCity}
+                  onChange={(e) => setAddressCity(e.target.value)}
+                  placeholder="e.g., Rīga"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            <div className="mt-3">
+              <Label>{t("addressField")}</Label>
+              <Input
+                value={addressStreet}
+                onChange={(e) => setAddressStreet(e.target.value)}
+                placeholder="e.g., Brīvības iela 100, LV-1001"
+                className="mt-1"
+              />
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                {t("addressHint")}
+              </p>
             </div>
           </section>
 

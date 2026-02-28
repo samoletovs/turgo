@@ -7,6 +7,17 @@ import { db } from "@/server/db";
 import { aiComplete, createMessages } from "./ai";
 import { URGENCY_HOURS } from "@/lib/constants";
 import type { PricingFactors, PricingCurvePoint } from "@/types";
+import { getSellingStrategy } from "./strategies/registry";
+import type {
+  OfferContext,
+  SellingAgentContext,
+  ListingContext,
+  BuyerOfferAck,
+  SellerOfferView,
+  TickAction,
+  DeadlineAction,
+} from "./strategies/types";
+import type { SellingStrategyId } from "@prisma/client";
 
 /** Calculate optimal starting price based on 10 factors */
 export async function calculateOptimalPrice(params: {
@@ -45,7 +56,12 @@ export async function calculateOptimalPrice(params: {
     marketSupply: listingCount > 50 ? 0.3 : listingCount > 20 ? 0.5 : 0.8,
     marketDemand: Math.min(1, (demandScore ?? 1) / 2),
     seasonality: getSeasonalityFactor(new Date().getMonth()),
-    condition: params.condition === "NEW" ? 1 : params.condition === "REFURBISHED" ? 0.7 : 0.5,
+    condition:
+      params.condition === "NEW"
+        ? 1
+        : params.condition === "REFURBISHED"
+          ? 0.7
+          : 0.5,
     locationDemand: 0.6, // Default — would be calculated from location data
     postingTiming: getPostingTimeFactor(),
     competitionAge: 0.5, // Default
@@ -80,7 +96,7 @@ export async function calculateOptimalPrice(params: {
   const curve = generatePricingCurve(
     suggestedPrice,
     params.userBasePrice * 0.7, // minimum at ~70% of base
-    urgencyHours / 24 // days
+    urgencyHours / 24, // days
   );
 
   return {
@@ -95,7 +111,7 @@ export async function calculateOptimalPrice(params: {
 function generatePricingCurve(
   startPrice: number,
   minPrice: number,
-  totalDays: number
+  totalDays: number,
 ): PricingCurvePoint[] {
   const curve: PricingCurvePoint[] = [];
   const steps = Math.min(totalDays, 10); // Max 10 price points
@@ -110,8 +126,10 @@ function generatePricingCurve(
 
     let reason = "";
     if (i === 0) reason = "Starting price — optimal for market conditions";
-    else if (progress < 0.3) reason = "Slight adjustment — testing market response";
-    else if (progress < 0.7) reason = "Moderate reduction — increasing competitiveness";
+    else if (progress < 0.3)
+      reason = "Slight adjustment — testing market response";
+    else if (progress < 0.7)
+      reason = "Moderate reduction — increasing competitiveness";
     else reason = "Aggressive pricing — approaching deadline";
 
     curve.push({ day, price, reason });
@@ -124,7 +142,7 @@ function generatePricingCurve(
 export async function generateAutoResponse(
   questionText: string,
   listingTitle: string,
-  listingDescription: string
+  listingDescription: string,
 ): Promise<string | null> {
   const messages = createMessages(
     `You are a helpful selling assistant for a classifieds listing.
@@ -134,11 +152,15 @@ Description: "${listingDescription}"
 If the buyer's question is a common FAQ (availability, condition, price negotiation, meeting location), 
 provide a brief, friendly response. If the question requires the seller's personal input, return null.
 Respond directly as if you are the seller's assistant.`,
-    questionText
+    questionText,
   );
 
   try {
-    const result = await aiComplete({ messages, temperature: 0.5, maxTokens: 200 });
+    const result = await aiComplete({
+      messages,
+      temperature: 0.5,
+      maxTokens: 200,
+    });
     return result.content;
   } catch {
     return null;
@@ -154,17 +176,23 @@ export function shouldAdjustPrice(agent: {
   createdAt: Date;
   urgency: string;
 }): { shouldAdjust: boolean; newPrice?: number; reason?: string } {
-  const daysActive = (Date.now() - agent.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+  const daysActive =
+    (Date.now() - agent.createdAt.getTime()) / (1000 * 60 * 60 * 24);
   const urgencyDays = (URGENCY_HOURS[agent.urgency] || 168) / 24;
   const progress = daysActive / urgencyDays;
-  const viewToInquiryRatio = agent.totalViews > 0 ? agent.totalInquiries / agent.totalViews : 0;
+  const viewToInquiryRatio =
+    agent.totalViews > 0 ? agent.totalInquiries / agent.totalViews : 0;
 
   // Low engagement trigger
-  if (progress > 0.3 && viewToInquiryRatio < 0.02 && agent.currentPrice > agent.minimumPrice) {
+  if (
+    progress > 0.3 &&
+    viewToInquiryRatio < 0.02 &&
+    agent.currentPrice > agent.minimumPrice
+  ) {
     const reduction = Math.min(0.05, progress * 0.1); // Max 5% reduction per adjustment
     const newPrice = Math.max(
       agent.minimumPrice,
-      Math.round(agent.currentPrice * (1 - reduction))
+      Math.round(agent.currentPrice * (1 - reduction)),
     );
 
     if (newPrice < agent.currentPrice) {
@@ -181,7 +209,7 @@ export function shouldAdjustPrice(agent: {
     const urgencyReduction = 0.03 + (progress - 0.7) * 0.1;
     const newPrice = Math.max(
       agent.minimumPrice,
-      Math.round(agent.currentPrice * (1 - urgencyReduction))
+      Math.round(agent.currentPrice * (1 - urgencyReduction)),
     );
 
     if (newPrice < agent.currentPrice) {
@@ -199,7 +227,9 @@ export function shouldAdjustPrice(agent: {
 /** Get seasonality factor (0-1) based on month */
 function getSeasonalityFactor(month: number): number {
   // General pattern: spring/fall higher, winter/summer lower
-  const factors = [0.4, 0.45, 0.6, 0.7, 0.75, 0.65, 0.55, 0.6, 0.8, 0.75, 0.6, 0.4];
+  const factors = [
+    0.4, 0.45, 0.6, 0.7, 0.75, 0.65, 0.55, 0.6, 0.8, 0.75, 0.6, 0.4,
+  ];
   return factors[month] ?? 0.5;
 }
 
@@ -222,105 +252,431 @@ function getPostingTimeFactor(): number {
 }
 
 // ──────────────────────────────────────────────
-// AUTO-NEGOTIATE
+// STRATEGY-DRIVEN OFFER PROCESSING
 // ──────────────────────────────────────────────
 
-export interface NegotiationRules {
-  minPrice: number;
-  autoAcceptAbove: number;
-  maxCounterRounds: number;
-  concessionRate: number; // 0-1: how much to concede per round
+/** Build the context objects strategies need */
+async function buildSellingAgentContext(
+  agentId: string,
+): Promise<SellingAgentContext | null> {
+  const agent = await db.sellingAgent.findUnique({
+    where: { id: agentId },
+    include: {
+      listing: {
+        select: {
+          id: true,
+          title: true,
+          price: true,
+          currency: true,
+          viewCount: true,
+          createdAt: true,
+          expiresAt: true,
+        },
+      },
+    },
+  });
+
+  if (!agent) return null;
+
+  const listing: ListingContext = {
+    id: agent.listing.id,
+    title: agent.listing.title,
+    price: Number(agent.listing.price),
+    minimumPrice: agent.minimumPrice,
+    currentPrice: agent.currentPrice ?? Number(agent.listing.price),
+    urgency: agent.urgency,
+    createdAt: agent.listing.createdAt,
+    expiresAt: agent.listing.expiresAt,
+    currency: agent.listing.currency,
+    totalViews: agent.listing.viewCount ?? 0,
+    totalInquiries: agent.totalInquiries ?? 0,
+  };
+
+  return {
+    id: agent.id,
+    listing,
+    strategyConfig: agent.strategyConfig as Record<string, unknown> | null,
+  };
 }
 
-export interface NegotiationResult {
-  action: "accept" | "counter" | "reject" | "escalate";
-  counterPrice?: number;
-  message: string;
-  reasoning: string;
-}
-
-/** Evaluate an incoming offer and decide how to respond */
-export async function evaluateOffer(params: {
+/**
+ * Process an incoming offer through the selling agent's strategy.
+ *
+ * 1. Creates an Offer record
+ * 2. Supersedes any previous PENDING offer from the same buyer
+ * 3. Delegates to the strategy for processing
+ * 4. Updates offer status based on strategy result
+ * 5. Returns a generic buyer acknowledgement (NEVER leaks price info)
+ */
+export async function processIncomingOffer(params: {
+  sellingAgentId: string;
+  listingId: string;
+  buyerId: string;
+  buyingAgentId?: string;
   offerPrice: number;
-  currentPrice: number;
-  rules: NegotiationRules;
-  roundNumber: number;
-  listingTitle: string;
-  buyerMessage?: string;
-}): Promise<NegotiationResult> {
-  const { offerPrice, currentPrice, rules, roundNumber, listingTitle, buyerMessage } = params;
+  message?: string;
+}): Promise<BuyerOfferAck> {
+  const {
+    sellingAgentId,
+    listingId,
+    buyerId,
+    buyingAgentId,
+    offerPrice,
+    message,
+  } = params;
 
-  // Auto-accept if above threshold
-  if (offerPrice >= rules.autoAcceptAbove) {
+  // Load agent + strategy
+  const agentCtx = await buildSellingAgentContext(sellingAgentId);
+  if (!agentCtx) {
     return {
-      action: "accept",
-      message: `Great, I accept your offer of €${offerPrice} for "${listingTitle}". Let's arrange the details!`,
-      reasoning: `Offer €${offerPrice} >= auto-accept threshold €${rules.autoAcceptAbove}`,
+      message:
+        "Your offer has been submitted. The seller will review it and respond.",
+      status: "PENDING",
+      offerId: "",
     };
   }
 
-  // Reject if below minimum
-  if (offerPrice < rules.minPrice) {
-    return {
-      action: "reject",
-      message: `Thanks for your interest, but I can't go that low. The lowest I can consider is closer to €${Math.round(rules.minPrice * 1.05)}.`,
-      reasoning: `Offer €${offerPrice} < minimum €${rules.minPrice}`,
-    };
+  const agent = await db.sellingAgent.findUnique({
+    where: { id: sellingAgentId },
+    select: { sellingStrategyId: true },
+  });
+  const strategyId: SellingStrategyId =
+    agent?.sellingStrategyId ?? "SEALED_BID";
+  const strategy = getSellingStrategy(strategyId);
+
+  // Supersede any existing PENDING offer from this buyer on this listing
+  const existingPending = await db.offer.findFirst({
+    where: {
+      listingId,
+      buyerId,
+      status: "PENDING",
+    },
+  });
+
+  // Create the new offer
+  const isAboveMinimum = offerPrice >= agentCtx.listing.minimumPrice;
+  const newOffer = await db.offer.create({
+    data: {
+      listingId,
+      buyerId,
+      sellingAgentId,
+      buyingAgentId: buyingAgentId ?? null,
+      price: offerPrice,
+      status: "PENDING",
+      isAboveMinimum,
+      message: message ?? null,
+    },
+  });
+
+  // Supersede the old offer if there was one
+  if (existingPending) {
+    await db.offer.update({
+      where: { id: existingPending.id },
+      data: {
+        status: "SUPERSEDED",
+        supersededById: newOffer.id,
+      },
+    });
   }
 
-  // Max rounds exceeded — escalate to seller
-  if (roundNumber >= rules.maxCounterRounds) {
-    return {
-      action: "escalate",
-      message: `Let me check with the seller and get back to you about the €${offerPrice} offer.`,
-      reasoning: `Max negotiation rounds (${rules.maxCounterRounds}) reached. Escalating to seller.`,
-    };
+  // Build offer context
+  const offerCtx: OfferContext = {
+    id: newOffer.id,
+    price: offerPrice,
+    buyerId,
+    buyingAgentId: buyingAgentId ?? null,
+    message: message ?? null,
+    createdAt: newOffer.createdAt,
+  };
+
+  // Let strategy process the offer
+  const result = await strategy.processOffer(agentCtx, offerCtx);
+
+  // Update offer based on strategy result
+  if (result.action === "accept") {
+    await db.offer.update({
+      where: { id: newOffer.id },
+      data: { status: "ACCEPTED", acceptedAt: new Date() },
+    });
+  } else if (result.action === "reject_silent") {
+    await db.offer.update({
+      where: { id: newOffer.id },
+      data: { status: "REJECTED", rejectedAt: new Date() },
+    });
+  }
+  // "pending" stays as-is
+
+  // Mark seller notified if forwarded
+  if (result.forwardToSeller) {
+    await db.offer.update({
+      where: { id: newOffer.id },
+      data: { sellerNotifiedAt: new Date() },
+    });
   }
 
-  // Counter-offer logic
-  const gap = currentPrice - offerPrice;
-  const concession = gap * rules.concessionRate * (1 + roundNumber * 0.1);
-  const counterPrice = Math.max(
-    rules.minPrice,
-    Math.round(currentPrice - concession)
-  );
+  // Log the action
+  await db.agentAction.create({
+    data: {
+      sellingAgentId,
+      agentType: "SELLING",
+      actionType: "AUTO_NEGOTIATE",
+      description: result.reasoning,
+      metadata: {
+        offerId: newOffer.id,
+        offerPrice,
+        strategyId,
+        action: result.action,
+        isAboveMinimum,
+      },
+    },
+  });
 
-  // If counter would be close to the offer, just accept
-  if (counterPrice - offerPrice < currentPrice * 0.02) {
-    return {
-      action: "accept",
-      counterPrice: offerPrice,
-      message: `You've got a deal at €${offerPrice}! Let's connect to finalize.`,
-      reasoning: `Counter would be only €${counterPrice - offerPrice} above offer. Accepting to close.`,
-    };
-  }
-
-  // Try AI-generated counter message
-  try {
-    const messages = createMessages(
-      `You are a friendly but firm negotiation assistant for a classifieds listing.
-Item: "${listingTitle}", Listed at €${currentPrice}.
-The buyer offered €${offerPrice}. You want to counter at €${counterPrice}.
-Write a brief, friendly counter-offer message. Be warm but hold firm.
-${buyerMessage ? `Buyer said: "${buyerMessage}"` : ""}`,
-      `Generate a counter-offer response.`
-    );
-    const result = await aiComplete({ messages, temperature: 0.6, maxTokens: 150 });
-    return {
-      action: "counter",
-      counterPrice,
-      message: result.content,
-      reasoning: `Round ${roundNumber + 1}: Counter at €${counterPrice} (concession: €${Math.round(concession)})`,
-    };
-  } catch {
-    return {
-      action: "counter",
-      counterPrice,
-      message: `I appreciate the offer! I could meet you at €${counterPrice}. What do you think?`,
-      reasoning: `Round ${roundNumber + 1}: Counter at €${counterPrice} (AI unavailable, using template)`,
-    };
-  }
+  // Return generic buyer ack — NEVER reveals price decisions
+  return strategy.getBuyerAck(offerCtx);
 }
+
+/**
+ * Get offers visible to the seller, filtered by the active strategy.
+ */
+export async function getSellerOffers(
+  sellingAgentId: string,
+): Promise<SellerOfferView[]> {
+  const agentCtx = await buildSellingAgentContext(sellingAgentId);
+  if (!agentCtx) return [];
+
+  const agent = await db.sellingAgent.findUnique({
+    where: { id: sellingAgentId },
+    select: { sellingStrategyId: true },
+  });
+  const strategy = getSellingStrategy(agent?.sellingStrategyId ?? "SEALED_BID");
+
+  const pendingOffers = await db.offer.findMany({
+    where: {
+      sellingAgentId,
+      status: "PENDING",
+      isAboveMinimum: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const offerContexts: OfferContext[] = pendingOffers.map((o) => ({
+    id: o.id,
+    price: o.price,
+    buyerId: o.buyerId,
+    buyingAgentId: o.buyingAgentId,
+    message: o.message,
+    createdAt: o.createdAt,
+  }));
+
+  return strategy.getSellerView(agentCtx, offerContexts);
+}
+
+/**
+ * Seller manually accepts an offer.
+ */
+export async function acceptOffer(
+  offerId: string,
+  sellingAgentId: string,
+): Promise<{ success: boolean; error?: string }> {
+  const offer = await db.offer.findUnique({ where: { id: offerId } });
+  if (!offer || offer.sellingAgentId !== sellingAgentId) {
+    return { success: false, error: "Offer not found" };
+  }
+  if (offer.status !== "PENDING") {
+    return { success: false, error: "Offer is no longer pending" };
+  }
+
+  // Accept this offer
+  await db.offer.update({
+    where: { id: offerId },
+    data: { status: "ACCEPTED", acceptedAt: new Date() },
+  });
+
+  // Reject all other pending offers for this listing
+  await db.offer.updateMany({
+    where: {
+      listingId: offer.listingId,
+      status: "PENDING",
+      id: { not: offerId },
+    },
+    data: { status: "REJECTED", rejectedAt: new Date() },
+  });
+
+  // Log
+  await db.agentAction.create({
+    data: {
+      sellingAgentId,
+      agentType: "SELLING",
+      actionType: "AUTO_NEGOTIATE",
+      description: `Seller accepted offer €${offer.price} from buyer.`,
+      metadata: { offerId, price: offer.price, action: "seller_accept" },
+    },
+  });
+
+  return { success: true };
+}
+
+/**
+ * Seller manually declines an offer.
+ */
+export async function declineOffer(
+  offerId: string,
+  sellingAgentId: string,
+): Promise<{ success: boolean; error?: string }> {
+  const offer = await db.offer.findUnique({ where: { id: offerId } });
+  if (!offer || offer.sellingAgentId !== sellingAgentId) {
+    return { success: false, error: "Offer not found" };
+  }
+  if (offer.status !== "PENDING") {
+    return { success: false, error: "Offer is no longer pending" };
+  }
+
+  await db.offer.update({
+    where: { id: offerId },
+    data: { status: "REJECTED", rejectedAt: new Date() },
+  });
+
+  await db.agentAction.create({
+    data: {
+      sellingAgentId,
+      agentType: "SELLING",
+      actionType: "AUTO_NEGOTIATE",
+      description: `Seller declined offer €${offer.price}.`,
+      metadata: { offerId, price: offer.price, action: "seller_decline" },
+    },
+  });
+
+  return { success: true };
+}
+
+/**
+ * Run periodic tick for all active selling agents.
+ * Called by cron — applies time-based strategy actions (e.g. Dutch auction price drops).
+ */
+export async function runSellingAgentTicks(): Promise<number> {
+  const agents = await db.sellingAgent.findMany({
+    where: { status: "ACTIVE" },
+    select: { id: true, sellingStrategyId: true },
+  });
+
+  let actionsApplied = 0;
+
+  for (const agent of agents) {
+    const strategy = getSellingStrategy(agent.sellingStrategyId);
+    if (!strategy.onTick) continue;
+
+    const ctx = await buildSellingAgentContext(agent.id);
+    if (!ctx) continue;
+
+    const actions = await strategy.onTick(ctx);
+    for (const action of actions) {
+      if (action.type === "PRICE_ADJUST" && action.newPrice != null) {
+        await db.sellingAgent.update({
+          where: { id: agent.id },
+          data: { currentPrice: action.newPrice },
+        });
+        await db.listing.update({
+          where: { id: ctx.listing.id },
+          data: { price: action.newPrice },
+        });
+        await db.agentAction.create({
+          data: {
+            sellingAgentId: agent.id,
+            agentType: "SELLING",
+            actionType: "PRICE_ADJUST",
+            description: action.reason,
+            metadata: {
+              newPrice: action.newPrice,
+              strategyId: agent.sellingStrategyId,
+            },
+          },
+        });
+        actionsApplied++;
+      }
+    }
+  }
+
+  return actionsApplied;
+}
+
+/**
+ * Check all active agents approaching deadline and prompt sellers.
+ */
+export async function checkDeadlines(): Promise<number> {
+  const agents = await db.sellingAgent.findMany({
+    where: { status: "ACTIVE" },
+    include: {
+      listing: { select: { id: true, expiresAt: true } },
+    },
+  });
+
+  let notifications = 0;
+
+  for (const agent of agents) {
+    if (!agent.listing.expiresAt) continue;
+
+    const hoursLeft =
+      (agent.listing.expiresAt.getTime() - Date.now()) / (1000 * 60 * 60);
+
+    // Only prompt in last 24 hours
+    if (hoursLeft > 24 || hoursLeft < 0) continue;
+
+    const strategy = getSellingStrategy(agent.sellingStrategyId);
+    if (!strategy.onDeadlineApproaching) continue;
+
+    const ctx = await buildSellingAgentContext(agent.id);
+    if (!ctx) continue;
+
+    const pendingOffers = await db.offer.findMany({
+      where: {
+        sellingAgentId: agent.id,
+        status: "PENDING",
+        isAboveMinimum: true,
+      },
+    });
+
+    const offerContexts: OfferContext[] = pendingOffers.map((o) => ({
+      id: o.id,
+      price: o.price,
+      buyerId: o.buyerId,
+      buyingAgentId: o.buyingAgentId,
+      message: o.message,
+      createdAt: o.createdAt,
+    }));
+
+    const deadlineAction = await strategy.onDeadlineApproaching(
+      ctx,
+      offerContexts,
+    );
+    if (deadlineAction) {
+      await db.agentAction.create({
+        data: {
+          sellingAgentId: agent.id,
+          agentType: "SELLING",
+          actionType: "NOTIFICATION",
+          description: deadlineAction.message,
+          metadata: {
+            type: "deadline_approaching",
+            offerCount: deadlineAction.offerCount,
+            bestOfferPrice: deadlineAction.bestOfferPrice,
+          },
+        },
+      });
+      notifications++;
+    }
+  }
+
+  return notifications;
+}
+
+// Re-export types for convenience
+export type {
+  BuyerOfferAck,
+  SellerOfferView,
+  OfferContext,
+  TickAction,
+  DeadlineAction,
+};
 
 // ──────────────────────────────────────────────
 // AUTO-BOOST
@@ -342,14 +698,31 @@ export function shouldBoost(params: {
   currentlyBoosted: boolean;
   previousBoosts: number;
 }): BoostRecommendation {
-  const { totalViews, totalInquiries, daysActive, urgency, currentlyBoosted, previousBoosts } = params;
+  const {
+    totalViews,
+    totalInquiries,
+    daysActive,
+    urgency,
+    currentlyBoosted,
+    previousBoosts,
+  } = params;
 
   if (currentlyBoosted) {
-    return { shouldBoost: false, reason: "Already boosted", estimatedReachIncrease: 0, suggestedDuration: 0 };
+    return {
+      shouldBoost: false,
+      reason: "Already boosted",
+      estimatedReachIncrease: 0,
+      suggestedDuration: 0,
+    };
   }
 
   if (previousBoosts >= 3) {
-    return { shouldBoost: false, reason: "Maximum boost limit reached", estimatedReachIncrease: 0, suggestedDuration: 0 };
+    return {
+      shouldBoost: false,
+      reason: "Maximum boost limit reached",
+      estimatedReachIncrease: 0,
+      suggestedDuration: 0,
+    };
   }
 
   const urgencyDays = (URGENCY_HOURS[urgency] || 168) / 24;
@@ -420,7 +793,9 @@ export interface DailySummary {
 }
 
 /** Generate a daily summary for a selling agent */
-export async function generateDailySummary(agentId: string): Promise<DailySummary | null> {
+export async function generateDailySummary(
+  agentId: string,
+): Promise<DailySummary | null> {
   const agent = await db.sellingAgent.findUnique({
     where: { id: agentId },
     include: {
@@ -446,26 +821,38 @@ export async function generateDailySummary(agentId: string): Promise<DailySummar
   if (!agent) return null;
 
   const todayActions = agent.actions;
-  const priceChanges = todayActions.filter((a) => a.actionType === "PRICE_ADJUST");
+  const priceChanges = todayActions.filter(
+    (a) => a.actionType === "PRICE_ADJUST",
+  );
   const responses = todayActions.filter((a) => a.actionType === "AUTO_RESPOND");
-  const negotiations = todayActions.filter((a) => a.actionType === "AUTO_NEGOTIATE");
+  const negotiations = todayActions.filter(
+    (a) => a.actionType === "AUTO_NEGOTIATE",
+  );
 
   const highlights: string[] = [];
   const recommendations: string[] = [];
 
   if (todayActions.length === 0) {
     highlights.push("Quiet day — no significant activity");
-    recommendations.push("Consider sharing your listing link on social media for more visibility");
+    recommendations.push(
+      "Consider sharing your listing link on social media for more visibility",
+    );
   } else {
-    if (responses.length > 0) highlights.push(`Answered ${responses.length} buyer question(s) automatically`);
-    if (negotiations.length > 0) highlights.push(`Handled ${negotiations.length} negotiation(s)`);
-    if (priceChanges.length > 0) highlights.push(`Made ${priceChanges.length} price adjustment(s)`);
+    if (responses.length > 0)
+      highlights.push(
+        `Answered ${responses.length} buyer question(s) automatically`,
+      );
+    if (negotiations.length > 0)
+      highlights.push(`Handled ${negotiations.length} negotiation(s)`);
+    if (priceChanges.length > 0)
+      highlights.push(`Made ${priceChanges.length} price adjustment(s)`);
   }
 
-  const originalPrice = agent.startingPrice ?? agent.listing.price;
-  const changePercent = originalPrice > 0
-    ? ((agent.listing.price - originalPrice) / originalPrice) * 100
-    : 0;
+  const originalPrice = agent.startingPrice ?? Number(agent.listing.price);
+  const changePercent =
+    originalPrice > 0
+      ? ((Number(agent.listing.price) - originalPrice) / originalPrice) * 100
+      : 0;
 
   return {
     agentId,
@@ -480,7 +867,7 @@ export async function generateDailySummary(agentId: string): Promise<DailySummar
     highlights,
     recommendations,
     pricingStatus: {
-      currentPrice: agent.listing.price,
+      currentPrice: Number(agent.listing.price),
       originalPrice,
       changePercent: Math.round(changePercent * 10) / 10,
     },

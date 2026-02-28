@@ -13,7 +13,7 @@ import type {
   LocationItem,
   SellingStepContext,
 } from "./types";
-import { resolveName } from "./types";
+import { resolveName, URGENCY_OPTIONS, buildCategoryActions } from "./types";
 import {
   handlePhotoUpload,
   handleGreetingInput,
@@ -23,7 +23,12 @@ import {
 import { handleCategoryInput, handleCategoryAction } from "./CategoryStep";
 import { handlePricingInput } from "./PricingStep";
 import { handleUrgencyInput, handleUrgencyAction } from "./UrgencyStep";
-import { handleAgentConfigInput } from "./AgentConfigStep";
+import {
+  handleAgentConfigInput,
+  buildSellingSummary,
+  SELLING_STRATEGY_OPTIONS,
+  handleStrategySelection,
+} from "./AgentConfigStep";
 import { handlePublishAction } from "./ReviewStep";
 
 export function useSellingWizard({
@@ -35,7 +40,7 @@ export function useSellingWizard({
   categories: CategoryItem[];
   locations: LocationItem[];
 }) {
-  const _t = useTranslations("sell");
+  const t = useTranslations("sell.chat");
   const _tAgent = useTranslations("agent");
   const utils = trpc.useUtils();
 
@@ -47,6 +52,7 @@ export function useSellingWizard({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const greetedRef = useRef(false);
 
   const [data, setData] = useState<SellingWizardData>({
     title: "",
@@ -64,6 +70,7 @@ export function useSellingWizard({
     autoRespond: true,
     autoNegotiate: false,
     autoBoost: false,
+    sellingStrategyId: "SEALED_BID",
   });
 
   const updateData = useCallback(
@@ -116,16 +123,14 @@ export function useSellingWizard({
     [addAgentMessage],
   );
 
-  // Initial greeting
+  // Initial greeting (ref guard prevents Strict Mode double-fire)
   useEffect(() => {
-    if (messages.length === 0) {
-      addAgentMessage(
-        "Hey there! I'm your selling agent. Let's get your item listed and sold quickly.\n\nStart by uploading some photos of what you're selling — I'll analyze them and suggest the best title, description, and pricing strategy.",
-        [
-          { label: "📸 Upload photos", value: "upload_photos" },
-          { label: "📝 I'll describe it first", value: "describe_first" },
-        ],
-      );
+    if (!greetedRef.current && messages.length === 0) {
+      greetedRef.current = true;
+      addAgentMessage(t("greeting"), [
+        { label: t("uploadPhotos"), value: "upload_photos" },
+        { label: t("describeFirst"), value: "describe_first" },
+      ]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -146,6 +151,7 @@ export function useSellingWizard({
     locations,
     trpcUtils: utils,
     fileInputRef,
+    t,
   };
 
   // Handle text input – dispatch to current step handler
@@ -175,27 +181,62 @@ export function useSellingWizard({
         await handleAgentConfigInput(content, ctx);
         break;
       default:
-        await thinkAndRespond("Could you tell me more?");
+        await thinkAndRespond(t("tellMore"));
     }
+  };
+
+  // Resolve a user-friendly label for action button clicks
+  const resolveActionLabel = (value: string): string => {
+    if (value === "upload_photos") return "I'll upload photos";
+    if (value === "describe_first") return "I'll describe it first";
+    if (value === "confirm_details") return "Looks good!";
+    if (value === "edit_details" || value === "edit") return "I want to edit";
+    if (value === "publish") return "Launch my agent!";
+    if (value === "draft") return "Save as draft";
+    if (value === "keep_my_price") return `Keep my €${data.price}`;
+    if (value === "auto_both") return "Enable both";
+    if (value === "auto_negotiate_only") return "Auto-negotiate only";
+    if (value === "auto_boost_only") return "Auto-boost only";
+    if (value === "auto_none") return "No automation";
+    if (value.startsWith("strategy_")) {
+      const s = SELLING_STRATEGY_OPTIONS.find(
+        (o) => o.value === value.replace("strategy_", ""),
+      );
+      return s ? s.label : value;
+    }
+    if (value.startsWith("use_ai_price_")) {
+      return `Use €${value.replace("use_ai_price_", "")}`;
+    }
+    if (value.startsWith("cat_")) {
+      const catId = value.replace("cat_", "");
+      const cat = categories.find((c) => c.id === catId);
+      return cat ? resolveName(cat.name, locale, cat.slug) : value;
+    }
+    if (value.startsWith("urgency_")) {
+      const u = URGENCY_OPTIONS.find(
+        (o) => o.value === value.replace("urgency_", ""),
+      );
+      return u ? u.label : value;
+    }
+    if (value.startsWith("goto_")) return "View listing";
+    return value;
+  };
+
+  // Show strategy selection prompt (only when autoNegotiate is enabled)
+  const showStrategySelection = async (ctx: SellingStepContext) => {
+    await ctx.thinkAndRespond(
+      ctx.t("chooseSellingStrategy"),
+      SELLING_STRATEGY_OPTIONS.map((s) => ({
+        label: `${s.icon} ${s.label}`,
+        value: `strategy_${s.value}`,
+        desc: s.desc,
+      })),
+    );
   };
 
   // Handle action button clicks
   const handleAction = async (value: string) => {
-    addUserMessage(
-      value === "upload_photos"
-        ? "I'll upload photos"
-        : value === "describe_first"
-          ? "I'll describe it first"
-          : value === "confirm_details"
-            ? "Looks good!"
-            : value === "edit_details"
-              ? "I want to edit"
-              : value === "publish"
-                ? "Launch my agent!"
-                : value === "draft"
-                  ? "Save as draft"
-                  : value,
-    );
+    addUserMessage(resolveActionLabel(value));
 
     if (value === "upload_photos") {
       fileInputRef.current?.click();
@@ -204,9 +245,7 @@ export function useSellingWizard({
 
     if (value === "describe_first") {
       setCurrentStep("confirm_details");
-      await thinkAndRespond(
-        "No problem! Just describe what you're selling — brand, condition, any notable features.",
-      );
+      await thinkAndRespond(t("describePrompt"));
       return;
     }
 
@@ -220,23 +259,77 @@ export function useSellingWizard({
       return;
     }
 
-    if (value === "confirm_details") {
-      setCurrentStep("category");
+    // AI price suggestion actions
+    if (value.startsWith("use_ai_price_")) {
+      const aiPrice = parseFloat(value.replace("use_ai_price_", ""));
+      if (!isNaN(aiPrice) && aiPrice > 0) {
+        updateData({ price: aiPrice });
+      }
+      setCurrentStep("urgency");
       await thinkAndRespond(
-        "Which category fits best?",
-        categories.slice(0, 6).map((c) => ({
-          label: resolveName(c.name, locale, c.slug),
-          value: `cat_${c.id}`,
+        t("priceUpdated", { price: String(aiPrice) }),
+        URGENCY_OPTIONS.map((u) => ({
+          label: `${u.label}`,
+          value: `urgency_${u.value}`,
         })),
       );
       return;
     }
 
+    if (value === "keep_my_price") {
+      setCurrentStep("urgency");
+      await thinkAndRespond(
+        t("priceKept", { price: String(data.price) }),
+        URGENCY_OPTIONS.map((u) => ({
+          label: `${u.label}`,
+          value: `urgency_${u.value}`,
+        })),
+      );
+      return;
+    }
+
+    if (value === "confirm_details") {
+      setCurrentStep("category");
+      const itemText = `${data.title} ${data.description}`;
+      await thinkAndRespond(
+        t("whichCategory"),
+        buildCategoryActions(categories, itemText, locale),
+      );
+      return;
+    }
+
+    // Automation toggle actions (auto-negotiate / auto-boost)
+    if (value === "auto_both") {
+      updateData({ autoNegotiate: true, autoBoost: true });
+      await showStrategySelection(ctx);
+      return;
+    }
+    if (value === "auto_negotiate_only") {
+      updateData({ autoNegotiate: true, autoBoost: false });
+      await showStrategySelection(ctx);
+      return;
+    }
+    if (value === "auto_boost_only") {
+      updateData({ autoNegotiate: false, autoBoost: true });
+      buildSellingSummary(ctx);
+      return;
+    }
+    if (value === "auto_none") {
+      updateData({ autoNegotiate: false, autoBoost: false });
+      buildSellingSummary(ctx);
+      return;
+    }
+
+    // Strategy selection actions
+    if (value.startsWith("strategy_")) {
+      handleStrategySelection(value, ctx);
+      buildSellingSummary(ctx);
+      return;
+    }
+
     if (value === "edit_details") {
       setCurrentStep("confirm_details");
-      await thinkAndRespond(
-        "Sure! What would you like to change? You can adjust the title, description, or add more details.",
-      );
+      await thinkAndRespond(t("changePrompt"));
       return;
     }
 
@@ -252,9 +345,7 @@ export function useSellingWizard({
 
     if (value === "edit") {
       setCurrentStep("confirm_details");
-      await thinkAndRespond(
-        "What would you like to change? Title, price, urgency, or something else?",
-      );
+      await thinkAndRespond(t("changePrompt"));
       return;
     }
 

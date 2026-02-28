@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Send, Loader2 } from "lucide-react";
+import { trpc } from "@/lib/trpc/client";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -47,15 +48,12 @@ export function ContactForm() {
     defaultValues: { name: "", email: "", subject: "", message: "" },
   });
 
+  const contactMutation = trpc.notification.submitContact.useMutation();
+
   const onSubmit = async (data: ContactFormData) => {
     setSubmitting(true);
     try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error("Failed");
+      await contactMutation.mutateAsync(data);
       setSubmitted(true);
       toast.success(t("form.success"));
       reset();

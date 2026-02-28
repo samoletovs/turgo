@@ -57,7 +57,7 @@ export default async function FavoritesPage({ params }: FavoritesPageProps) {
               listing={{
                 id: fav.listing.id,
                 title: fav.listing.title,
-                price: fav.listing.price,
+                price: Number(fav.listing.price),
                 currency: fav.listing.currency,
                 location: String(fav.listing.location?.name || ""),
                 imageUrl: fav.listing.images[0]?.url || "/placeholder.svg",

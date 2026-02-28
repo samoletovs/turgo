@@ -1,8 +1,5 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -19,39 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { AgentIntent } from "@/types";
-import { useUiStore } from "@/stores/useUiStore";
-
-interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-  actions?: SuggestedAction[];
-  intent?: AgentIntent;
-}
-
-interface SuggestedAction {
-  label: string;
-  action: string;
-  url?: string;
-}
-
-const INTENT_ROUTES: Record<string, string> = {
-  sell_start: "/sell",
-  sell_upload: "/sell",
-  sell_describe: "/sell",
-  sell: "/sell",
-  buy_start: "/search",
-  buy_describe: "/search",
-  buy: "/search",
-  browse: "/search",
-  browse_categories: "/",
-  browse_featured: "/",
-  search: "/search",
-  support_account: "/profile",
-  support_billing: "/pricing",
-  support_listing: "/profile",
-};
+import { useConciergeChat } from "@/components/hooks/useConciergeChat";
 
 const INTENT_ICONS: Record<AgentIntent, React.ReactNode> = {
   sell: <Tag className="h-3 w-3" />,
@@ -62,161 +27,26 @@ const INTENT_ICONS: Record<AgentIntent, React.ReactNode> = {
 };
 
 export function ConciergeChat({ locale = "en" }: { locale?: string }) {
-  const t = useTranslations("concierge");
-  const router = useRouter();
-  const { conciergeMinimized, setConciergeMinimized } = useUiStore();
-  const [isOpen, setIsOpen] = useState(false);
-  const isMinimized = conciergeMinimized;
-  const setIsMinimized = setConciergeMinimized;
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentIntent, setCurrentIntent] = useState<AgentIntent | null>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Auto-scroll to bottom
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  // Focus input when opening
-  useEffect(() => {
-    if (isOpen && !isMinimized) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [isOpen, isMinimized]);
-
-  // Add greeting on first open
-  useEffect(() => {
-    if (isOpen && messages.length === 0) {
-      setMessages([
-        {
-          id: "greeting",
-          role: "assistant",
-          content: t("greeting"),
-          timestamp: new Date(),
-          actions: [
-            { label: t("suggestions.0"), action: "sell" },
-            { label: t("suggestions.1"), action: "buy" },
-            { label: t("suggestions.2"), action: "browse" },
-          ],
-        },
-      ]);
-    }
-  }, [isOpen, messages.length, t]);
-
-  const sendMessage = useCallback(
-    async (content: string) => {
-      if (!content.trim() || isLoading) return;
-
-      const userMessage: ChatMessage = {
-        id: `user-${Date.now()}`,
-        role: "user",
-        content: content.trim(),
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, userMessage]);
-      setInput("");
-      setIsLoading(true);
-
-      try {
-        // Build conversation history for context memory
-        const conversationHistory = messages.slice(-10).map((m) => ({
-          role: m.role as "user" | "assistant",
-          content: m.content,
-        }));
-
-        const response = await fetch("/api/concierge", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            message: content.trim(),
-            locale,
-            conversationHistory,
-          }),
-        });
-
-        if (!response.ok) throw new Error("Failed to get response");
-
-        const data = await response.json();
-        const intent = data.intent as AgentIntent;
-
-        // Update current intent for visual indicator
-        if (intent && intent !== "other") {
-          setCurrentIntent(intent);
-        }
-
-        const assistantMessage: ChatMessage = {
-          id: `assistant-${Date.now()}`,
-          role: "assistant",
-          content: data.message,
-          timestamp: new Date(),
-          intent,
-          actions: data.suggestedActions?.map(
-            (a: { label: string; action: string; url?: string }) => ({
-              label: a.label,
-              action: a.action,
-              url: a.url,
-            }),
-          ),
-        };
-
-        setMessages((prev) => [...prev, assistantMessage]);
-
-        // If minimized, increment unread
-        if (isMinimized) {
-          setUnreadCount((c) => c + 1);
-        }
-      } catch {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `error-${Date.now()}`,
-            role: "assistant",
-            content:
-              t("error") ||
-              "Sorry, I'm having trouble right now. Please try again.",
-            timestamp: new Date(),
-          },
-        ]);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [isLoading, locale, messages, isMinimized, t],
-  );
-
-  const handleActionClick = (action: SuggestedAction) => {
-    const route = INTENT_ROUTES[action.action];
-    if (route) {
-      router.push(`/${locale}${route}`);
-      return;
-    }
-    if (action.url) {
-      router.push(`/${locale}${action.url}`);
-      return;
-    }
-    // Otherwise send as message to continue conversation
-    sendMessage(action.label);
-  };
-
-  const handleOpen = () => {
-    setIsOpen(true);
-    setIsMinimized(false);
-    setUnreadCount(0);
-  };
-
-  const handleMinimize = () => {
-    setIsMinimized(true);
-  };
-
-  const handleRestore = () => {
-    setIsMinimized(false);
-    setUnreadCount(0);
-  };
+  const {
+    isOpen,
+    isMinimized,
+    messages,
+    input,
+    isLoading,
+    currentIntent,
+    unreadCount,
+    messagesEndRef,
+    inputRef,
+    setInput,
+    setCurrentIntent,
+    sendMessage,
+    handleActionClick,
+    handleOpen,
+    handleMinimize,
+    handleRestore,
+    handleClose,
+    t,
+  } = useConciergeChat({ locale });
 
   return (
     <>
@@ -305,10 +135,7 @@ export function ConciergeChat({ locale = "en" }: { locale?: string }) {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
-                  onClick={() => {
-                    setIsOpen(false);
-                    setIsMinimized(false);
-                  }}
+                  onClick={handleClose}
                 >
                   <X className="h-4 w-4" />
                 </Button>

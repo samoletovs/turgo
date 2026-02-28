@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import { MessageSquare, TrendingUp, Shield } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import type { SellingStepContext } from "./types";
+import { trpcClient } from "@/lib/trpc/client";
 
 // ──────────────────────────────────────────────
 // PUBLISH / DRAFT ACTION HANDLER
@@ -16,7 +18,6 @@ export async function handlePublishAction(
   if (!ctx.data.title || ctx.data.title.trim().length < 5)
     missing.push("title (min 5 chars)");
   if (!ctx.data.description || ctx.data.description.trim().length < 20) {
-    // Auto-generate a minimal description if user didn't provide enough
     if (ctx.data.title && ctx.data.description.length < 20) {
       const autoDesc = `${ctx.data.title}. ${ctx.data.categoryName ? `Category: ${ctx.data.categoryName}. ` : ""}Condition: ${ctx.data.condition}. Price: €${ctx.data.price}.`;
       ctx.updateData({
@@ -33,9 +34,13 @@ export async function handlePublishAction(
   if (!ctx.data.categoryId) missing.push("category");
 
   if (missing.length > 0) {
+    // Reset to confirm_details so typed text is handled by the details handler
+    ctx.setCurrentStep("confirm_details");
     ctx.addAgentMessage(
-      `I need a few more details before I can create this listing:\n\n${missing.map((m) => `• Missing: **${m}**`).join("\n")}\n\nLet me walk you through the missing steps.`,
-      [{ label: "📝 Fill in details", value: "edit" }],
+      ctx.t("missingFields", {
+        fields: missing.map((m) => `• Missing: **${m}**`).join("\n"),
+      }),
+      [{ label: ctx.t("fillDetails"), value: "edit" }],
     );
     return;
   }
@@ -43,71 +48,84 @@ export async function handlePublishAction(
   ctx.setCurrentStep("publishing");
   ctx.setIsSubmitting(true);
   try {
-    const formData = new FormData();
-    formData.append("title", ctx.data.title.trim());
-    formData.append("description", ctx.data.description.trim());
-    formData.append("categoryId", ctx.data.categoryId);
-    formData.append("condition", ctx.data.condition);
-    if (ctx.data.locationId) formData.append("locationId", ctx.data.locationId);
-    formData.append("price", String(ctx.data.price));
-    formData.append("status", value === "draft" ? "DRAFT" : "ACTIVE");
-
-    if (value === "publish") {
-      formData.append("agent[enabled]", "true");
-      formData.append("agent[autoRespond]", String(ctx.data.autoRespond));
-      formData.append("agent[autoNegotiate]", String(ctx.data.autoNegotiate));
-      formData.append("agent[autoBoost]", String(ctx.data.autoBoost));
-      formData.append("agent[urgency]", ctx.data.urgency);
-      formData.append("agent[minPrice]", String(ctx.data.minimumPrice));
+    // Upload photos via /api/upload (kept as REST for multipart)
+    let imageUrls: { url: string; thumbnailUrl?: string }[] = [];
+    if (ctx.data.photos.length > 0) {
+      const uploadFormData = new FormData();
+      ctx.data.photos.forEach((photo) => uploadFormData.append("files", photo));
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: uploadFormData,
+      });
+      if (!uploadRes.ok) {
+        const err = await uploadRes.json().catch(() => null);
+        throw new Error(err?.error || "Failed to upload images");
+      }
+      const uploadData = await uploadRes.json();
+      imageUrls = (uploadData.uploaded || []).map(
+        (u: { url: string; thumbnailUrl: string }) => ({
+          url: u.url,
+          thumbnailUrl: u.thumbnailUrl,
+        }),
+      );
     }
 
-    ctx.data.photos.forEach((photo) => formData.append("photos", photo));
-
-    const response = await fetch("/api/listings", {
-      method: "POST",
-      body: formData,
+    // Create listing via tRPC
+    const result = await trpcClient.listing.createFull.mutate({
+      title: ctx.data.title.trim(),
+      description: ctx.data.description.trim(),
+      categoryId: ctx.data.categoryId,
+      condition: ctx.data.condition as "NEW" | "USED" | "REFURBISHED",
+      locationId: ctx.data.locationId || undefined,
+      price: ctx.data.price,
+      status: value === "draft" ? "DRAFT" : "ACTIVE",
+      imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
+      agent:
+        value === "publish"
+          ? {
+              enabled: true,
+              autoRespond: ctx.data.autoRespond,
+              autoNegotiate: ctx.data.autoNegotiate,
+              autoBoost: ctx.data.autoBoost,
+              sellingStrategyId: ctx.data.sellingStrategyId,
+              urgency: ctx.data.urgency as
+                | "ONE_DAY"
+                | "THREE_DAYS"
+                | "ONE_WEEK"
+                | "TWO_WEEKS"
+                | "ONE_MONTH"
+                | "NO_RUSH",
+              minPrice: ctx.data.minimumPrice,
+            }
+          : undefined,
     });
 
-    if (response.ok) {
-      const result = await response.json();
-      ctx.setCurrentStep("done");
-      ctx.addAgentMessage(
-        value === "draft"
-          ? `Your listing has been saved as a **draft**! You can find it in your profile and publish it when you're ready.`
-          : `Your listing is live and I'm on the job! Here's what I'll be doing:\n\n✅ Monitoring views and engagement\n✅ Responding to buyer questions\n✅ Adjusting price based on market data\n✅ Sending you daily summaries\n\nI'll message you when there's important activity. Good luck! 🎉`,
-        [
-          {
-            label: "View my listing",
-            value: `goto_/listing/${result.slug || result.id}`,
-          },
-        ],
-      );
-    } else if (response.status === 401) {
-      ctx.addAgentMessage(
-        `You need to be **signed in** to create a listing. Please sign in and try again.`,
-        [
-          {
-            label: "🔑 Sign in",
-            value: `goto_/auth/signin?callbackUrl=/${ctx.locale}/sell`,
-          },
-        ],
-      );
-    } else {
-      const errorData = await response.json().catch(() => null);
-      const errorMsg = errorData?.error || `Server error (${response.status})`;
-      ctx.addAgentMessage(
-        `There was an issue creating the listing: **${errorMsg}**\n\nPlease try again or edit details.`,
-        [
-          { label: "🔄 Retry", value: value },
-          { label: "📝 Edit details", value: "edit" },
-        ],
-      );
-    }
-  } catch {
+    ctx.setCurrentStep("done");
     ctx.addAgentMessage(
-      "Something went wrong — couldn't reach the server. Please check your connection and try again.",
-      [{ label: "🔄 Retry", value: value }],
+      value === "draft" ? ctx.t("draftSaved") : ctx.t("listingLive"),
+      [
+        {
+          label: ctx.t("viewListing"),
+          value: `goto_/listing/${result.slug || result.id}`,
+        },
+      ],
     );
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "";
+    if (message.includes("UNAUTHORIZED")) {
+      ctx.addAgentMessage(ctx.t("signInRequired"), [
+        {
+          label: ctx.t("signIn"),
+          value: `goto_/auth/signin?callbackUrl=/${ctx.locale}/sell`,
+        },
+      ]);
+    } else {
+      const errorMsg = message || "Something went wrong";
+      ctx.addAgentMessage(ctx.t("createError", { error: errorMsg }), [
+        { label: ctx.t("retry"), value: value },
+        { label: ctx.t("editDetails"), value: "edit" },
+      ]);
+    }
   } finally {
     ctx.setIsSubmitting(false);
   }
@@ -118,6 +136,7 @@ export async function handlePublishAction(
 // ──────────────────────────────────────────────
 
 export function DonePanel() {
+  const t = useTranslations("sell.chat");
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -130,9 +149,9 @@ export function DonePanel() {
             <MessageSquare className="h-4 w-4 text-blue-500" />
           </div>
           <div>
-            <p className="text-sm font-medium">Auto-Respond</p>
+            <p className="text-sm font-medium">{t("doneAutoRespond")}</p>
             <p className="text-xs text-muted-foreground">
-              AI answers buyer questions 24/7
+              {t("doneAutoRespondDesc")}
             </p>
           </div>
         </CardContent>
@@ -143,9 +162,9 @@ export function DonePanel() {
             <TrendingUp className="h-4 w-4 text-green-500" />
           </div>
           <div>
-            <p className="text-sm font-medium">Smart Pricing</p>
+            <p className="text-sm font-medium">{t("doneSmartPricing")}</p>
             <p className="text-xs text-muted-foreground">
-              Dynamic price optimization
+              {t("doneSmartPricingDesc")}
             </p>
           </div>
         </CardContent>
@@ -156,9 +175,9 @@ export function DonePanel() {
             <Shield className="h-4 w-4 text-purple-500" />
           </div>
           <div>
-            <p className="text-sm font-medium">Auto-Negotiate</p>
+            <p className="text-sm font-medium">{t("doneAutoNegotiate")}</p>
             <p className="text-xs text-muted-foreground">
-              Handles offers within your rules
+              {t("doneAutoNegotiateDesc")}
             </p>
           </div>
         </CardContent>

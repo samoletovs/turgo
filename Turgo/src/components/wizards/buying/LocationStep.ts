@@ -9,9 +9,37 @@ export async function handleLocationInput(
   content: string,
   ctx: BuyingStepContext,
 ) {
+  const lower = content.toLowerCase().trim();
+
+  // Check for "anywhere" intent
+  if (
+    lower.includes("anywhere") ||
+    lower.includes("any") ||
+    lower.includes("all") ||
+    lower.includes("doesn't matter") ||
+    lower.includes("no preference")
+  ) {
+    ctx.updateData({ locationName: "Anywhere" });
+  } else {
+    // Fuzzy match against available locations
+    const matchedLoc = ctx.locations.find((l) => {
+      const name = resolveName(l.name, ctx.locale, l.slug);
+      return (
+        name.toLowerCase().includes(lower) || lower.includes(name.toLowerCase())
+      );
+    });
+    if (matchedLoc) {
+      const locName = resolveName(matchedLoc.name, ctx.locale, matchedLoc.slug);
+      ctx.updateData({ locationId: matchedLoc.id, locationName: locName });
+    } else {
+      // No match — store as location name for reference
+      ctx.updateData({ locationName: content.trim() });
+    }
+  }
+
   ctx.setCurrentStep("condition");
   await ctx.thinkAndRespond(
-    "What condition are you okay with?",
+    ctx.t("conditionPrompt"),
     CONDITION_OPTIONS.map((c) => ({
       label: `${c.label} — ${c.desc}`,
       value: `cond_${c.value}`,
@@ -37,7 +65,7 @@ export async function handleLocationAction(
   }
   ctx.setCurrentStep("condition");
   await ctx.thinkAndRespond(
-    "What condition are you okay with?",
+    ctx.t("conditionPrompt"),
     CONDITION_OPTIONS.map((c) => ({
       label: `${c.label} — ${c.desc}`,
       value: `cond_${c.value}`,

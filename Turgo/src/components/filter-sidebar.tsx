@@ -12,12 +12,13 @@ import {
   LayoutList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useFilterStore } from "@/stores/useFilterStore";
-import type { ViewMode, Condition } from "@/stores/useFilterStore";
+import type { Condition } from "@/stores/useFilterStore";
+import { PriceRangeFilter } from "@/components/filters/PriceRangeFilter";
+import { DynamicAttributeFilter } from "@/components/filters/DynamicAttributeFilter";
+export { MobileFilterTrigger } from "@/components/filters/MobileFilterTrigger";
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -284,6 +285,7 @@ export function FilterSidebar({
         onToggle={toggleSection}
       >
         <PriceRangeFilter
+          key={`${currentFilters.minPrice}-${currentFilters.maxPrice}`}
           minPrice={currentFilters.minPrice}
           maxPrice={currentFilters.maxPrice}
           onApply={(min, max) => {
@@ -463,173 +465,5 @@ function FilterSection({
       </button>
       {expanded && children}
     </div>
-  );
-}
-
-function PriceRangeFilter({
-  minPrice,
-  maxPrice,
-  onApply,
-}: {
-  minPrice?: string;
-  maxPrice?: string;
-  onApply: (min: string, max: string) => void;
-}) {
-  const tb = useTranslations("browse");
-  const [min, setMin] = useState(minPrice || "");
-  const [max, setMax] = useState(maxPrice || "");
-  const [prevMinPrice, setPrevMinPrice] = useState(minPrice);
-  const [prevMaxPrice, setPrevMaxPrice] = useState(maxPrice);
-
-  if (prevMinPrice !== minPrice) {
-    setPrevMinPrice(minPrice);
-    setMin(minPrice || "");
-  }
-  if (prevMaxPrice !== maxPrice) {
-    setPrevMaxPrice(maxPrice);
-    setMax(maxPrice || "");
-  }
-
-  return (
-    <div className="flex items-center gap-2">
-      <Input
-        type="number"
-        placeholder={tb("min")}
-        value={min}
-        onChange={(e) => setMin(e.target.value)}
-        className="h-8 text-sm"
-        min={0}
-      />
-      <span className="text-muted-foreground text-xs">–</span>
-      <Input
-        type="number"
-        placeholder={tb("max")}
-        value={max}
-        onChange={(e) => setMax(e.target.value)}
-        className="h-8 text-sm"
-        min={0}
-      />
-      <Button
-        size="sm"
-        variant="outline"
-        className="h-8 shrink-0 px-2 text-xs"
-        onClick={() => onApply(min, max)}
-      >
-        {tb("go")}
-      </Button>
-    </div>
-  );
-}
-
-function DynamicAttributeFilter({
-  attribute,
-  value,
-  onChange,
-}: {
-  attribute: CategorySpecificFilter;
-  value?: string;
-  onChange: (val: string | undefined) => void;
-}) {
-  switch (attribute.type) {
-    case "SELECT": {
-      const options = attribute.options ?? [];
-      return (
-        <div>
-          <Label className="text-xs text-muted-foreground mb-1 block">
-            {attribute.name}
-          </Label>
-          <div className="flex flex-wrap gap-1">
-            {options.map((opt) => (
-              <button
-                key={opt}
-                onClick={() => onChange(value === opt ? undefined : opt)}
-                className={cn(
-                  "rounded-full border px-2.5 py-0.5 text-xs transition-colors",
-                  value === opt
-                    ? "border-primary bg-primary/10 text-primary font-medium"
-                    : "hover:bg-muted",
-                )}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-    case "BOOLEAN":
-      return (
-        <button
-          onClick={() => onChange(value === "true" ? undefined : "true")}
-          className={cn(
-            "flex w-full items-center rounded-md px-2.5 py-1.5 text-sm transition-colors hover:bg-muted",
-            value === "true" && "bg-muted font-medium text-primary",
-          )}
-        >
-          {attribute.name}
-        </button>
-      );
-
-    case "NUMBER":
-      return (
-        <div>
-          <Label className="text-xs text-muted-foreground mb-1 block">
-            {attribute.name}
-          </Label>
-          <Input
-            type="number"
-            placeholder={attribute.name}
-            value={value ?? ""}
-            onChange={(e) => onChange(e.target.value || undefined)}
-            className="h-8 text-sm"
-          />
-        </div>
-      );
-
-    case "TEXT":
-    default:
-      return (
-        <div>
-          <Label className="text-xs text-muted-foreground mb-1 block">
-            {attribute.name}
-          </Label>
-          <Input
-            type="text"
-            placeholder={attribute.name}
-            value={value ?? ""}
-            onChange={(e) => onChange(e.target.value || undefined)}
-            className="h-8 text-sm"
-          />
-        </div>
-      );
-  }
-}
-
-// ─── Mobile Filter Sheet ─────────────────────────────────
-
-export function MobileFilterTrigger({
-  activeCount,
-  onClick,
-}: {
-  activeCount: number;
-  onClick: () => void;
-}) {
-  const tb = useTranslations("browse");
-  return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="gap-1.5 lg:hidden"
-      onClick={onClick}
-    >
-      <SlidersHorizontal className="h-3.5 w-3.5" />
-      {tb("filters")}
-      {activeCount > 0 && (
-        <Badge variant="default" className="text-[10px] px-1 ml-1">
-          {activeCount}
-        </Badge>
-      )}
-    </Button>
   );
 }

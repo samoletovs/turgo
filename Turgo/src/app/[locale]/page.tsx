@@ -18,15 +18,18 @@ import {
   PawPrint,
   Palette,
   Tractor,
+  MessageSquare,
+  CheckCircle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { MarketInsights } from "@/components/market-insights";
-import { HeroAnimation } from "@/components/hero-animation";
+import { HeroTabbed } from "@/components/hero-tabbed";
 import { db } from "@/server/db";
 import { ListingCard } from "@/components/listing-card";
 import { getLocalizedName } from "@/lib/utils";
+
+/** ISR: revalidate every 60 seconds for fresh featured listings */
+export const revalidate = 60;
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
   transport: Car,
@@ -95,74 +98,8 @@ export default async function HomePage({
 
   return (
     <>
-      {/* Hero section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-primary/5 via-background to-background py-16 sm:py-20">
-        {/* Decorative gradient blobs */}
-        <div className="pointer-events-none absolute -left-32 -top-20 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-        <div className="pointer-events-none absolute -right-20 top-10 h-56 w-56 rounded-full bg-accent/15 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-0 left-1/3 h-48 w-48 rounded-full bg-primary/5 blur-2xl" />
-
-        <div className="relative mx-auto max-w-7xl px-4">
-          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-            {/* Left column — text + search + CTA */}
-            <div className="text-center lg:text-left">
-              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-                {t("hero.title")}
-              </h1>
-              <p className="mt-4 max-w-2xl text-lg text-muted-foreground lg:max-w-lg">
-                {t("hero.subtitle")}
-              </p>
-
-              {/* Search bar */}
-              <form
-                className="mt-8 flex max-w-xl gap-2 mx-auto lg:mx-0"
-                action={`/${locale}/search`}
-                method="GET"
-                suppressHydrationWarning
-              >
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    name="q"
-                    placeholder={t("hero.searchPlaceholder")}
-                    className="h-12 pl-10 text-base rounded-xl"
-                  />
-                </div>
-                <Button type="submit" size="lg" className="rounded-xl">
-                  {tCommon("search")}
-                </Button>
-              </form>
-
-              {/* CTA */}
-              <div className="mt-6 flex flex-col items-center gap-2 lg:items-start">
-                <Button
-                  asChild
-                  size="lg"
-                  variant="default"
-                  className="gap-2 rounded-xl"
-                >
-                  <Link href="/sell">
-                    <Bot className="h-5 w-5" />
-                    {t("hero.cta")}
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <a
-                  href="#categories"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {t("hero.browseBelow")}
-                </a>
-              </div>
-            </div>
-
-            {/* Right column — animated agent conversation mockup */}
-            <div className="flex justify-center lg:justify-end">
-              <HeroAnimation />
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Tabbed Hero section */}
+      <HeroTabbed locale={locale} />
 
       {/* Categories grid */}
       <section id="categories" className="py-12">
@@ -210,7 +147,7 @@ export default async function HomePage({
                     id: listing.id,
                     title: listing.title,
                     slug: listing.slug,
-                    price: listing.price,
+                    price: Number(listing.price),
                     currency: listing.currency,
                     location: listing.location
                       ? getLocalizedName(listing.location.name, locale)
@@ -251,11 +188,12 @@ export default async function HomePage({
           <h2 className="mb-10 text-center text-2xl font-bold">
             {t("howItWorks.title")}
           </h2>
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-4">
             {[
               { step: "step1", icon: Search, color: "text-blue-500" },
               { step: "step2", icon: Bot, color: "text-purple-500" },
-              { step: "step3", icon: Zap, color: "text-green-500" },
+              { step: "step3", icon: MessageSquare, color: "text-amber-500" },
+              { step: "step4", icon: CheckCircle, color: "text-green-500" },
             ].map(({ step, icon: Icon, color }, i) => (
               <Card key={step} className="relative overflow-hidden">
                 <CardContent className="p-6 text-center">

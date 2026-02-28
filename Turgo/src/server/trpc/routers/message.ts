@@ -6,6 +6,7 @@ import {
 } from "@/server/trpc";
 import { sendMessageSchema } from "@/lib/validators";
 import { RATE_LIMITS } from "@/lib/constants";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { emitMessage } from "@/server/socket";
 import {
   processAutoRespond,
@@ -29,7 +30,11 @@ export const messageRouter = createTRPCRouter({
   send: createRateLimitedProcedure(RATE_LIMITS.MESSAGE_SEND)
     .input(sendMessageSchema)
     .mutation(async ({ ctx, input }) => {
-      let conversationId = input.conversationId;
+      // Sanitize user-generated message content
+      const sanitizedContent = sanitizeHtml(input.content);
+      const sanitizedInput = { ...input, content: sanitizedContent };
+
+      let conversationId = sanitizedInput.conversationId;
       let _sellerId: string | undefined;
 
       // Create or get conversation
@@ -65,7 +70,7 @@ export const messageRouter = createTRPCRouter({
       }
 
       // Detect language
-      const originalLanguage = detectLanguage(input.content);
+      const originalLanguage = detectLanguage(sanitizedContent);
 
       const message = await ctx.db.message.create({
         data: {
@@ -73,7 +78,7 @@ export const messageRouter = createTRPCRouter({
           senderId: ctx.session.user.id!,
           receiverId: input.receiverId,
           listingId: input.listingId,
-          content: input.content,
+          content: sanitizedContent,
           messageType: "TEXT",
           originalLanguage,
         },
@@ -124,7 +129,7 @@ export const messageRouter = createTRPCRouter({
           senderName: message.sender?.name ?? "Someone",
           conversationId,
           listingTitle: listing?.title ?? "Listing",
-          messagePreview: input.content,
+          messagePreview: sanitizedContent,
           isAgentMessage: false,
         }).catch(console.error);
       }
@@ -137,7 +142,7 @@ export const messageRouter = createTRPCRouter({
       // Process auto-respond (selling agent)
       processAutoRespond({
         conversationId,
-        messageContent: input.content,
+        messageContent: sanitizedContent,
         senderId: ctx.session.user.id!,
         receiverId: input.receiverId,
         listingId: input.listingId,
@@ -146,7 +151,7 @@ export const messageRouter = createTRPCRouter({
       // Process auto-negotiate (selling agent)
       processAutoNegotiate({
         conversationId,
-        messageContent: input.content,
+        messageContent: sanitizedContent,
         senderId: ctx.session.user.id!,
         receiverId: input.receiverId,
         listingId: input.listingId,

@@ -20,6 +20,7 @@ export type SellingWizardStep =
 export interface ChatAction {
   label: string;
   value: string;
+  desc?: string;
 }
 
 export interface ChatMsg {
@@ -47,6 +48,7 @@ export interface SellingWizardData {
   autoRespond: boolean;
   autoNegotiate: boolean;
   autoBoost: boolean;
+  sellingStrategyId: "SEALED_BID" | "FIXED_PRICE" | "DUTCH_AUCTION";
 }
 
 export type JsonName = string | Record<string, string>;
@@ -155,6 +157,325 @@ export function resolveName(
   return name as string;
 }
 
+/** Category keyword mapping for smart ordering based on item description */
+const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  transport: [
+    "car",
+    "auto",
+    "vehicle",
+    "truck",
+    "motorcycle",
+    "bike",
+    "bicycle",
+    "boat",
+    "tires",
+    "wheels",
+    "spare parts",
+    "bmw",
+    "audi",
+    "toyota",
+    "honda",
+    "ford",
+    "volkswagen",
+    "vw",
+    "mercedes",
+    "volvo",
+  ],
+  "real-estate": [
+    "apartment",
+    "house",
+    "flat",
+    "room",
+    "land",
+    "property",
+    "rent",
+    "garage",
+    "estate",
+  ],
+  electronics: [
+    "phone",
+    "laptop",
+    "computer",
+    "tablet",
+    "tv",
+    "television",
+    "camera",
+    "gaming",
+    "console",
+    "playstation",
+    "xbox",
+    "iphone",
+    "samsung",
+    "headphones",
+    "speaker",
+    "monitor",
+  ],
+  "home-garden": [
+    "furniture",
+    "sofa",
+    "table",
+    "chair",
+    "bed",
+    "kitchen",
+    "garden",
+    "tool",
+    "drill",
+    "appliance",
+    "washing",
+    "fridge",
+    "oven",
+    "lamp",
+    "shelf",
+    "wardrobe",
+    "desk",
+  ],
+  fashion: [
+    "dress",
+    "shirt",
+    "jacket",
+    "coat",
+    "shoes",
+    "boots",
+    "bag",
+    "watch",
+    "jewelry",
+    "ring",
+    "clothing",
+    "jeans",
+    "sneakers",
+    "handbag",
+  ],
+  jobs: [
+    "job",
+    "work",
+    "hiring",
+    "vacancy",
+    "position",
+    "salary",
+    "employment",
+  ],
+  services: [
+    "repair",
+    "service",
+    "cleaning",
+    "plumbing",
+    "electrician",
+    "moving",
+    "tutoring",
+    "lesson",
+  ],
+  "kids-baby": [
+    "baby",
+    "child",
+    "kids",
+    "stroller",
+    "toy",
+    "school",
+    "diaper",
+    "crib",
+  ],
+  "sports-outdoors": [
+    "sport",
+    "fitness",
+    "gym",
+    "ski",
+    "snowboard",
+    "camping",
+    "hiking",
+    "fishing",
+    "hunting",
+    "bicycle",
+    "swimming",
+    "running",
+    "yoga",
+    "tennis",
+    "football",
+    "basketball",
+  ],
+  pets: [
+    "dog",
+    "cat",
+    "bird",
+    "fish",
+    "aquarium",
+    "pet",
+    "puppy",
+    "kitten",
+    "parrot",
+    "hamster",
+  ],
+  "hobbies-leisure": [
+    "book",
+    "music",
+    "guitar",
+    "piano",
+    "violin",
+    "drum",
+    "instrument",
+    "record",
+    "vinyl",
+    "collectible",
+    "antique",
+    "board game",
+    "puzzle",
+    "art",
+    "painting",
+    "craft",
+    "hobby",
+    "ticket",
+    "concert",
+    "bass",
+    "saxophone",
+    "flute",
+    "keyboard",
+    "ukulele",
+    "cello",
+    "harmonica",
+    "banjo",
+    "mandolin",
+    "gibson",
+    "fender",
+    "yamaha",
+    "ibanez",
+  ],
+  agriculture: [
+    "tractor",
+    "farm",
+    "seed",
+    "harvest",
+    "livestock",
+    "animal feed",
+    "agricultural",
+  ],
+};
+
+/**
+ * Sort categories by relevance to the item description.
+ * Returns all categories, with best matches first.
+ */
+export function sortCategoriesByRelevance(
+  categories: CategoryItem[],
+  text: string,
+  locale: string,
+): CategoryItem[] {
+  if (!text || text.trim().length === 0) return categories;
+
+  const lower = text.toLowerCase();
+  const words = lower.split(/\s+/);
+
+  const scored = categories.map((cat) => {
+    let score = 0;
+    const slug = cat.slug;
+
+    // Check keyword map for the category slug
+    const keywords = CATEGORY_KEYWORDS[slug] || [];
+    for (const kw of keywords) {
+      if (lower.includes(kw)) {
+        score += kw.length > 4 ? 3 : 2; // longer keyword = stronger match
+      }
+    }
+
+    // Check subcategory names
+    if (cat.children) {
+      for (const child of cat.children) {
+        const childName = resolveName(
+          child.name,
+          locale,
+          child.slug,
+        ).toLowerCase();
+        for (const word of words) {
+          if (word.length > 2 && childName.includes(word)) {
+            score += 2;
+          }
+        }
+      }
+    }
+
+    // Check category name itself
+    const catName = resolveName(cat.name, locale, slug).toLowerCase();
+    for (const word of words) {
+      if (word.length > 2 && catName.includes(word)) {
+        score += 1;
+      }
+    }
+
+    return { cat, score };
+  });
+
+  // Sort by score descending, keep original order for ties
+  scored.sort((a, b) => b.score - a.score);
+  return scored.map((s) => s.cat);
+}
+
+/**
+ * Build category action buttons with the best match highlighted.
+ * Shows up to `limit` categories, sorted by relevance.
+ * The top category gets a ⭐ prefix if it scored above 0.
+ */
+export function buildCategoryActions(
+  categories: CategoryItem[],
+  text: string,
+  locale: string,
+  limit = 8,
+): ChatAction[] {
+  if (!text || text.trim().length === 0) {
+    return categories.slice(0, limit).map((c) => ({
+      label: resolveName(c.name, locale, c.slug),
+      value: `cat_${c.id}`,
+    }));
+  }
+
+  const lower = text.toLowerCase();
+  const words = lower.split(/\s+/);
+
+  const scored = categories.map((cat) => {
+    let score = 0;
+    const slug = cat.slug;
+
+    const keywords = CATEGORY_KEYWORDS[slug] || [];
+    for (const kw of keywords) {
+      if (lower.includes(kw)) {
+        score += kw.length > 4 ? 3 : 2;
+      }
+    }
+
+    if (cat.children) {
+      for (const child of cat.children) {
+        const childName = resolveName(
+          child.name,
+          locale,
+          child.slug,
+        ).toLowerCase();
+        for (const word of words) {
+          if (word.length > 2 && childName.includes(word)) {
+            score += 2;
+          }
+        }
+      }
+    }
+
+    const catName = resolveName(cat.name, locale, slug).toLowerCase();
+    for (const word of words) {
+      if (word.length > 2 && catName.includes(word)) {
+        score += 1;
+      }
+    }
+
+    return { cat, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  const topScore = scored[0]?.score ?? 0;
+
+  return scored.slice(0, limit).map((s, i) => ({
+    label:
+      i === 0 && topScore > 0
+        ? `⭐ ${resolveName(s.cat.name, locale, s.cat.slug)}`
+        : resolveName(s.cat.name, locale, s.cat.slug),
+    value: `cat_${s.cat.id}`,
+  }));
+}
+
 // ──────────────────────────────────────────────
 // STEP CONTEXT (passed to step handlers)
 // ──────────────────────────────────────────────
@@ -183,4 +504,5 @@ export interface SellingStepContext {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   trpcUtils: any;
   fileInputRef: RefObject<HTMLInputElement | null>;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }

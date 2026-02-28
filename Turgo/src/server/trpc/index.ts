@@ -56,18 +56,14 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
   });
 });
 
-/** Admin procedure — requires ADMIN or MODERATOR role */
-export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
+/** Admin procedure — requires ADMIN or MODERATOR role (read from JWT session) */
+export const adminProcedure = t.procedure.use(({ ctx, next }) => {
   if (!ctx.session?.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  const user = await ctx.db.user.findUnique({
-    where: { id: ctx.session.user.id },
-    select: { role: true },
-  });
-
-  if (!user || (user.role !== "ADMIN" && user.role !== "MODERATOR")) {
+  const role = (ctx.session.user as { role?: string }).role;
+  if (role !== "ADMIN" && role !== "MODERATOR") {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "Admin access required",
@@ -85,26 +81,44 @@ export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
 // TIER-AWARE PROCEDURES
 // ──────────────────────────────────────────────
 
-/** Resolve user's subscription tier */
-async function resolveUserTier(
+/** Per-request cache for resolved user tiers (avoids duplicate DB queries within a single request) */
+const tierCache = new Map<string, Promise<UserTier>>();
+
+/** Resolve user's subscription tier (cached per-request via middleware reset) */
+function resolveUserTier(
   userId: string,
   database: typeof db,
 ): Promise<UserTier> {
-  const subscription = await database.subscription.findUnique({
-    where: { userId },
-    include: { plan: true },
+  const existing = tierCache.get(userId);
+  if (existing) return existing;
+
+  const promise = (async (): Promise<UserTier> => {
+    const subscription = await database.subscription.findUnique({
+      where: { userId },
+      include: { plan: true },
+    });
+
+    if (!subscription || subscription.status !== "ACTIVE") return "free";
+
+    switch (subscription.plan.name) {
+      case "PRO":
+        return "pro";
+      case "BUSINESS":
+        return "business";
+      default:
+        return "free";
+    }
+  })();
+
+  tierCache.set(userId, promise);
+
+  // Clean up after the promise settles to avoid cross-request leaks
+  // (Next.js runs each request in its own microtask queue, but belt-and-suspenders)
+  void promise.finally(() => {
+    setTimeout(() => tierCache.delete(userId), 0);
   });
 
-  if (!subscription || subscription.status !== "ACTIVE") return "free";
-
-  switch (subscription.plan.name) {
-    case "PRO":
-      return "pro";
-    case "BUSINESS":
-      return "business";
-    default:
-      return "free";
-  }
+  return promise;
 }
 
 /** Protected procedure with user tier context — for AI-routed operations */

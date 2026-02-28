@@ -207,10 +207,15 @@ describe("scheduleJob", () => {
   });
 
   it("supports priority option", async () => {
-    await scheduleJob("quality", "quality-check", {}, { priority: 1 });
+    await scheduleJob(
+      "selling-agents",
+      "selling-agent-price-adjust",
+      {},
+      { priority: 1 },
+    );
 
     expect(mockQueueAdd).toHaveBeenCalledWith(
-      "quality-check",
+      "selling-agent-price-adjust",
       {},
       expect.objectContaining({ priority: 1 }),
     );

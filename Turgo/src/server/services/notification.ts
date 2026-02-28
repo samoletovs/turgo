@@ -440,7 +440,7 @@ export async function checkAndNotifySavedSearchMatches(): Promise<void> {
       matchCount: matchingListings.length,
       listings: matchingListings.map((l) => ({
         title: l.title,
-        price: l.price,
+        price: Number(l.price),
         url: `${APP_URL}/listing/${l.slug}`,
       })),
       manageUrl: `${APP_URL}/profile`,

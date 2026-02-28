@@ -5,6 +5,7 @@ import {
   publicProcedure,
   protectedProcedure,
 } from "@/server/trpc";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 export const reviewRouter = createTRPCRouter({
   /** Create a review for a user (must have had a conversation with them) */
@@ -67,7 +68,7 @@ export const reviewRouter = createTRPCRouter({
           reviewerId,
           revieweeId: input.revieweeId,
           rating: input.rating,
-          comment: input.comment,
+          comment: input.comment ? sanitizeHtml(input.comment) : undefined,
           listingId: input.listingId,
         },
       });

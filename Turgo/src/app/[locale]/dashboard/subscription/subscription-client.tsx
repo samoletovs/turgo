@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Loader2, RotateCcw, XCircle } from "lucide-react";
+import { trpc } from "@/lib/trpc/client";
 
 interface SubscriptionActionsProps {
   hasSubscription: boolean;
@@ -16,12 +17,14 @@ export function SubscriptionActions({
   hasStripeCustomer,
 }: SubscriptionActionsProps) {
   const [loading, setLoading] = useState<string | null>(null);
+  const portalMutation = trpc.subscription.createPortalSession.useMutation();
+  const cancelMutation = trpc.subscription.cancel.useMutation();
+  const resumeMutation = trpc.subscription.resume.useMutation();
 
   async function handlePortal() {
     setLoading("portal");
     try {
-      const response = await fetch("/api/billing/portal", { method: "POST" });
-      const data = await response.json();
+      const data = await portalMutation.mutateAsync();
       if (data.portalUrl) {
         window.location.href = data.portalUrl;
       }
@@ -33,15 +36,17 @@ export function SubscriptionActions({
   }
 
   async function handleCancel() {
-    if (!confirm("Are you sure you want to cancel your subscription? You'll retain access until the end of the billing period.")) {
+    if (
+      !confirm(
+        "Are you sure you want to cancel your subscription? You'll retain access until the end of the billing period.",
+      )
+    ) {
       return;
     }
     setLoading("cancel");
     try {
-      const response = await fetch("/api/billing/cancel", { method: "POST" });
-      if (response.ok) {
-        window.location.reload();
-      }
+      await cancelMutation.mutateAsync();
+      window.location.reload();
     } catch (error) {
       console.error("Cancel error:", error);
     } finally {
@@ -52,10 +57,8 @@ export function SubscriptionActions({
   async function handleResume() {
     setLoading("resume");
     try {
-      const response = await fetch("/api/billing/resume", { method: "POST" });
-      if (response.ok) {
-        window.location.reload();
-      }
+      await resumeMutation.mutateAsync();
+      window.location.reload();
     } catch (error) {
       console.error("Resume error:", error);
     } finally {

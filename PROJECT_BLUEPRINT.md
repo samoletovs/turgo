@@ -203,7 +203,7 @@ SS.lv's publicly available data is our **bootstrap market intelligence** — we 
 ### Production — Free Tier
 | Feature | Technology | Cost |
 |---------|-----------|------|
-| **Agent reasoning** | GitHub Models API (rate-limited) or Ollama self-hosted as fallback | Free / compute only |
+| **Agent reasoning** | GitHub Models API (rate-limited) | Free / compute only |
 | **Image categorization** | CLIP client-side | Free |
 | **Embeddings** | all-MiniLM-L6-v2 | Free |
 | **Price intelligence** | Own MarketSnapshot data (replaces ss.lv bootstrap once sufficient) | Free |
@@ -280,7 +280,7 @@ SS.lv's publicly available data is our **bootstrap market intelligence** — we 
 | Technology | Purpose |
 |-----------|---------|
 | **Azure App Service / Vercel** | Hosting and deployment |
-| **Docker + Docker Compose** | Local development environment (PostgreSQL, Redis, Meilisearch, Ollama — all containerized) |
+| **Docker + Docker Compose** | Local development environment (PostgreSQL, Redis, Meilisearch, Mailpit — all containerized) |
 | **GitHub Actions** | CI/CD pipelines (lint, test, build, deploy) |
 | **Azure Monitor / Sentry** | Error tracking and performance monitoring |
 | **Terraform** | Infrastructure as code (optional) |

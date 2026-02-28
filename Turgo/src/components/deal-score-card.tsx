@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import {
   TrendingDown,
@@ -35,29 +36,106 @@ interface DealScoreCardProps {
   compact?: boolean;
 }
 
-const FACTORS: {
+const FACTOR_META: {
   key: keyof Omit<DealScoreBreakdown, "total">;
-  label: string;
+  i18nKey: string;
   maxPoints: number;
   icon: typeof TrendingDown;
   color: string;
-  description: string;
 }[] = [
-  { key: "priceVsMarket", label: "Price vs Market", maxPoints: 30, icon: TrendingDown, color: "#22c55e", description: "How the price compares to market average" },
-  { key: "timeOnMarket", label: "Time on Market", maxPoints: 15, icon: Clock, color: "#3b82f6", description: "Freshly listed or overdue?" },
-  { key: "sellerUrgency", label: "Seller Urgency", maxPoints: 15, icon: Zap, color: "#f97316", description: "How urgently the seller wants to sell" },
-  { key: "listingQuality", label: "Listing Quality", maxPoints: 10, icon: Star, color: "#eab308", description: "Photos, description completeness" },
-  { key: "sellerReputation", label: "Seller Reputation", maxPoints: 10, icon: BarChart3, color: "#8b5cf6", description: "Seller's track record and ratings" },
-  { key: "locationConvenience", label: "Location", maxPoints: 10, icon: MapPin, color: "#ec4899", description: "Proximity and location convenience" },
-  { key: "conditionVsPrice", label: "Condition vs Price", maxPoints: 10, icon: Wrench, color: "#06b6d4", description: "Item condition relative to asking price" },
+  {
+    key: "priceVsMarket",
+    i18nKey: "priceVsMarket",
+    maxPoints: 30,
+    icon: TrendingDown,
+    color: "#22c55e",
+  },
+  {
+    key: "timeOnMarket",
+    i18nKey: "timeOnMarket",
+    maxPoints: 15,
+    icon: Clock,
+    color: "#3b82f6",
+  },
+  {
+    key: "sellerUrgency",
+    i18nKey: "sellerUrgency",
+    maxPoints: 15,
+    icon: Zap,
+    color: "#f97316",
+  },
+  {
+    key: "listingQuality",
+    i18nKey: "listingQuality",
+    maxPoints: 10,
+    icon: Star,
+    color: "#eab308",
+  },
+  {
+    key: "sellerReputation",
+    i18nKey: "sellerReputation",
+    maxPoints: 10,
+    icon: BarChart3,
+    color: "#8b5cf6",
+  },
+  {
+    key: "locationConvenience",
+    i18nKey: "location",
+    maxPoints: 10,
+    icon: MapPin,
+    color: "#ec4899",
+  },
+  {
+    key: "conditionVsPrice",
+    i18nKey: "conditionVsPrice",
+    maxPoints: 10,
+    icon: Wrench,
+    color: "#06b6d4",
+  },
 ];
 
-function getScoreGrade(total: number): { label: string; emoji: string; color: string; bgColor: string } {
-  if (total >= 85) return { label: "Exceptional Deal", emoji: "🏆", color: "text-green-600", bgColor: "bg-green-500/10" };
-  if (total >= 70) return { label: "Great Deal", emoji: "🎯", color: "text-blue-600", bgColor: "bg-blue-500/10" };
-  if (total >= 55) return { label: "Good Deal", emoji: "👍", color: "text-yellow-600", bgColor: "bg-yellow-500/10" };
-  if (total >= 40) return { label: "Fair Deal", emoji: "😐", color: "text-orange-600", bgColor: "bg-orange-500/10" };
-  return { label: "Below Average", emoji: "⚠️", color: "text-red-600", bgColor: "bg-red-500/10" };
+type GradeKey = "exceptional" | "great" | "good" | "fair" | "belowAverage";
+
+function getScoreGradeKey(total: number): {
+  key: GradeKey;
+  emoji: string;
+  color: string;
+  bgColor: string;
+} {
+  if (total >= 85)
+    return {
+      key: "exceptional",
+      emoji: "🏆",
+      color: "text-green-600",
+      bgColor: "bg-green-500/10",
+    };
+  if (total >= 70)
+    return {
+      key: "great",
+      emoji: "🎯",
+      color: "text-blue-600",
+      bgColor: "bg-blue-500/10",
+    };
+  if (total >= 55)
+    return {
+      key: "good",
+      emoji: "👍",
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-500/10",
+    };
+  if (total >= 40)
+    return {
+      key: "fair",
+      emoji: "😐",
+      color: "text-orange-600",
+      bgColor: "bg-orange-500/10",
+    };
+  return {
+    key: "belowAverage",
+    emoji: "⚠️",
+    color: "text-red-600",
+    bgColor: "bg-red-500/10",
+  };
 }
 
 export function DealScoreCard({
@@ -67,7 +145,12 @@ export function DealScoreCard({
   marketAvg,
   compact = false,
 }: DealScoreCardProps) {
-  const grade = useMemo(() => getScoreGrade(breakdown.total), [breakdown.total]);
+  const t = useTranslations("dealScore");
+  const grade = useMemo(
+    () => getScoreGradeKey(breakdown.total),
+    [breakdown.total],
+  );
+  const gradeLabel = t(grade.key);
 
   // Circular progress for the total score
   const circumference = 2 * Math.PI * 40;
@@ -79,27 +162,44 @@ export function DealScoreCard({
         {/* Mini circular score */}
         <div className="relative flex h-12 w-12 shrink-0 items-center justify-center">
           <svg className="h-12 w-12 -rotate-90" viewBox="0 0 48 48">
-            <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" strokeOpacity={0.1} strokeWidth={3} />
+            <circle
+              cx="24"
+              cy="24"
+              r="20"
+              fill="none"
+              stroke="currentColor"
+              strokeOpacity={0.1}
+              strokeWidth={3}
+            />
             <motion.circle
               cx="24"
               cy="24"
               r="20"
               fill="none"
-              stroke={breakdown.total >= 70 ? "#22c55e" : breakdown.total >= 50 ? "#eab308" : "#ef4444"}
+              stroke={
+                breakdown.total >= 70
+                  ? "#22c55e"
+                  : breakdown.total >= 50
+                    ? "#eab308"
+                    : "#ef4444"
+              }
               strokeWidth={3}
               strokeLinecap="round"
               strokeDasharray={2 * Math.PI * 20}
               initial={{ strokeDashoffset: 2 * Math.PI * 20 }}
-              animate={{ strokeDashoffset: 2 * Math.PI * 20 - (breakdown.total / 100) * 2 * Math.PI * 20 }}
+              animate={{
+                strokeDashoffset:
+                  2 * Math.PI * 20 - (breakdown.total / 100) * 2 * Math.PI * 20,
+              }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             />
           </svg>
           <span className="absolute text-sm font-bold">{breakdown.total}</span>
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-medium truncate">{title || "Deal Score"}</p>
+          <p className="text-sm font-medium truncate">{title || t("title")}</p>
           <p className={`text-xs font-medium ${grade.color}`}>
-            {grade.emoji} {grade.label}
+            {grade.emoji} {gradeLabel}
           </p>
         </div>
       </div>
@@ -114,13 +214,27 @@ export function DealScoreCard({
           {/* Large circular score */}
           <div className="relative flex h-24 w-24 shrink-0 items-center justify-center">
             <svg className="h-24 w-24 -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeOpacity={0.08} strokeWidth={6} />
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                fill="none"
+                stroke="currentColor"
+                strokeOpacity={0.08}
+                strokeWidth={6}
+              />
               <motion.circle
                 cx="50"
                 cy="50"
                 r="40"
                 fill="none"
-                stroke={breakdown.total >= 70 ? "#22c55e" : breakdown.total >= 50 ? "#eab308" : "#ef4444"}
+                stroke={
+                  breakdown.total >= 70
+                    ? "#22c55e"
+                    : breakdown.total >= 50
+                      ? "#eab308"
+                      : "#ef4444"
+                }
                 strokeWidth={6}
                 strokeLinecap="round"
                 strokeDasharray={circumference}
@@ -137,7 +251,7 @@ export function DealScoreCard({
 
           <div className="flex-1">
             <Badge className={`${grade.bgColor} ${grade.color} mb-1 border-0`}>
-              {grade.emoji} {grade.label}
+              {grade.emoji} {gradeLabel}
             </Badge>
             {title && <p className="text-sm font-medium mt-1">{title}</p>}
             {price != null && marketAvg != null && (
@@ -146,7 +260,10 @@ export function DealScoreCard({
                 <span>vs market avg</span>
                 <span className="font-semibold">€{Math.round(marketAvg)}</span>
                 {price < marketAvg && (
-                  <Badge variant="outline" className="bg-green-500/10 text-green-600 text-[10px] border-0">
+                  <Badge
+                    variant="outline"
+                    className="bg-green-500/10 text-green-600 text-[10px] border-0"
+                  >
                     {Math.round(((marketAvg - price) / marketAvg) * 100)}% below
                   </Badge>
                 )}
@@ -157,7 +274,7 @@ export function DealScoreCard({
 
         {/* Factor breakdown bars */}
         <div className="space-y-3">
-          {FACTORS.map((factor, i) => {
+          {FACTOR_META.map((factor, i) => {
             const score = breakdown[factor.key];
             const pct = (score / factor.maxPoints) * 100;
             const Icon = factor.icon;
@@ -169,8 +286,13 @@ export function DealScoreCard({
                 transition={{ delay: 0.1 * i }}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: factor.color }} />
-                  <span className="text-xs font-medium flex-1">{factor.label}</span>
+                  <Icon
+                    className="h-3.5 w-3.5 shrink-0"
+                    style={{ color: factor.color }}
+                  />
+                  <span className="text-xs font-medium flex-1">
+                    {t(`factors.${factor.i18nKey}`)}
+                  </span>
                   <span className="text-xs tabular-nums text-muted-foreground">
                     {score}/{factor.maxPoints}
                   </span>
@@ -181,7 +303,11 @@ export function DealScoreCard({
                     style={{ backgroundColor: factor.color }}
                     initial={{ width: 0 }}
                     animate={{ width: `${pct}%` }}
-                    transition={{ duration: 0.6, delay: 0.1 * i, ease: "easeOut" }}
+                    transition={{
+                      duration: 0.6,
+                      delay: 0.1 * i,
+                      ease: "easeOut",
+                    }}
                   />
                 </div>
               </motion.div>
@@ -195,24 +321,27 @@ export function DealScoreCard({
             <>
               <ThumbsUp className="h-4 w-4 text-green-500" />
               <p className="text-xs">
-                <strong className="text-green-600">Recommended —</strong> This is a strong deal.
-                Consider making an offer before someone else does.
+                <strong className="text-green-600">
+                  {t("recommendation.buy")}
+                </strong>
               </p>
             </>
           ) : breakdown.total >= 50 ? (
             <>
               <Minus className="h-4 w-4 text-yellow-500" />
               <p className="text-xs">
-                <strong className="text-yellow-600">Decent —</strong> Worth watching, but consider
-                negotiating for a better price.
+                <strong className="text-yellow-600">
+                  {t("recommendation.watch")}
+                </strong>
               </p>
             </>
           ) : (
             <>
               <ThumbsDown className="h-4 w-4 text-red-500" />
               <p className="text-xs">
-                <strong className="text-red-600">Pass —</strong> This deal scores below average.
-                Better options likely exist.
+                <strong className="text-red-600">
+                  {t("recommendation.pass")}
+                </strong>
               </p>
             </>
           )}

@@ -32,16 +32,19 @@
     "grid": "Grid",
     "list": "List",
     "map": "Map",
-    "location": "Location"
+    "location": "Location",
+    "expandMap": "Expand map"
   },
   "nav": {
     "home": "Home",
     "categories": "Categories",
     "sell": "Sell",
+    "buy": "Buy",
+    "new": "New",
     "messages": "Messages",
     "favorites": "Favorites",
     "myListings": "My Listings",
-    "agents": "My Agents",
+    "agents": "My AI",
     "profile": "Profile",
     "settings": "Settings",
     "signIn": "Sign In",
@@ -54,12 +57,31 @@
   },
   "home": {
     "hero": {
-      "title": "Buy & Sell Smarter with AI Agents",
-      "subtitle": "The first platform where intelligent agents work 24/7 to get you the best deal",
-      "searchPlaceholder": "What are you looking for?",
-      "cta": "Start Selling with AI",
+      "title": "AI-Powered Classifieds for the Baltics",
+      "subtitle": "Buy and sell smarter with smart tools that handle pricing, negotiation, and matching 24/7",
+      "searchPlaceholder": "Search listings...",
+      "tabs": {
+        "sell": "Sell with AI",
+        "buy": "Buy with AI"
+      },
+      "sell": {
+        "title": "Sell Smarter with AI",
+        "subtitle": "Upload photos and AI creates your listing, sets optimal pricing, and negotiates with buyers 24/7",
+        "searchPlaceholder": "What do you want to sell?",
+        "cta": "Start Selling with AI",
+        "aiOptimized": "AI-optimized listing"
+      },
+      "buy": {
+        "title": "Buy Smarter with AI",
+        "subtitle": "Describe what you want and AI monitors listings, scores deals, and negotiates the best price for you",
+        "searchPlaceholder": "What are you looking for?",
+        "cta": "Start Buying with AI",
+        "matchFound": "Match found!",
+        "belowMarket": "€120 below market",
+        "dealScore": "Deal Score"
+      },
       "browseBelow": "or browse categories below ↓",
-      "agentName": "Turgo AI Agent",
+      "agentName": "Turgo AI",
       "demoOnline": "● Online",
       "demoUserMessage": "Sell my iPhone 15 Pro",
       "demoSimilar": "23 similar listings",
@@ -96,25 +118,29 @@
     "howItWorks": {
       "title": "How It Works",
       "step1": {
-        "title": "List Your Item",
-        "description": "Describe what you're selling — our AI helps with pricing and descriptions"
+        "title": "Tell Us What You Need",
+        "description": "Selling? Upload photos. Buying? Describe your ideal item. Our AI understands both."
       },
       "step2": {
-        "title": "Activate Your Agent",
-        "description": "Your AI selling agent optimizes pricing, responds to buyers, and negotiates 24/7"
+        "title": "AI Takes Care of It",
+        "description": "Works 24/7 in the background — creating listings, monitoring deals, analyzing prices."
       },
       "step3": {
+        "title": "Smart Negotiation",
+        "description": "Auto-respond, counter-offer, and negotiate on your behalf — whether buying or selling."
+      },
+      "step4": {
         "title": "Close the Deal",
-        "description": "Get notified when your agent finds the perfect buyer at the best price"
+        "description": "Get notified when your agent finds a buyer or the perfect item at the right price."
       }
     },
     "stats": {
       "aiValue": "24/7",
-      "aiDesc": "AI agents working for you",
+      "aiDesc": "Smart automation, 24/7",
       "smartValue": "Smart",
-      "smartDesc": "Dynamic pricing optimization",
+      "smartDesc": "Dynamic pricing & deal scoring",
       "fastValue": "Fast",
-      "fastDesc": "Auto-respond to buyers instantly"
+      "fastDesc": "Auto-respond & auto-offer instantly"
     }
   },
   "auth": {
@@ -221,7 +247,8 @@
     "deleting": "Deleting...",
     "cancel": "Cancel",
     "editListing": "Edit listing",
-    "manageYourListing": "Manage your listing"
+    "manageYourListing": "Manage your listing",
+    "locationOnMap": "Location on map"
   },
   "review": {
     "title": "Reviews",
@@ -255,8 +282,8 @@
     "noUser": "User not found"
   },
   "sell": {
-    "title": "Sell with AI Agent",
-    "subtitle": "Let our AI help you create the perfect listing and sell faster",
+    "title": "Sell with AI",
+    "subtitle": "Let AI help you create the perfect listing and sell faster",
     "orCreateManually": "Prefer to do it yourself?",
     "createManuallyLink": "Create listing manually",
     "wizard": {
@@ -292,6 +319,148 @@
       },
       "publish": "Publish Listing",
       "saveDraft": "Save as Draft"
+    },
+    "chat": {
+      "agentName": "Selling Agent",
+      "statusActive": "Agent active — monitoring your listing",
+      "statusHelping": "Helping you create the perfect listing",
+      "publishing": "Publishing your listing...",
+      "inputPricing": "Enter price in EUR...",
+      "inputMinPrice": "Minimum price in EUR...",
+      "inputDefault": "Type a message...",
+      "greeting": "Hey there! I'm your selling agent. Let's get your item listed and sold quickly.\n\nStart by uploading some photos of what you're selling — I'll analyze them and suggest the best title, description, and pricing strategy.",
+      "uploadPhotos": "📸 Upload photos",
+      "describeFirst": "📝 I'll describe it first",
+      "describePrompt": "No problem! Just describe what you're selling — brand, condition, any notable features.",
+      "photosUploaded": "Uploaded {count} photo(s)",
+      "photoAnalysisResult": "I can see you're selling: **{title}**\n\n{description}\n\nDoes this look right, or would you like to adjust?",
+      "photoAnalysisFallback": "Great photos! Now tell me — what exactly are you selling? Just describe it naturally.",
+      "looksGood": "✅ Looks good!",
+      "letMeAdjust": "✏️ Let me adjust",
+      "describeItem": "Sure! Just describe what you're selling and I'll create a great listing for you.",
+      "aiGenerating": "Got it! Let me work with that: \"{content}\"\n\nI'll generate a title and description. One moment...",
+      "aiGenerated": "Here's what I came up with:\n\n**Title:** {title}\n**Description:** {description}\n\nShall we continue with this, or would you like to make changes?",
+      "continueBtn": "✅ Continue",
+      "editBtn": "✏️ Edit",
+      "moreDetails": "I'll use \"{content}\" as the starting point. Could you give me more details about the item? Condition, brand, any notable details?",
+      "askDescription": "And a brief description?",
+      "pickCategory": "Now let's pick a category. Which of these best fits your item?",
+      "whichCategory": "Which category fits best?",
+      "categorySelected": "{category} — great choice!\n\nWhat price did you have in mind? I'll compare against market data and suggest an optimal starting price.\n\nJust type a number (EUR).",
+      "categoryNotFound": "I couldn't find a category matching \"{input}\". Please pick one from the list:",
+      "enterPrice": "What price are you thinking? I'll analyze the market and suggest an optimal starting price.\n\nJust type a number (in EUR).",
+      "priceYours": "Your price: **€{price}**",
+      "analyzing": "Analyzing market data...",
+      "priceSuggestion": "Your price: **€{price}**\n{confidence} Market analysis suggests: **€{suggested}** ({confidenceLabel} confidence){reasoning}{comparable}\n\nWould you like to use the suggested price or keep yours?",
+      "priceMatch": "Your price: **€{price}** — matches market data. Good choice!\n\nHow quickly do you want to sell? This affects my pricing strategy:",
+      "priceNoAi": "Your price: **€{price}**\n⚠️ AI pricing unavailable — I'll use your entered price.\n\nHow quickly do you want to sell? This affects my pricing strategy:",
+      "useAiPrice": "✅ Use €{price}",
+      "keepMyPrice": "💰 Keep my €{price}",
+      "priceUpdated": "Price updated to **€{price}** ✅\n\nNow, how quickly do you want to sell? This affects my pricing strategy:",
+      "priceKept": "Keeping your price of **€{price}** ✅\n\nHow quickly do you want to sell? This affects my pricing strategy:",
+      "invalidPrice": "I need a valid price in euros. Just type a number like 150 or 29.99",
+      "urgencySelected": "**{label}** — {desc}.\n\nNow, what's the absolute **minimum price** you'd accept? I'll never go below this.\n\nType a number (EUR).",
+      "urgencyFromText": "I'll base my pricing strategy on that timeline.\n\nNow, what's the absolute **minimum price** you'd accept? I won't go below this, even under deadline pressure.\n\nType a number (EUR), or say \"no minimum\" if price is flexible.",
+      "minPriceSet": "Minimum price: **€{price}** ✅{defaultNote}\n\nWould you like to enable AI automation features?",
+      "minPriceDefault": "\n\n💡 I set your minimum to **€{price}** (70% of your asking price).",
+      "autoBoth": "🤖 Enable both",
+      "autoNegotiateOnly": "🤝 Auto-negotiate only",
+      "autoBoostOnly": "📈 Auto-boost only",
+      "autoNone": "⏭️ No automation",
+      "summaryPlan": "Here's my plan:\n\n🏷️ **{title}**\n💰 Starting at **€{price}** → minimum **€{minPrice}**\n⏱️ {urgency}\n{postingTip}\n\n**My strategy:**\n{features}\n\n**Price Strategy Preview** — how your price will adjust over time:",
+      "strategyAutoRespond": "• Auto-respond to buyer questions 24/7",
+      "strategyAutoNegotiate": "• 🤝 Auto-negotiate offers within your price range",
+      "strategyAutoBoost": "• 📈 Auto-boost when views are low",
+      "strategyPriceAdjust": "• Dynamically adjust price based on engagement",
+      "strategyAlerts": "• Alert you when offers come in",
+      "launchAgent": "🚀 Launch agent!",
+      "saveDraft": "📝 Save as draft",
+      "changeSomething": "🔙 Change something",
+      "changePrompt": "What would you like to change? Title, price, urgency, or something else?",
+      "missingFields": "I need a few more details before I can create this listing:\n\n{fields}\n\nLet me walk you through the missing steps.",
+      "fillDetails": "📝 Fill in details",
+      "draftSaved": "Your listing has been saved as a **draft**! You can find it in your profile and publish it when you're ready.",
+      "listingLive": "Your listing is live and I'm on the job! Here's what I'll be doing:\n\n✅ Monitoring views and engagement\n✅ Responding to buyer questions\n✅ Adjusting price based on market data\n✅ Sending you daily summaries\n\nI'll message you when there's important activity. Good luck! 🎉",
+      "viewListing": "View my listing",
+      "signInRequired": "You need to be **signed in** to create a listing. Please sign in and try again.",
+      "signIn": "🔑 Sign in",
+      "createError": "There was an issue creating the listing: **{error}**\n\nPlease try again or edit details.",
+      "retry": "🔄 Retry",
+      "editDetails": "📝 Edit details",
+      "doneAutoRespond": "Auto-Respond",
+      "doneAutoRespondDesc": "AI answers buyer questions 24/7",
+      "doneSmartPricing": "Smart Pricing",
+      "doneSmartPricingDesc": "Dynamic price optimization",
+      "doneAutoNegotiate": "Auto-Negotiate",
+      "doneAutoNegotiateDesc": "Handles offers within your rules",
+      "tellMore": "Could you tell me more?",
+      "chooseSellingStrategy": "Pick a negotiation strategy:",
+      "strategySealedBid": "🔒 Sealed Bid — Blind offers, you pick the winner.",
+      "strategyFixedPrice": "💲 Fixed Price — Auto-accept at your price.",
+      "strategyDutchAuction": "📉 Dutch Auction — Price drops until someone buys."
+    }
+  },
+  "buy": {
+    "title": "Buy with AI",
+    "subtitle": "Describe what you want and let AI find the best deals for you",
+    "orBrowse": "Prefer to browse yourself?",
+    "browseLink": "Search listings manually",
+    "chat": {
+      "agentName": "Buying Agent",
+      "statusActive": "Monitoring marketplace for you",
+      "statusHelping": "Setting up your search agent",
+      "creating": "Creating your agent...",
+      "inputBudget": "e.g. max 500, ideal 350",
+      "inputDescribe": "Describe what you want...",
+      "inputDefault": "Type a message...",
+      "greeting": "Hi! I'm your buying agent. I'll continuously scan the marketplace for exactly what you want and alert you the moment a great deal appears.\n\nWhat are you looking for?",
+      "wantVehicle": "🚗 A vehicle",
+      "wantApartment": "🏠 An apartment",
+      "wantElectronics": "📱 Electronics",
+      "wantOther": "🔍 Something else",
+      "vehicleDetails": "What kind of vehicle? Give me some details — brand, model, features, year, etc.",
+      "apartmentDetails": "What kind of apartment? Give me some details — brand, model, features, year, etc.",
+      "electronicsDetails": "What kind of electronics? Give me some details — brand, model, features, year, etc.",
+      "otherDetails": "Describe what you're looking for. Be as specific as you can — it helps me find better matches.",
+      "searchConfirm": "Got it — searching for: \"{query}\"\n\nWhich category should I focus on?",
+      "budgetPrompt": "What's your budget?\n\nTell me the **maximum** you'd spend, and optionally your **ideal** price.\n\nExample: \"max 500, ideal 350\"",
+      "budgetSet": "Budget set: up to **€{max}**{ideal}\n\n{marketInsight}Any location preference?",
+      "idealPrice": " (ideal: €{price})",
+      "marketInsight": "📊 **Market insight:** Median price in this category is **€{median}** (range €{min}–€{max})\nYour budget of €{budget} covers ~{coverage}% of listings. Based on {count} listings.",
+      "anywhere": "🌍 Anywhere",
+      "conditionPrompt": "What condition are you okay with?",
+      "conditionAny": "Any condition — New or used",
+      "conditionNew": "New only — Sealed / unused",
+      "conditionUsed": "Used is fine — Good condition",
+      "frequencyPrompt": "How often should I check for new listings?\n\nThe more frequently I check, the faster you'll know about new deals.",
+      "freq5": "Every 5 min — Never miss a deal",
+      "freq15": "Every 15 min — Frequent checks",
+      "freq60": "Hourly — Balanced",
+      "freq1440": "Daily digest — Once a day",
+      "summary": "Here's my monitoring plan:\n\n🔍 **Looking for:** {query}\n📂 **Category:** {category}\n💰 **Budget:** €{idealPrice}–€{maxPrice}\n📍 **Location:** {location}\n📊 **Condition:** {condition}\n⏱️ **Checking:** Every {frequency} min\n\n**I will:**\n• Scan every new listing matching your criteria\n• Score each deal (0–100) based on 7 factors\n• Alert you instantly for deals scoring 70+\n• Track price drops on matching listings\n\nShall I start monitoring?",
+      "startMonitoring": "🚀 Start monitoring!",
+      "adjustCriteria": "📝 Adjust criteria",
+      "agentLive": "Your buying agent is live! Here's what happens next:\n\n✅ Scanning marketplace every {frequency} minutes\n✅ Scoring deals with 7-factor analysis\n✅ Instant alerts for great matches (70+ score)\n✅ Price drop tracking on top matches\n\nI'll message you the moment I find something good. 🎯",
+      "viewAgent": "View my agent",
+      "viewAllAgents": "View all agents",
+      "createAnother": "Create another",
+      "createError": "Something went wrong: **{error}**\n\nPlease try again.",
+      "retryCreate": "🔄 Retry",
+      "editPrompt": "What would you like to change? You can update the search, budget, location, or monitoring frequency.",
+      "welcomeBack": "Welcome back! What are you looking for this time?",
+      "unclearInput": "I didn't catch that. Could you clarify?",
+      "done24x7": "24/7 Monitoring",
+      "done24x7Desc": "Continuous marketplace scanning",
+      "doneDealScore": "Deal Scoring",
+      "doneDealScoreDesc": "7-factor analysis (0–100)",
+      "donePriceTrack": "Price Tracking",
+      "donePriceTrackDesc": "Alerts on price drops",
+      "chooseBuyingStrategy": "Pick a negotiation strategy:",
+      "strategyTimeEscalation": "⏳ Time Escalation — Start low, increase over time.",
+      "strategyMaxBid": "💪 Max Bid — Offer max budget immediately.",
+      "strategySniper": "🎯 Sniper — Wait, then strike at expiry.",
+      "strategyAcceptListed": "✅ Accept Listed Price — Offer the listed price directly.",
+      "strategyEarlyBird": "🐦 Early Bird — Bid early at 60–70% of listing price."
     }
   },
   "agent": {
@@ -323,7 +492,13 @@
       "ONE_WEEK": "This week",
       "TWO_WEEKS": "Within 2 weeks",
       "ONE_MONTH": "This month",
-      "NO_RUSH": "No rush"
+      "NO_RUSH": "No rush",
+      "ONE_DAY_desc": "Aggressive pricing, max exposure",
+      "THREE_DAYS_desc": "Fast but flexible",
+      "ONE_WEEK_desc": "Balanced approach",
+      "TWO_WEEKS_desc": "Patient pricing",
+      "ONE_MONTH_desc": "Maximize price",
+      "NO_RUSH_desc": "Hold for best offer"
     },
     "negotiate": {
       "accept": "Offer accepted",
@@ -571,33 +746,6 @@
       "upgrade": "Upgrade",
       "getStarted": "Get Started"
     }
-  },
-  "liquidation": {
-    "title": "Batch Liquidation",
-    "uploadDesc": "Upload photos of all items you want to sell. Our AI will identify each item and suggest prices.",
-    "dropPhotos": "Click or drag photos here",
-    "analyzeItems": "Analyze Items",
-    "analyzingTitle": "Identifying Items…",
-    "analyzingDesc": "Our AI is analyzing your photos to identify individual items",
-    "identifiedItems": "Identified Items",
-    "selected": "selected",
-    "itemTitle": "Item title",
-    "suggestedPrice": "AI suggested",
-    "deadline": "Selling deadline for all items",
-    "urgency": {
-      "oneDay": "Sell today",
-      "threeDays": "Within 3 days",
-      "oneWeek": "This week",
-      "twoWeeks": "Within 2 weeks",
-      "oneMonth": "This month"
-    },
-    "back": "Back",
-    "publishAll": "Publish All",
-    "publishingTitle": "Publishing Listings…",
-    "publishingDesc": "Creating listings and activating AI selling agents",
-    "doneTitle": "All Done!",
-    "doneDesc": "{count} listings created with AI selling agents",
-    "createMore": "Sell More Items"
   },
   "footer": {
     "about": "About",
@@ -1031,7 +1179,13 @@
     "errorTitleMin": "Title must be at least 5 characters",
     "errorDescMin": "Description must be at least 20 characters",
     "errorPrice": "Enter a valid price",
-    "errorCategory": "Select a category"
+    "errorCategory": "Select a category",
+    "addressLabel": "Address",
+    "addressCountry": "Country",
+    "selectCountry": "Select country",
+    "addressCityLabel": "City",
+    "addressField": "Street address (optional)",
+    "addressHint": "The full address will be shown on the map. Coordinates are resolved automatically."
   },
   "about": {
     "title": "About Turgo",

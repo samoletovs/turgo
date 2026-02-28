@@ -1,7 +1,7 @@
 import type { ChangeEvent } from "react";
 import { X } from "lucide-react";
 import type { SellingStepContext } from "./types";
-import { resolveName } from "./types";
+import { resolveName, buildCategoryActions } from "./types";
 
 // ──────────────────────────────────────────────
 // PHOTO UPLOAD HANDLER
@@ -161,12 +161,10 @@ export async function handleConfirmDetailsInput(
     return;
   }
   ctx.setCurrentStep("category");
+  const itemText = `${ctx.data.title} ${ctx.data.description} ${content}`;
   await ctx.thinkAndRespond(
     "Now let's pick a category. Which of these best fits your item?",
-    ctx.categories.slice(0, 6).map((c) => ({
-      label: resolveName(c.name, ctx.locale, c.slug),
-      value: `cat_${c.id}`,
-    })),
+    buildCategoryActions(ctx.categories, itemText, ctx.locale),
   );
 }
 

@@ -6,6 +6,7 @@ import { Search, X, Loader2, Tag, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useFilterStore } from "@/stores/useFilterStore";
+import { trpcClient } from "@/lib/trpc/client";
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -66,14 +67,33 @@ export function SearchBar({
     const timer = setTimeout(async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(
-          `/api/search/suggest?q=${encodeURIComponent(query.trim())}`,
-        );
-        if (res.ok) {
-          const data: Suggestion[] = await res.json();
-          setSuggestions(data);
-          setIsOpen(data.length > 0);
+        const data = await trpcClient.search.suggest.query({
+          query: query.trim(),
+        });
+        // Normalize to flat Suggestion array
+        const results: Suggestion[] = [];
+        if (Array.isArray(data)) {
+          results.push(...(data as Suggestion[]));
+        } else if (data && typeof data === "object") {
+          const d = data as {
+            listings?: { text: string; type: string }[];
+            categories?: { text: string; type: string; slug?: string }[];
+          };
+          if (d.listings)
+            results.push(
+              ...d.listings.map((l) => ({ ...l, type: "listing" as const })),
+            );
+          if (d.categories)
+            results.push(
+              ...d.categories.map((c) => ({
+                text: c.text,
+                type: "category" as const,
+                slug: c.slug,
+              })),
+            );
         }
+        setSuggestions(results);
+        setIsOpen(results.length > 0);
       } catch {
         // Fallback: keep existing suggestions
       } finally {
