@@ -18,6 +18,7 @@ import {
 import { auth } from "@/lib/auth";
 import type { Metadata } from "next";
 import { ConciergeChatLoader } from "@/components/concierge-chat-loader";
+import { FeedbackButton } from "@/components/feedback-button";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -90,6 +91,7 @@ export default async function LocaleLayout({
           <Footer />
         </div>
         <BottomNav />
+        <FeedbackButton />
         <ConciergeChatLoader locale={locale} />
         <CookieConsentBanner />
       </Providers>
