@@ -1,96 +1,107 @@
 /**
- * Search Service — Meilisearch integration for full-text search
+ * Search Service — Azure AI Search integration for full-text search
  * Provides indexing, search, suggestions, faceted filtering,
  * bulk sync, geo-search, and saved-search notification helpers.
  */
 
 import {
-  MeiliSearch,
-  type SearchParams,
-  type SearchResponse,
-} from "meilisearch";
+  SearchClient,
+  SearchIndexClient,
+  AzureKeyCredential,
+  type SearchOptions,
+} from "@azure/search-documents";
 
-// ─── Singleton client ────────────────────────────────────
+// ─── Singleton clients ───────────────────────────────────
 
-let _client: MeiliSearch | null = null;
+let _searchClient: SearchClient<SearchDocument> | null = null;
+let _indexClient: SearchIndexClient | null = null;
 
-function getClient(): MeiliSearch {
-  if (!_client) {
-    const apiKey = process.env.MEILISEARCH_API_KEY;
-    if (!apiKey && process.env.NODE_ENV === "production") {
-      throw new Error("MEILISEARCH_API_KEY must be set in production");
-    }
-    _client = new MeiliSearch({
-      host: process.env.MEILISEARCH_HOST || "http://localhost:7700",
-      apiKey: apiKey || "masterKey",
-    });
+function getEndpoint(): string {
+  return (
+    process.env.AZURE_SEARCH_ENDPOINT ||
+    "https://search-turgo.search.windows.net"
+  );
+}
+
+function getCredential(): AzureKeyCredential {
+  const key = process.env.AZURE_SEARCH_API_KEY;
+  if (!key && process.env.NODE_ENV === "production") {
+    throw new Error("AZURE_SEARCH_API_KEY must be set in production");
   }
-  return _client;
+  return new AzureKeyCredential(key || "dev-key");
+}
+
+function getSearchClient(): SearchClient<SearchDocument> {
+  if (!_searchClient) {
+    _searchClient = new SearchClient<SearchDocument>(
+      getEndpoint(),
+      LISTINGS_INDEX,
+      getCredential(),
+    );
+  }
+  return _searchClient;
+}
+
+function getIndexClient(): SearchIndexClient {
+  if (!_indexClient) {
+    _indexClient = new SearchIndexClient(getEndpoint(), getCredential());
+  }
+  return _indexClient;
 }
 
 const LISTINGS_INDEX = "listings";
 
 // ─── Index initialisation ────────────────────────────────
 
-/** Initialize Meilisearch index with settings (call once on app boot) */
+/** Initialize Azure AI Search index with schema (call once on app boot) */
 export async function initSearchIndex() {
   try {
-    const client = getClient();
+    const indexClient = getIndexClient();
 
-    // Create the index if it doesn't exist yet
-    try {
-      await client.createIndex(LISTINGS_INDEX, { primaryKey: "id" });
-    } catch {
-      /* index already exists — ignore */
-    }
-
-    const index = client.index(LISTINGS_INDEX);
-
-    await index.updateSettings({
-      searchableAttributes: [
-        "title",
-        "description",
-        "categoryName",
-        "locationName",
-        "attributeValues",
+    const indexDef = {
+      name: LISTINGS_INDEX,
+      fields: [
+        { name: "id", type: "Edm.String" as const, key: true, filterable: true },
+        { name: "title", type: "Edm.String" as const, searchable: true },
+        { name: "slug", type: "Edm.String" as const, filterable: true },
+        { name: "description", type: "Edm.String" as const, searchable: true },
+        { name: "price", type: "Edm.Double" as const, filterable: true, sortable: true, facetable: true },
+        { name: "currency", type: "Edm.String" as const, filterable: true },
+        { name: "condition", type: "Edm.String" as const, filterable: true, facetable: true },
+        { name: "status", type: "Edm.String" as const, filterable: true },
+        { name: "negotiable", type: "Edm.Boolean" as const, filterable: true },
+        { name: "categoryId", type: "Edm.String" as const, filterable: true },
+        { name: "categorySlug", type: "Edm.String" as const, filterable: true },
+        { name: "categoryName", type: "Edm.String" as const, searchable: true, filterable: true },
+        { name: "locationId", type: "Edm.String" as const, filterable: true },
+        { name: "locationSlug", type: "Edm.String" as const, filterable: true },
+        { name: "locationName", type: "Edm.String" as const, searchable: true },
+        { name: "countryCode", type: "Edm.String" as const, filterable: true },
+        { name: "managedByAgent", type: "Edm.Boolean" as const, filterable: true },
+        { name: "viewCount", type: "Edm.Int32" as const, sortable: true },
+        { name: "imageUrl", type: "Edm.String" as const },
+        { name: "imageCount", type: "Edm.Int32" as const },
+        { name: "hasImages", type: "Edm.Boolean" as const, filterable: true },
+        { name: "attributeValues", type: "Edm.String" as const, searchable: true },
+        { name: "location", type: "Edm.GeographyPoint" as const, filterable: true },
+        { name: "createdAt", type: "Edm.DateTimeOffset" as const, sortable: true, filterable: true },
       ],
-      filterableAttributes: [
-        "categoryId",
-        "categorySlug",
-        "locationId",
-        "locationSlug",
-        "status",
-        "condition",
-        "price",
-        "currency",
-        "managedByAgent",
-        "countryCode",
-        "negotiable",
-        "hasImages",
+      suggesters: [
+        { name: "sg", searchMode: "analyzingInfixMatching" as const, sourceFields: ["title", "categoryName"] },
       ],
-      sortableAttributes: ["price", "createdAt", "viewCount"],
-      rankingRules: [
-        "words",
-        "typo",
-        "proximity",
-        "attribute",
-        "sort",
-        "exactness",
+      scoringProfiles: [
+        {
+          name: "boostTitle",
+          textWeights: { weights: { title: 3, description: 1, categoryName: 2, attributeValues: 1.5 } },
+        },
       ],
-      // Geo-search for map view
-      displayedAttributes: ["*"],
-      distinctAttribute: null,
-      typoTolerance: {
-        enabled: true,
-        minWordSizeForTypos: { oneTypo: 4, twoTypos: 8 },
-      },
-      faceting: { maxValuesPerFacet: 100 },
-      pagination: { maxTotalHits: 10000 },
-    });
+      defaultScoringProfile: "boostTitle",
+    };
 
-    console.log("[Search] Meilisearch index initialized");
+    await indexClient.createOrUpdateIndex(indexDef);
+    console.log("[Search] Azure AI Search index initialized");
   } catch (error) {
-    console.warn("[Search] Meilisearch not available:", error);
+    console.warn("[Search] Azure AI Search not available:", error);
   }
 }
 
@@ -119,10 +130,9 @@ export interface SearchDocument {
   imageCount: number;
   hasImages: boolean;
   attributeValues?: string;
-  latitude?: number;
-  longitude?: number;
-  _geo?: { lat: number; lng: number };
-  createdAt: number; // epoch ms
+  /** Azure AI Search GeographyPoint (GeoJSON) */
+  location?: { type: "Point"; coordinates: [number, number] } | null;
+  createdAt: string; // ISO 8601 (Azure AI Search DateTimeOffset)
 }
 
 // ─── Indexing helpers ────────────────────────────────────
@@ -177,14 +187,16 @@ export function toSearchDocument(listing: {
     imageCount: listing.imageCount ?? 0,
     hasImages: (listing.imageCount ?? 0) > 0,
     attributeValues: listing.attributeValues,
-    latitude: listing.latitude ?? undefined,
-    longitude: listing.longitude ?? undefined,
-    createdAt: listing.createdAt.getTime(),
+    location: null,
+    createdAt: listing.createdAt.toISOString(),
   };
 
-  // Meilisearch geo-search requires _geo: { lat, lng }
+  // Azure AI Search geo: GeoJSON Point [longitude, latitude]
   if (listing.latitude != null && listing.longitude != null) {
-    doc._geo = { lat: listing.latitude, lng: listing.longitude };
+    doc.location = {
+      type: "Point",
+      coordinates: [listing.longitude, listing.latitude],
+    };
   }
 
   return doc;
@@ -195,8 +207,8 @@ export async function indexListing(
   listing: Parameters<typeof toSearchDocument>[0],
 ) {
   try {
-    const index = getClient().index(LISTINGS_INDEX);
-    await index.addDocuments([toSearchDocument(listing)]);
+    const client = getSearchClient();
+    await client.mergeOrUploadDocuments([toSearchDocument(listing)]);
   } catch (error) {
     console.warn("[Search] Failed to index listing:", error);
   }
@@ -207,12 +219,11 @@ export async function bulkIndexListings(
   listings: Parameters<typeof toSearchDocument>[0][],
 ) {
   try {
-    const index = getClient().index(LISTINGS_INDEX);
+    const client = getSearchClient();
     const docs = listings.map(toSearchDocument);
-    // Meilisearch recommends batches of ~10 000
-    const BATCH = 10_000;
+    const BATCH = 1_000; // Azure AI Search max batch size
     for (let i = 0; i < docs.length; i += BATCH) {
-      await index.addDocuments(docs.slice(i, i + BATCH));
+      await client.mergeOrUploadDocuments(docs.slice(i, i + BATCH));
     }
     console.log(`[Search] Bulk-indexed ${docs.length} listings`);
   } catch (error) {
@@ -223,8 +234,8 @@ export async function bulkIndexListings(
 /** Remove a listing from search index */
 export async function removeListing(listingId: string) {
   try {
-    const index = getClient().index(LISTINGS_INDEX);
-    await index.deleteDocument(listingId);
+    const client = getSearchClient();
+    await client.deleteDocuments([{ id: listingId } as SearchDocument]);
   } catch (error) {
     console.warn("[Search] Failed to remove listing:", error);
   }
@@ -247,42 +258,42 @@ export interface SearchListingsParams {
   geo?: { lat: number; lng: number; radiusM: number };
 }
 
-/** Build a Meilisearch filter string from structured params */
+/** Build an Azure AI Search OData filter string from structured params */
 function buildFilter(params: SearchListingsParams): string {
-  const parts: string[] = ['status = "ACTIVE"'];
+  const parts: string[] = ["status eq 'ACTIVE'"];
 
   if (params.categorySlug)
-    parts.push(`categorySlug = "${params.categorySlug}"`);
+    parts.push(`categorySlug eq '${params.categorySlug}'`);
   if (params.locationSlug)
-    parts.push(`locationSlug = "${params.locationSlug}"`);
-  if (params.condition) parts.push(`condition = "${params.condition}"`);
-  if (params.countryCode) parts.push(`countryCode = "${params.countryCode}"`);
-  if (params.minPrice != null) parts.push(`price >= ${params.minPrice}`);
-  if (params.maxPrice != null) parts.push(`price <= ${params.maxPrice}`);
+    parts.push(`locationSlug eq '${params.locationSlug}'`);
+  if (params.condition) parts.push(`condition eq '${params.condition}'`);
+  if (params.countryCode) parts.push(`countryCode eq '${params.countryCode}'`);
+  if (params.minPrice != null) parts.push(`price ge ${params.minPrice}`);
+  if (params.maxPrice != null) parts.push(`price le ${params.maxPrice}`);
 
   if (params.geo) {
     parts.push(
-      `_geoRadius(${params.geo.lat}, ${params.geo.lng}, ${params.geo.radiusM})`,
+      `geo.distance(location, geography'POINT(${params.geo.lng} ${params.geo.lat})') le ${params.geo.radiusM / 1000}`,
     );
   }
 
-  return parts.join(" AND ");
+  return parts.join(" and ");
 }
 
-/** Convert sort param to Meilisearch sort array */
-function buildSort(sort?: string): string[] | undefined {
+/** Convert sort param to Azure AI Search orderBy array */
+function buildOrderBy(sort?: string): string[] | undefined {
   switch (sort) {
     case "price_asc":
-      return ["price:asc"];
+      return ["price asc"];
     case "price_desc":
-      return ["price:desc"];
+      return ["price desc"];
     case "oldest":
-      return ["createdAt:asc"];
+      return ["createdAt asc"];
     case "views":
-      return ["viewCount:desc"];
+      return ["viewCount desc"];
     case "newest":
     default:
-      return ["createdAt:desc"];
+      return ["createdAt desc"];
   }
 }
 
@@ -298,31 +309,36 @@ export async function searchListings(params: SearchListingsParams): Promise<{
   const limit = params.limit ?? 24;
 
   try {
-    const index = getClient().index(LISTINGS_INDEX);
+    const client = getSearchClient();
+    const start = Date.now();
 
-    const searchParams: SearchParams = {
+    const searchOptions: SearchOptions<SearchDocument> = {
       filter: buildFilter(params),
-      sort: buildSort(params.sort),
-      offset: (page - 1) * limit,
-      limit,
-      attributesToHighlight: ["title", "description"],
+      orderBy: buildOrderBy(params.sort),
+      skip: (page - 1) * limit,
+      top: limit,
+      highlightFields: "title,description",
       highlightPreTag: "<mark>",
       highlightPostTag: "</mark>",
+      includeTotalCount: true,
     };
 
-    const result: SearchResponse<SearchDocument> = await index.search(
-      params.query,
-      searchParams,
-    );
+    const result = await client.search(params.query || "*", searchOptions);
 
-    const totalHits = result.estimatedTotalHits ?? 0;
+    const hits: SearchDocument[] = [];
+    for await (const r of result.results) {
+      hits.push(r.document);
+    }
+
+    const totalHits = result.count ?? 0;
+    const processingTimeMs = Date.now() - start;
 
     return {
-      hits: result.hits as SearchDocument[],
+      hits,
       totalHits,
       page,
       totalPages: Math.ceil(totalHits / limit),
-      processingTimeMs: result.processingTimeMs ?? 0,
+      processingTimeMs,
     };
   } catch (error) {
     console.warn("[Search] Search failed, falling back to empty:", error);
@@ -345,24 +361,24 @@ export async function searchSuggestions(
   maxResults = 8,
 ): Promise<SearchSuggestion[]> {
   try {
-    const index = getClient().index(LISTINGS_INDEX);
-    const result = await index.search(query, {
-      limit: maxResults,
-      attributesToRetrieve: ["title", "categorySlug", "categoryName"],
+    const client = getSearchClient();
+    const result = await client.suggest(query, "sg", {
+      top: maxResults,
+      select: ["title", "categorySlug", "categoryName"],
     });
 
     const seen = new Set<string>();
     const suggestions: SearchSuggestion[] = [];
 
-    for (const hit of result.hits) {
-      const doc = hit as SearchDocument;
-      const key = doc.title.toLowerCase();
+    for (const item of result.results) {
+      const key = item.text.toLowerCase();
       if (!seen.has(key)) {
         seen.add(key);
-        suggestions.push({ text: doc.title, type: "listing" });
+        suggestions.push({ text: item.text, type: "listing" });
       }
-      // Also suggest the category if not already present
-      if (doc.categoryName && !seen.has(doc.categorySlug)) {
+      // Also suggest the category if available
+      const doc = item.document as SearchDocument | undefined;
+      if (doc?.categoryName && doc.categorySlug && !seen.has(doc.categorySlug)) {
         seen.add(doc.categorySlug);
         suggestions.push({
           text: doc.categoryName,
@@ -411,11 +427,12 @@ export function savedSearchMatchesListing(
 
 // ─── Health check ────────────────────────────────────────
 
-/** Returns true if Meilisearch is reachable */
+/** Returns true if Azure AI Search is reachable */
 export async function isSearchHealthy(): Promise<boolean> {
   try {
-    const health = await getClient().health();
-    return health.status === "available";
+    const indexClient = getIndexClient();
+    const index = await indexClient.getIndex(LISTINGS_INDEX);
+    return !!index;
   } catch {
     return false;
   }

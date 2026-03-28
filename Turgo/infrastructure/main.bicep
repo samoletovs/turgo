@@ -3,9 +3,9 @@
 //
 // Resources:
 //   - Azure Container Registry (Basic)
-//   - Azure Container Apps Environment + App (turgo) + App (meilisearch)
+//   - Azure Container Apps Environment + App (turgo)
 //   - Azure Database for PostgreSQL Flexible Server (B1ms) + pgvector
-//   - Azure Cache for Redis (Basic C0)
+//   - Azure AI Search (Free tier)
 //   - Azure Storage Account (Blob for listing images)
 //   - Azure OpenAI (gpt-4o-mini + text-embedding-3-small)
 //   - Log Analytics + Application Insights
@@ -113,22 +113,6 @@ resource postgresFirewallAzure 'Microsoft.DBforPostgreSQL/flexibleServers/firewa
   }
 }
 
-// ── Azure Cache for Redis ─────────────────────────────────────────
-resource redis 'Microsoft.Cache/redis@2024-03-01' = {
-  name: 'redis-${projectName}'
-  location: location
-  tags: tags
-  properties: {
-    sku: {
-      name: 'Basic'
-      family: 'C'
-      capacity: 0
-    }
-    enableNonSslPort: false
-    minimumTlsVersion: '1.2'
-  }
-}
-
 // ── Storage Account (Blob for listing images) ─────────────────────
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   name: 'st${projectName}'
@@ -204,32 +188,16 @@ resource containerEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
   }
 }
 
-// ── Meilisearch Container App (internal) ──────────────────────────
-resource meilisearch 'Microsoft.App/containerApps@2024-03-01' = {
-  name: 'meilisearch'
+// ── Azure AI Search (Free tier) ───────────────────────────────────
+resource searchService 'Microsoft.Search/searchServices@2024-03-01-preview' = {
+  name: 'search-${projectName}'
   location: location
   tags: tags
+  sku: { name: 'free' }
   properties: {
-    managedEnvironmentId: containerEnv.id
-    configuration: {
-      ingress: {
-        targetPort: 7700
-        external: false
-      }
-    }
-    template: {
-      containers: [
-        {
-          name: 'meilisearch'
-          image: 'getmeili/meilisearch:v1.6'
-          resources: { cpu: json('0.25') memory: '0.5Gi' }
-          env: [
-            { name: 'MEILI_ENV' value: 'production' }
-          ]
-        }
-      ]
-      scale: { minReplicas: 1 maxReplicas: 1 }
-    }
+    replicaCount: 1
+    partitionCount: 1
+    hostingMode: 'default'
   }
 }
 
@@ -276,8 +244,8 @@ resource turgoApp 'Microsoft.App/containerApps@2024-03-01' = {
 output appUrl string = 'https://${turgoApp.properties.configuration.ingress.fqdn}'
 output acrLoginServer string = acr.properties.loginServer
 output postgresHost string = postgres.properties.fullyQualifiedDomainName
-output redisHost string = '${redis.name}.redis.cache.windows.net'
 output storageAccountName string = storageAccount.name
 output openaiEndpoint string = openai.properties.endpoint
-output meilisearchFqdn string = meilisearch.properties.configuration.ingress.fqdn
+output searchEndpoint string = 'https://${searchService.name}.search.windows.net'
+output searchAdminKey string = searchService.listAdminKeys().primaryKey
 output appInsightsConnectionString string = appInsights.properties.ConnectionString

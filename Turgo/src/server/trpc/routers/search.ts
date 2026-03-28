@@ -232,7 +232,7 @@ export const searchRouter = createTRPCRouter({
       for (const search of searches) {
         const filters = search.filters as Record<string, unknown>;
         if (
-          savedSearchMatchesListing(filters, input.listing as SearchDocument)
+          savedSearchMatchesListing(filters, input.listing as unknown as SearchDocument)
         ) {
           matches.push({
             userId: search.userId,

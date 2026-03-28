@@ -1,26 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock Meilisearch client
-const mockAddDocuments = vi.fn().mockResolvedValue({ taskUid: 1 });
-const mockDeleteDocument = vi.fn().mockResolvedValue({ taskUid: 2 });
-const mockSearch = vi.fn();
-const mockUpdateSettings = vi.fn().mockResolvedValue({ taskUid: 3 });
-const mockCreateIndex = vi.fn().mockResolvedValue({});
-const mockHealth = vi.fn();
+// Mock Azure AI Search clients
+const mockMergeOrUploadDocuments = vi.fn().mockResolvedValue({ results: [] });
+const mockDeleteDocuments = vi.fn().mockResolvedValue({ results: [] });
+const mockSearchResults = vi.fn();
+const mockSuggestResults = vi.fn();
+const mockCreateOrUpdateIndex = vi.fn().mockResolvedValue({});
+const mockGetIndex = vi.fn();
 
-vi.mock("meilisearch", () => {
+vi.mock("@azure/search-documents", () => {
   return {
-    MeiliSearch: class MockMeiliSearch {
-      index() {
-        return {
-          addDocuments: mockAddDocuments,
-          deleteDocument: mockDeleteDocument,
-          search: mockSearch,
-          updateSettings: mockUpdateSettings,
-        };
-      }
-      createIndex = mockCreateIndex;
-      health = mockHealth;
+    SearchClient: class MockSearchClient {
+      mergeOrUploadDocuments = mockMergeOrUploadDocuments;
+      deleteDocuments = mockDeleteDocuments;
+      search = mockSearchResults;
+      suggest = mockSuggestResults;
+    },
+    SearchIndexClient: class MockSearchIndexClient {
+      createOrUpdateIndex = mockCreateOrUpdateIndex;
+      getIndex = mockGetIndex;
+    },
+    AzureKeyCredential: class MockAzureKeyCredential {
+      constructor(_key: string) {}
     },
   };
 });
@@ -81,23 +82,26 @@ describe("toSearchDocument", () => {
     expect(doc.price).toBe(15000);
     expect(doc.categorySlug).toBe("cars");
     expect(doc.hasImages).toBe(true);
-    expect(doc.createdAt).toBe(baseListing.createdAt.getTime());
+    expect(doc.createdAt).toBe(baseListing.createdAt.toISOString());
   });
 
-  it("adds _geo when lat/lng are present", () => {
+  it("adds location GeoJSON when lat/lng are present", () => {
     const doc = toSearchDocument(baseListing);
 
-    expect(doc._geo).toEqual({ lat: 56.95, lng: 24.11 });
+    expect(doc.location).toEqual({
+      type: "Point",
+      coordinates: [24.11, 56.95],
+    });
   });
 
-  it("omits _geo when lat/lng are null", () => {
+  it("sets location to null when lat/lng are null", () => {
     const doc = toSearchDocument({
       ...baseListing,
       latitude: null,
       longitude: null,
     });
 
-    expect(doc._geo).toBeUndefined();
+    expect(doc.location).toBeNull();
   });
 
   it("defaults hasImages to false when imageCount is 0", () => {
@@ -126,10 +130,11 @@ describe("toSearchDocument", () => {
 // ──────────────────────────────────────────────────────────────
 describe("searchListings", () => {
   it("returns search results with pagination", async () => {
-    mockSearch.mockResolvedValue({
-      hits: [{ id: "1", title: "Car" }],
-      estimatedTotalHits: 42,
-      processingTimeMs: 5,
+    mockSearchResults.mockResolvedValue({
+      results: (async function* () {
+        yield { document: { id: "1", title: "Car" } };
+      })(),
+      count: 42,
     });
 
     const result = await searchListings({ query: "car" });
@@ -138,14 +143,12 @@ describe("searchListings", () => {
     expect(result.totalHits).toBe(42);
     expect(result.page).toBe(1);
     expect(result.totalPages).toBe(2); // ceil(42/24)
-    expect(result.processingTimeMs).toBe(5);
   });
 
-  it("builds correct filter with all params", async () => {
-    mockSearch.mockResolvedValue({
-      hits: [],
-      estimatedTotalHits: 0,
-      processingTimeMs: 0,
+  it("builds correct OData filter with all params", async () => {
+    mockSearchResults.mockResolvedValue({
+      results: (async function* () {})(),
+      count: 0,
     });
 
     await searchListings({
@@ -158,57 +161,69 @@ describe("searchListings", () => {
       countryCode: "LV",
     });
 
-    const searchCall = mockSearch.mock.calls[0];
+    const searchCall = mockSearchResults.mock.calls[0];
     const filter = searchCall[1].filter;
-    expect(filter).toContain('status = "ACTIVE"');
-    expect(filter).toContain('categorySlug = "electronics"');
-    expect(filter).toContain('locationSlug = "riga"');
-    expect(filter).toContain('condition = "NEW"');
-    expect(filter).toContain("price >= 100");
-    expect(filter).toContain("price <= 500");
-    expect(filter).toContain('countryCode = "LV"');
+    expect(filter).toContain("status eq 'ACTIVE'");
+    expect(filter).toContain("categorySlug eq 'electronics'");
+    expect(filter).toContain("locationSlug eq 'riga'");
+    expect(filter).toContain("condition eq 'NEW'");
+    expect(filter).toContain("price ge 100");
+    expect(filter).toContain("price le 500");
+    expect(filter).toContain("countryCode eq 'LV'");
   });
 
   it("applies geo filter when provided", async () => {
-    mockSearch.mockResolvedValue({ hits: [], estimatedTotalHits: 0 });
+    mockSearchResults.mockResolvedValue({
+      results: (async function* () {})(),
+      count: 0,
+    });
 
     await searchListings({
       query: "",
       geo: { lat: 56.95, lng: 24.11, radiusM: 5000 },
     });
 
-    const filter = mockSearch.mock.calls[0][1].filter;
-    expect(filter).toContain("_geoRadius(56.95, 24.11, 5000)");
+    const filter = mockSearchResults.mock.calls[0][1].filter;
+    expect(filter).toContain("geo.distance(location, geography'POINT(24.11 56.95)') le 5");
   });
 
   it("sorts by price ascending", async () => {
-    mockSearch.mockResolvedValue({ hits: [], estimatedTotalHits: 0 });
+    mockSearchResults.mockResolvedValue({
+      results: (async function* () {})(),
+      count: 0,
+    });
 
     await searchListings({ query: "car", sort: "price_asc" });
 
-    expect(mockSearch.mock.calls[0][1].sort).toEqual(["price:asc"]);
+    expect(mockSearchResults.mock.calls[0][1].orderBy).toEqual(["price asc"]);
   });
 
   it("sorts by newest by default", async () => {
-    mockSearch.mockResolvedValue({ hits: [], estimatedTotalHits: 0 });
+    mockSearchResults.mockResolvedValue({
+      results: (async function* () {})(),
+      count: 0,
+    });
 
     await searchListings({ query: "car" });
 
-    expect(mockSearch.mock.calls[0][1].sort).toEqual(["createdAt:desc"]);
+    expect(mockSearchResults.mock.calls[0][1].orderBy).toEqual(["createdAt desc"]);
   });
 
   it("handles pagination correctly", async () => {
-    mockSearch.mockResolvedValue({ hits: [], estimatedTotalHits: 100 });
+    mockSearchResults.mockResolvedValue({
+      results: (async function* () {})(),
+      count: 100,
+    });
 
     await searchListings({ query: "car", page: 3, limit: 10 });
 
-    expect(mockSearch.mock.calls[0][1].offset).toBe(20);
-    expect(mockSearch.mock.calls[0][1].limit).toBe(10);
+    expect(mockSearchResults.mock.calls[0][1].skip).toBe(20);
+    expect(mockSearchResults.mock.calls[0][1].top).toBe(10);
   });
 
-  it("returns empty results on Meilisearch error", async () => {
+  it("returns empty results on Azure AI Search error", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    mockSearch.mockRejectedValue(new Error("Connection refused"));
+    mockSearchResults.mockRejectedValue(new Error("Connection refused"));
 
     const result = await searchListings({ query: "car" });
 
@@ -223,10 +238,10 @@ describe("searchListings", () => {
 // ──────────────────────────────────────────────────────────────
 describe("searchSuggestions", () => {
   it("returns listing and category suggestions", async () => {
-    mockSearch.mockResolvedValue({
-      hits: [
-        { title: "Honda Civic", categorySlug: "cars", categoryName: "Cars" },
-        { title: "Honda Accord", categorySlug: "cars", categoryName: "Cars" },
+    mockSuggestResults.mockResolvedValue({
+      results: [
+        { text: "Honda Civic", document: { title: "Honda Civic", categorySlug: "cars", categoryName: "Cars" } },
+        { text: "Honda Accord", document: { title: "Honda Accord", categorySlug: "cars", categoryName: "Cars" } },
       ],
     });
 
@@ -237,10 +252,10 @@ describe("searchSuggestions", () => {
   });
 
   it("deduplicates suggestions", async () => {
-    mockSearch.mockResolvedValue({
-      hits: [
-        { title: "Same title", categorySlug: "cat1", categoryName: "Cat" },
-        { title: "Same title", categorySlug: "cat1", categoryName: "Cat" },
+    mockSuggestResults.mockResolvedValue({
+      results: [
+        { text: "Same title", document: { title: "Same title", categorySlug: "cat1", categoryName: "Cat" } },
+        { text: "Same title", document: { title: "Same title", categorySlug: "cat1", categoryName: "Cat" } },
       ],
     });
 
@@ -251,11 +266,10 @@ describe("searchSuggestions", () => {
   });
 
   it("limits results to maxResults", async () => {
-    mockSearch.mockResolvedValue({
-      hits: Array.from({ length: 20 }, (_, i) => ({
-        title: `Item ${i}`,
-        categorySlug: `cat-${i}`,
-        categoryName: `Cat ${i}`,
+    mockSuggestResults.mockResolvedValue({
+      results: Array.from({ length: 20 }, (_, i) => ({
+        text: `Item ${i}`,
+        document: { title: `Item ${i}`, categorySlug: `cat-${i}`, categoryName: `Cat ${i}` },
       })),
     });
 
@@ -265,7 +279,7 @@ describe("searchSuggestions", () => {
   });
 
   it("returns empty array on error", async () => {
-    mockSearch.mockRejectedValue(new Error("unavailable"));
+    mockSuggestResults.mockRejectedValue(new Error("unavailable"));
 
     const result = await searchSuggestions("test");
 
@@ -296,7 +310,7 @@ describe("savedSearchMatchesListing", () => {
     viewCount: 0,
     imageCount: 1,
     hasImages: true,
-    createdAt: Date.now(),
+    createdAt: new Date().toISOString(),
   };
 
   it("matches when all filters match", () => {
@@ -369,7 +383,7 @@ describe("savedSearchMatchesListing", () => {
 // indexListing / removeListing / bulkIndexListings
 // ──────────────────────────────────────────────────────────────
 describe("indexListing", () => {
-  it("adds document to Meilisearch index", async () => {
+  it("uploads document to Azure AI Search index", async () => {
     await indexListing({
       id: "l1",
       title: "Car",
@@ -384,14 +398,14 @@ describe("indexListing", () => {
       createdAt: new Date(),
     });
 
-    expect(mockAddDocuments).toHaveBeenCalledWith([
+    expect(mockMergeOrUploadDocuments).toHaveBeenCalledWith([
       expect.objectContaining({ id: "l1", title: "Car" }),
     ]);
   });
 
   it("handles indexing error gracefully", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    mockAddDocuments.mockRejectedValue(new Error("Connection refused"));
+    mockMergeOrUploadDocuments.mockRejectedValue(new Error("Connection refused"));
 
     await expect(
       indexListing({
@@ -417,7 +431,7 @@ describe("removeListing", () => {
   it("removes document from index", async () => {
     await removeListing("l1");
 
-    expect(mockDeleteDocument).toHaveBeenCalledWith("l1");
+    expect(mockDeleteDocuments).toHaveBeenCalledWith([{ id: "l1" }]);
   });
 });
 
@@ -440,7 +454,7 @@ describe("bulkIndexListings", () => {
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     await bulkIndexListings(listings);
 
-    expect(mockAddDocuments).toHaveBeenCalled();
+    expect(mockMergeOrUploadDocuments).toHaveBeenCalled();
     logSpy.mockRestore();
   });
 });
@@ -449,16 +463,16 @@ describe("bulkIndexListings", () => {
 // isSearchHealthy
 // ──────────────────────────────────────────────────────────────
 describe("isSearchHealthy", () => {
-  it("returns true when Meilisearch is available", async () => {
-    mockHealth.mockResolvedValue({ status: "available" });
+  it("returns true when Azure AI Search is available", async () => {
+    mockGetIndex.mockResolvedValue({ name: "listings" });
 
     const result = await isSearchHealthy();
 
     expect(result).toBe(true);
   });
 
-  it("returns false when Meilisearch is unavailable", async () => {
-    mockHealth.mockRejectedValue(new Error("Connection refused"));
+  it("returns false when Azure AI Search is unavailable", async () => {
+    mockGetIndex.mockRejectedValue(new Error("Connection refused"));
 
     const result = await isSearchHealthy();
 
@@ -470,21 +484,20 @@ describe("isSearchHealthy", () => {
 // initSearchIndex
 // ──────────────────────────────────────────────────────────────
 describe("initSearchIndex", () => {
-  it("creates index and updates settings", async () => {
+  it("creates or updates index with schema", async () => {
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     await initSearchIndex();
 
-    expect(mockCreateIndex).toHaveBeenCalledWith("listings", {
-      primaryKey: "id",
-    });
-    expect(mockUpdateSettings).toHaveBeenCalled();
+    expect(mockCreateOrUpdateIndex).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "listings" }),
+    );
     logSpy.mockRestore();
   });
 
-  it("handles Meilisearch unavailability gracefully", async () => {
+  it("handles Azure AI Search unavailability gracefully", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    mockCreateIndex.mockRejectedValue(new Error("Connection refused"));
+    mockCreateOrUpdateIndex.mockRejectedValue(new Error("Connection refused"));
 
     await expect(initSearchIndex()).resolves.not.toThrow();
 
