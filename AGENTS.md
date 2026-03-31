@@ -19,7 +19,7 @@ Always run all three before creating a PR.
 
 ## Project structure
 
-```
+```text
 src/
 ├── app/[locale]/     # Next.js App Router pages
 ├── components/       # React components (ui/, listings/, agents/, messaging/, etc.)
