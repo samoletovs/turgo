@@ -158,3 +158,13 @@ jobs:
               --resource-group ${{ env.RESOURCE_GROUP }} \
               --name ${{ env.CONTAINER_APP_NAME }} \
               --command "npx --yes prisma db seed"
+
+      - name: Sync landing page order
+        if: success()
+        run: |
+          curl -sf -X POST \
+            -H "Authorization: token ${{ secrets.GH_PAT }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/samoletovs/naurolabs/dispatches \
+            -d '{"event_type": "project-deployed", "client_payload": {"project": "turgo"}}' \
+            || echo "::warning::Landing page sync dispatch failed"
