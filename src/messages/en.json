@@ -1,6 +1,6 @@
-{
+﻿{
   "common": {
-    "appName": "Turgo",
+    "appName": "turgo",
     "loading": "Loading...",
     "error": "Something went wrong",
     "save": "Save",
@@ -81,7 +81,7 @@
         "dealScore": "Deal Score"
       },
       "browseBelow": "or browse categories below ↓",
-      "agentName": "Turgo AI",
+      "agentName": "turgo AI",
       "demoOnline": "● Online",
       "demoUserMessage": "Sell my iPhone 15 Pro",
       "demoSimilar": "23 similar listings",
@@ -780,7 +780,7 @@
   },
   "concierge": {
     "title": "AI Concierge",
-    "greeting": "Hi! I'm your Turgo AI assistant. How can I help you today?",
+    "greeting": "Hi! I'm your turgo AI assistant. How can I help you today?",
     "placeholder": "Ask me anything...",
     "suggestions": [
       "I want to sell something",
@@ -840,7 +840,7 @@
     "terms": "Terms of Service",
     "contact": "Contact",
     "help": "Help Center",
-    "copyright": "© {year} Turgo. All rights reserved.",
+    "copyright": "© {year} turgo. All rights reserved.",
     "tagline": "Agent-first classifieds for the Baltics",
     "legal": "Legal",
     "cookies": "Cookie Policy"
@@ -880,7 +880,7 @@
     "cookies": {
       "title": "Cookie Policy",
       "lastUpdated": "Last updated: February 2026",
-      "intro": "This Cookie Policy explains how Turgo uses cookies and similar technologies.",
+      "intro": "This Cookie Policy explains how turgo uses cookies and similar technologies.",
       "whatAreCookies": "What Are Cookies",
       "whatAreCookiesDesc": "Cookies are small text files stored on your device when you visit a website. They help the site remember your preferences and improve your experience.",
       "typesTitle": "Types of Cookies We Use",
@@ -1088,7 +1088,7 @@
   },
   "onboarding": {
     "welcome": {
-      "title": "Welcome to Turgo!",
+      "title": "Welcome to turgo!",
       "subtitle": "Let's set up your account in just a few steps"
     },
     "step1": {
@@ -1100,7 +1100,7 @@
       "subtitle": "Select categories you're interested in"
     },
     "step3": {
-      "title": "How Will You Use Turgo?",
+      "title": "How Will You Use turgo?",
       "subtitle": "This helps us customize your experience",
       "buying": "I want to buy things",
       "selling": "I want to sell things",
@@ -1276,7 +1276,7 @@
     "addressHint": "The full address will be shown on the map. Coordinates are resolved automatically."
   },
   "about": {
-    "title": "About Turgo",
+    "title": "About turgo",
     "subtitle": "The agent-first classifieds platform built for the Baltic region. We combine AI intelligence with deep local market expertise.",
     "mission": {
       "title": "Our Mission",
@@ -1284,9 +1284,9 @@
     },
     "story": {
       "title": "Our Story",
-      "p1": "Turgo was born from a simple frustration: classifieds platforms in the Baltics hadn't evolved in decades. Listings sat unoptimized, pricing was guesswork, and buyers had to manually sift through thousands of posts.",
+      "p1": "turgo was born from a simple frustration: classifieds platforms in the Baltics hadn't evolved in decades. Listings sat unoptimized, pricing was guesswork, and buyers had to manually sift through thousands of posts.",
       "p2": "We asked ourselves: what if AI agents could handle all of that? What if a selling agent could dynamically price your items, respond to inquiries, and negotiate on your behalf — while a buying agent continuously searched for the best deals matching your criteria?",
-      "p3": "That vision became Turgo — the first agent-first classifieds platform purpose-built for Latvia, Lithuania, and Estonia. Today, our AI agents have helped thousands of users across the Baltics buy and sell smarter."
+      "p3": "That vision became turgo — the first agent-first classifieds platform purpose-built for Latvia, Lithuania, and Estonia. Today, our AI agents have helped thousands of users across the Baltics buy and sell smarter."
     },
     "values": {
       "title": "Core Values",
@@ -1309,7 +1309,7 @@
     },
     "market": {
       "title": "Baltic Market Focus",
-      "desc": "Turgo operates across all three Baltic states, providing a unified marketplace with localized content, pricing intelligence, and language support for each country.",
+      "desc": "turgo operates across all three Baltic states, providing a unified marketplace with localized content, pricing intelligence, and language support for each country.",
       "latvia": {
         "flag": "🇱🇻",
         "name": "Latvia",
@@ -1410,7 +1410,7 @@
   },
   "help": {
     "title": "Help Center",
-    "subtitle": "Find answers to common questions about using Turgo.",
+    "subtitle": "Find answers to common questions about using turgo.",
     "cta": {
       "title": "Still need help?",
       "desc": "Our support team is ready to assist you with any questions not covered here.",
@@ -1425,11 +1425,11 @@
         },
         "q2": {
           "q": "How do AI agents work?",
-          "a": "Turgo's AI agents work behind the scenes to automate buying and selling. Selling agents optimize your listing pricing, auto-respond to buyer inquiries, and can negotiate on your behalf 24/7. Buying agents continuously scan for items matching your criteria and alert you when great deals appear."
+          "a": "turgo's AI agents work behind the scenes to automate buying and selling. Selling agents optimize your listing pricing, auto-respond to buyer inquiries, and can negotiate on your behalf 24/7. Buying agents continuously scan for items matching your criteria and alert you when great deals appear."
         },
         "q3": {
           "q": "What regions and languages are supported?",
-          "a": "Turgo covers Latvia, Lithuania, and Estonia. The platform is fully localized in English, Latvian (Latviešu), Lithuanian (Lietuvių), Estonian (Eesti), and Russian (Русский). AI agents can auto-translate listings between languages."
+          "a": "turgo covers Latvia, Lithuania, and Estonia. The platform is fully localized in English, Latvian (Latviešu), Lithuanian (Lietuvių), Estonian (Eesti), and Russian (Русский). AI agents can auto-translate listings between languages."
         }
       },
       "sellingAgents": {
@@ -1488,7 +1488,7 @@
       "payments": {
         "title": "Payments & Subscriptions",
         "q1": {
-          "q": "Is Turgo free to use?",
+          "q": "Is turgo free to use?",
           "a": "Yes! The Free plan includes up to 5 listings, 1 AI agent, and 5 photos per listing. Upgrade to Pro (€9.99/month) for 50 listings and unlimited agents, or Business (€29.99/month) for unlimited everything plus API access and priority support."
         },
         "q2": {
@@ -1497,14 +1497,14 @@
         },
         "q3": {
           "q": "What payment methods are accepted?",
-          "a": "We accept all major credit and debit cards (Visa, Mastercard, Amex) via Stripe. Payments between buyers and sellers are handled directly between parties — Turgo facilitates the connection but does not process purchase payments."
+          "a": "We accept all major credit and debit cards (Visa, Mastercard, Amex) via Stripe. Payments between buyers and sellers are handled directly between parties — turgo facilitates the connection but does not process purchase payments."
         }
       },
       "accountPrivacy": {
         "title": "Account & Privacy",
         "q1": {
           "q": "How is my data protected?",
-          "a": "Turgo is fully GDPR-compliant. We encrypt all data in transit and at rest, never sell your personal information, and give you full control over your data. You can export or delete your data at any time from Settings."
+          "a": "turgo is fully GDPR-compliant. We encrypt all data in transit and at rest, never sell your personal information, and give you full control over your data. You can export or delete your data at any time from Settings."
         },
         "q2": {
           "q": "Can I export my data?",

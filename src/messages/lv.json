@@ -1,6 +1,6 @@
-{
+﻿{
   "common": {
-    "appName": "Turgo",
+    "appName": "turgo",
     "loading": "Ielādē...",
     "error": "Kaut kas nogāja greizi",
     "save": "Saglabāt",
@@ -81,7 +81,7 @@
         "dealScore": "Darījuma vērtējums"
       },
       "browseBelow": "vai skatīt kategorijas zemāk ↓",
-      "agentName": "Turgo AI",
+      "agentName": "turgo AI",
       "demoOnline": "● Tiešsaistē",
       "demoUserMessage": "Pārdot manu iPhone 15 Pro",
       "demoSimilar": "23 līdzīgi sludinājumi",
@@ -662,7 +662,7 @@
     "terms": "Lietošanas noteikumi",
     "contact": "Kontakti",
     "help": "Palīdzības centrs",
-    "copyright": "© {year} Turgo. Visas tiesības aizsargātas.",
+    "copyright": "© {year} turgo. Visas tiesības aizsargātas.",
     "tagline": "Aģentu vadīts sludinājumu tirgus Baltijā",
     "legal": "Juridiskā informācija",
     "cookies": "Sīkdatņu politika"
@@ -702,7 +702,7 @@
     "cookies": {
       "title": "Sīkdatņu politika",
       "lastUpdated": "Pēdējoreiz atjaunināts: 2026. gada februāris",
-      "intro": "Šī sīkdatņu politika izskaidro, kā Turgo izmanto sīkdatnes un līdzīgas tehnoloģijas.",
+      "intro": "Šī sīkdatņu politika izskaidro, kā turgo izmanto sīkdatnes un līdzīgas tehnoloģijas.",
       "whatAreCookies": "Kas ir sīkdatnes",
       "whatAreCookiesDesc": "Sīkdatnes ir mazi teksta faili, kas tiek saglabāti jūsu ierīcē apmeklējot vietni.",
       "typesTitle": "Izmantoto sīkdatņu veidi",
@@ -910,7 +910,7 @@
   },
   "onboarding": {
     "welcome": {
-      "title": "Laipni lūdzam Turgo!",
+      "title": "Laipni lūdzam turgo!",
       "subtitle": "Iestatiet savu kontu dažos vienkāršos soļos"
     },
     "step1": {
@@ -922,7 +922,7 @@
       "subtitle": "Atlasiet kategorijas, kas jūs interesē"
     },
     "step3": {
-      "title": "Kā jūs izmantosiet Turgo?",
+      "title": "Kā jūs izmantosiet turgo?",
       "subtitle": "Tas palīdzēs mums pielāgot jūsu pieredzi",
       "buying": "Vēlos pirkt",
       "selling": "Vēlos pārdot",
@@ -1276,7 +1276,7 @@
     "addressHint": "Pilnā adrese tiks parādīta kartē. Koordinātas tiek noteiktas automātiski."
   },
   "about": {
-    "title": "Par Turgo",
+    "title": "Par turgo",
     "subtitle": "Aģentu vadīta sludinājumu platforma, kas veidota Baltijas reģionam. Mēs apvienojam mākslīgā intelekta izlūkošanu ar dziļām vietējā tirgus zināšanām.",
     "mission": {
       "title": "Mūsu misija",
@@ -1284,9 +1284,9 @@
     },
     "story": {
       "title": "Mūsu stāsts",
-      "p1": "Turgo radās no vienkāršas neapmierinātības: sludinājumu platformas Baltijā nebija attīstījušās gadu desmitiem.",
+      "p1": "turgo radās no vienkāršas neapmierinātības: sludinājumu platformas Baltijā nebija attīstījušās gadu desmitiem.",
       "p2": "Mēs jautājām sev: ko darītu, ja AI aģenti varētu to visu pārvaldīt?",
-      "p3": "Šī vīzija kļuva par Turgo — pirmo aģentu vadīto sludinājumu platformu Latvijai, Lietuvai un Igaunijai."
+      "p3": "Šī vīzija kļuva par turgo — pirmo aģentu vadīto sludinājumu platformu Latvijai, Lietuvai un Igaunijai."
     },
     "values": {
       "title": "Pamatvērtības",
@@ -1309,7 +1309,7 @@
     },
     "market": {
       "title": "Baltijas tirgus fokuss",
-      "desc": "Turgo darbojas visās trijās Baltijas valstīs.",
+      "desc": "turgo darbojas visās trijās Baltijas valstīs.",
       "latvia": {
         "flag": "🇱🇻",
         "name": "Latvija",
@@ -1410,7 +1410,7 @@
   },
   "help": {
     "title": "Palīdzības centrs",
-    "subtitle": "Atrodiet atbildes uz biežāk uzdotajiem jautājumiem par Turgo.",
+    "subtitle": "Atrodiet atbildes uz biežāk uzdotajiem jautājumiem par turgo.",
     "cta": {
       "title": "Joprojām nepieciešama palīdzība?",
       "desc": "Mūsu atbalsta komanda ir gatava jums palīdzēt.",
@@ -1425,11 +1425,11 @@
         },
         "q2": {
           "q": "Kā darbojas AI aģenti?",
-          "a": "Turgo AI aģenti automatizē pirkšanu un pārdošanu. Pārdošanas aģenti optimizē cenas un atbild pircējiem."
+          "a": "turgo AI aģenti automatizē pirkšanu un pārdošanu. Pārdošanas aģenti optimizē cenas un atbild pircējiem."
         },
         "q3": {
           "q": "Kādi reģioni un valodas tiek atbalstītas?",
-          "a": "Turgo aptver Latviju, Lietuvu un Igauniju. Platforma ir pilnībā lokalizēta 5 valodās."
+          "a": "turgo aptver Latviju, Lietuvu un Igauniju. Platforma ir pilnībā lokalizēta 5 valodās."
         }
       },
       "sellingAgents": {
@@ -1488,7 +1488,7 @@
       "payments": {
         "title": "Maksājumi un abonementi",
         "q1": {
-          "q": "Vai Turgo ir bezmaksas?",
+          "q": "Vai turgo ir bezmaksas?",
           "a": "Jā! Bezmaksas plāns ietver līdz 5 sludinājumiem un 1 AI aģentu."
         },
         "q2": {
@@ -1504,7 +1504,7 @@
         "title": "Konts un privātums",
         "q1": {
           "q": "Kā tiek aizsargāti mani dati?",
-          "a": "Turgo pilnībā atbilst GDPR. Mēs šifrējam visus datus."
+          "a": "turgo pilnībā atbilst GDPR. Mēs šifrējam visus datus."
         },
         "q2": {
           "q": "Vai es varu eksportēt savus datus?",

@@ -1,6 +1,6 @@
-{
+﻿{
   "common": {
-    "appName": "Turgo",
+    "appName": "turgo",
     "loading": "Kraunama...",
     "error": "Kažkas nutiko ne taip",
     "save": "Išsaugoti",
@@ -81,7 +81,7 @@
         "dealScore": "Sandorio įvertinimas"
       },
       "browseBelow": "arba naršykite kategorijas žemiau ↓",
-      "agentName": "Turgo AI",
+      "agentName": "turgo AI",
       "demoOnline": "● Prisijungęs",
       "demoUserMessage": "Parduoti mano iPhone 15 Pro",
       "demoSimilar": "23 panašūs skelbimai",
@@ -663,7 +663,7 @@
     "terms": "Naudojimo sąlygos",
     "contact": "Kontaktai",
     "help": "Pagalbos centras",
-    "copyright": "© {year} Turgo. Visos teisės saugomos.",
+    "copyright": "© {year} turgo. Visos teisės saugomos.",
     "tagline": "AI agentų prekyvietė Baltijai",
     "legal": "Teisinė informacija",
     "cookies": "Slapukų politika"
@@ -703,7 +703,7 @@
     "cookies": {
       "title": "Slapukų politika",
       "lastUpdated": "Atnaujinta: 2026 m. vasaris",
-      "intro": "Ši politika paaiškina, kaip Turgo naudoja slapukus.",
+      "intro": "Ši politika paaiškina, kaip turgo naudoja slapukus.",
       "whatAreCookies": "Kas yra slapukai",
       "whatAreCookiesDesc": "Slapukai yra maži tekstiniai failai, saugomi jūsų įrenginyje.",
       "typesTitle": "Naudojamų slapukų tipai",
@@ -911,7 +911,7 @@
   },
   "onboarding": {
     "welcome": {
-      "title": "Sveiki atvykę į Turgo!",
+      "title": "Sveiki atvykę į turgo!",
       "subtitle": "Nustatykite paskyrą per kelis žingsnius"
     },
     "step1": {
@@ -923,7 +923,7 @@
       "subtitle": "Pasirinkite dominančias kategorijas"
     },
     "step3": {
-      "title": "Kaip naudosite Turgo?",
+      "title": "Kaip naudosite turgo?",
       "subtitle": "Tai padės pritaikyti jūsų patirtį",
       "buying": "Noriu pirkti",
       "selling": "Noriu parduoti",
@@ -1277,7 +1277,7 @@
     "addressHint": "Visas adresas bus rodomas žemėlapyje. Koordinatės nustatomos automatiškai."
   },
   "about": {
-    "title": "Apie Turgo",
+    "title": "Apie turgo",
     "subtitle": "Agentais paremta skelbimų platforma, sukurta Baltijos regionui. Jungiame dirbtinį intelektą su gilia vietinės rinkos patirtimi.",
     "mission": {
       "title": "Mūsų misija",
@@ -1285,9 +1285,9 @@
     },
     "story": {
       "title": "Mūsų istorija",
-      "p1": "Turgo gimė iš paprasto nusivylimo: skelbimų platformos Baltijoje nebuvo pasikeitusios dešimtmečiais.",
+      "p1": "turgo gimė iš paprasto nusivylimo: skelbimų platformos Baltijoje nebuvo pasikeitusios dešimtmečiais.",
       "p2": "Paklausėme savęs: o jei AI agentai galėtų visa tai valdyti?",
-      "p3": "Ši vizija tapo Turgo — pirmąja agentais paremta skelbimų platforma Latvijai, Lietuvai ir Estijai."
+      "p3": "Ši vizija tapo turgo — pirmąja agentais paremta skelbimų platforma Latvijai, Lietuvai ir Estijai."
     },
     "values": {
       "title": "Pagrindinės vertybės",
@@ -1310,7 +1310,7 @@
     },
     "market": {
       "title": "Baltijos rinkos fokusas",
-      "desc": "Turgo veikia visose trijose Baltijos šalyse.",
+      "desc": "turgo veikia visose trijose Baltijos šalyse.",
       "latvia": {
         "flag": "🇱🇻",
         "name": "Latvija",
@@ -1411,7 +1411,7 @@
   },
   "help": {
     "title": "Pagalbos centras",
-    "subtitle": "Raskite atsakymus į dažniausiai užduodamus klausimus apie Turgo.",
+    "subtitle": "Raskite atsakymus į dažniausiai užduodamus klausimus apie turgo.",
     "cta": {
       "title": "Vis dar reikia pagalbos?",
       "desc": "Mūsų palaikymo komanda pasiruošusi jums padėti.",
@@ -1426,11 +1426,11 @@
         },
         "q2": {
           "q": "Kaip veikia AI agentai?",
-          "a": "Turgo AI agentai automatizuoja pirkimą ir pardavimą. Pardavimo agentai optimizuoja kainas ir atsako pirkėjams."
+          "a": "turgo AI agentai automatizuoja pirkimą ir pardavimą. Pardavimo agentai optimizuoja kainas ir atsako pirkėjams."
         },
         "q3": {
           "q": "Kokie regionai ir kalbos palaikomi?",
-          "a": "Turgo apima Latviją, Lietuvą ir Estiją. Platforma pilnai lokalizuota 5 kalbomis."
+          "a": "turgo apima Latviją, Lietuvą ir Estiją. Platforma pilnai lokalizuota 5 kalbomis."
         }
       },
       "sellingAgents": {
@@ -1489,7 +1489,7 @@
       "payments": {
         "title": "Mokėjimai ir prenumeratos",
         "q1": {
-          "q": "Ar Turgo nemokamas?",
+          "q": "Ar turgo nemokamas?",
           "a": "Taip! Nemokamas planas apima iki 5 skelbimų ir 1 AI agentą."
         },
         "q2": {
@@ -1505,7 +1505,7 @@
         "title": "Paskyra ir privatumas",
         "q1": {
           "q": "Kaip saugomi mano duomenys?",
-          "a": "Turgo pilnai atitinka BDAR. Visi duomenys šifruojami."
+          "a": "turgo pilnai atitinka BDAR. Visi duomenys šifruojami."
         },
         "q2": {
           "q": "Ar galiu eksportuoti savo duomenis?",

@@ -23,8 +23,8 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'Turgo — AI-Powered Classifieds',
-    template: '%s | Turgo',
+    default: 'turgo — AI-Powered Classifieds',
+    template: '%s | turgo',
   },
   description:
     'Agent-first classifieds platform for the Baltics. Buy and sell smarter with AI agents.',

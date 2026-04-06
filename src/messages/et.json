@@ -1,6 +1,6 @@
-{
+﻿{
   "common": {
-    "appName": "Turgo",
+    "appName": "turgo",
     "loading": "Laadimine...",
     "error": "Midagi läks valesti",
     "save": "Salvesta",
@@ -81,7 +81,7 @@
         "dealScore": "Tehingu skoor"
       },
       "browseBelow": "või sirvi kategooriaid allpool ↓",
-      "agentName": "Turgo AI",
+      "agentName": "turgo AI",
       "demoOnline": "● Võrgus",
       "demoUserMessage": "Müü minu iPhone 15 Pro",
       "demoSimilar": "23 sarnast kuulutust",
@@ -663,7 +663,7 @@
     "terms": "Kasutustingimused",
     "contact": "Kontakt",
     "help": "Abikeskus",
-    "copyright": "© {year} Turgo. Kõik õigused kaitstud.",
+    "copyright": "© {year} turgo. Kõik õigused kaitstud.",
     "tagline": "AI agendiga kuulutuste turg Baltikumile",
     "legal": "Õiguslik teave",
     "cookies": "Küpsiste poliitika"
@@ -703,7 +703,7 @@
     "cookies": {
       "title": "Küpsiste poliitika",
       "lastUpdated": "Viimati uuendatud: veebruar 2026",
-      "intro": "See poliitika selgitab, kuidas Turgo kasutab küpsiseid.",
+      "intro": "See poliitika selgitab, kuidas turgo kasutab küpsiseid.",
       "whatAreCookies": "Mis on küpsised",
       "whatAreCookiesDesc": "Küpsised on väikesed tekstifailid, mis salvestatakse teie seadmesse.",
       "typesTitle": "Kasutatavate küpsiste tüübid",
@@ -911,7 +911,7 @@
   },
   "onboarding": {
     "welcome": {
-      "title": "Tere tulemast Turgosse!",
+      "title": "Tere tulemast turgosse!",
       "subtitle": "Seadistage konto mõne sammuga"
     },
     "step1": {
@@ -923,7 +923,7 @@
       "subtitle": "Valige huvipakkuvad kategooriad"
     },
     "step3": {
-      "title": "Kuidas kasutate Turgot?",
+      "title": "Kuidas kasutate turgot?",
       "subtitle": "See aitab kogemust kohandada",
       "buying": "Tahan osta",
       "selling": "Tahan müüa",
@@ -1277,7 +1277,7 @@
     "addressHint": "Täielik aadress kuvatakse kaardil. Koordinaadid leitakse automaatselt."
   },
   "about": {
-    "title": "Turgost",
+    "title": "turgost",
     "subtitle": "Agentidel põhinev kuulutuste platvorm, mis on loodud Balti regioonile. Ühendame tehisintellekti kohaliku turu sügava tundmisega.",
     "mission": {
       "title": "Meie missioon",
@@ -1285,9 +1285,9 @@
     },
     "story": {
       "title": "Meie lugu",
-      "p1": "Turgo sündis lihtsast frustratsioonist: kuulutuste platvormid Baltikumis polnud aastakümneid arenenud.",
+      "p1": "turgo sündis lihtsast frustratsioonist: kuulutuste platvormid Baltikumis polnud aastakümneid arenenud.",
       "p2": "Küsisime endalt: mis oleks, kui AI agendid saaksid seda kõike hallata?",
-      "p3": "See visioon sai Turgoks — esimeseks agentidel põhinevaks kuulutuste platvormiks Lätile, Leedule ja Eestile."
+      "p3": "See visioon sai turgoks — esimeseks agentidel põhinevaks kuulutuste platvormiks Lätile, Leedule ja Eestile."
     },
     "values": {
       "title": "Põhiväärtused",
@@ -1310,7 +1310,7 @@
     },
     "market": {
       "title": "Balti turu fookus",
-      "desc": "Turgo tegutseb kõigis kolmes Balti riigis.",
+      "desc": "turgo tegutseb kõigis kolmes Balti riigis.",
       "latvia": {
         "flag": "🇱🇻",
         "name": "Läti",
@@ -1411,7 +1411,7 @@
   },
   "help": {
     "title": "Abikeskus",
-    "subtitle": "Leidke vastused levinumatele küsimustele Turgo kohta.",
+    "subtitle": "Leidke vastused levinumatele küsimustele turgo kohta.",
     "cta": {
       "title": "Vajate veel abi?",
       "desc": "Meie tugimeeskond on valmis teid aitama.",
@@ -1426,11 +1426,11 @@
         },
         "q2": {
           "q": "Kuidas AI agendid töötavad?",
-          "a": "Turgo AI agendid automatiseerivad ostmist ja müümist. Müügiagendid optimeerivad hindu ja vastavad ostjatele."
+          "a": "turgo AI agendid automatiseerivad ostmist ja müümist. Müügiagendid optimeerivad hindu ja vastavad ostjatele."
         },
         "q3": {
           "q": "Milliseid piirkondi ja keeli toetatakse?",
-          "a": "Turgo katab Lätit, Leedut ja Eestit. Platvorm on täielikult lokaliseeritud 5 keeles."
+          "a": "turgo katab Lätit, Leedut ja Eestit. Platvorm on täielikult lokaliseeritud 5 keeles."
         }
       },
       "sellingAgents": {
@@ -1489,7 +1489,7 @@
       "payments": {
         "title": "Maksed ja tellimused",
         "q1": {
-          "q": "Kas Turgo on tasuta?",
+          "q": "Kas turgo on tasuta?",
           "a": "Jah! Tasuta plaan sisaldab kuni 5 kuulutust ja 1 AI agenti."
         },
         "q2": {
@@ -1505,7 +1505,7 @@
         "title": "Konto ja privaatsus",
         "q1": {
           "q": "Kuidas on minu andmed kaitstud?",
-          "a": "Turgo on täielikult GDPR-iga kooskõlas. Kõik andmed on krüpteeritud."
+          "a": "turgo on täielikult GDPR-iga kooskõlas. Kõik andmed on krüpteeritud."
         },
         "q2": {
           "q": "Kas saan oma andmeid eksportida?",
