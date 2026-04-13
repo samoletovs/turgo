@@ -27,15 +27,15 @@ const TITLE_IMAGE_MAP: [RegExp, string[]][] = [
     "https://images.unsplash.com/photo-1626668011687-8a114cf5a34c?w=800",
   ]],
   [/honda\s*civic/i, [
-    "https://images.unsplash.com/photo-1606611013004-1e0e17458d7e?w=800",
-    "https://images.unsplash.com/photo-1679483529741-5fa3fc490e2a?w=800",
+    "https://images.unsplash.com/photo-1551830820-330a71b99659?w=800",
+    "https://images.unsplash.com/photo-1612825173281-9a193378527e?w=800",
   ]],
   [/volvo/i, [
-    "https://images.unsplash.com/photo-1619551734325-81aaf2fef8cc?w=800",
+    "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=800",
     "https://images.unsplash.com/photo-1616788494707-ec28f08d05a1?w=800",
   ]],
   [/škoda|skoda|octavia/i, [
-    "https://images.unsplash.com/photo-1632038229852-e71bc6757543?w=800",
+    "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
     "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=800",
   ]],
   [/ford\s*focus/i, [
@@ -44,15 +44,15 @@ const TITLE_IMAGE_MAP: [RegExp, string[]][] = [
   ]],
   [/mazda/i, [
     "https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=800",
-    "https://images.unsplash.com/photo-1615063029789-7ea354222242?w=800",
+    "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800",
   ]],
   [/hyundai\s*tucson/i, [
     "https://images.unsplash.com/photo-1629897048514-3dd7414fe72a?w=800",
-    "https://images.unsplash.com/photo-1636866361746-c64a034049e0?w=800",
+    "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800",
   ]],
   [/kia\s*sportage/i, [
-    "https://images.unsplash.com/photo-1669230245498-b59c02720428?w=800",
-    "https://images.unsplash.com/photo-1619682817481-e994891cd1f6?w=800",
+    "https://images.unsplash.com/photo-1629897048514-3dd7414fe72a?w=800",
+    "https://images.unsplash.com/photo-1610647752706-3bb12232b3ab?w=800",
   ]],
   [/renault\s*clio/i, [
     "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=800",
@@ -120,7 +120,7 @@ const TITLE_IMAGE_MAP: [RegExp, string[]][] = [
 
   // Phones
   [/iphone\s*16/i, [
-    "https://images.unsplash.com/photo-1727447067775-352411b15204?w=800",
+    "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800",
     "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=800",
   ]],
   [/iphone\s*15/i, [
@@ -133,7 +133,7 @@ const TITLE_IMAGE_MAP: [RegExp, string[]][] = [
   ]],
   [/samsung\s*galaxy/i, [
     "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=800",
-    "https://images.unsplash.com/photo-1678911820864-e5c67e784172?w=800",
+    "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800",
   ]],
   [/google\s*pixel/i, [
     "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=800",
@@ -237,10 +237,10 @@ const TITLE_IMAGE_MAP: [RegExp, string[]][] = [
   ]],
   [/e-velos|kalkhoff|electric.*bike|cube.*hybrid/i, [
     "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=800",
-    "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800",
+    "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=800",
   ]],
   [/frog|bērnu\s*velos/i, [
-    "https://images.unsplash.com/photo-1595558009579-876cf21b02c2?w=800",
+    "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=800",
     "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800",
   ]],
 
@@ -282,7 +282,7 @@ const TITLE_IMAGE_MAP: [RegExp, string[]][] = [
     "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800",
   ]],
   [/canada\s*goose|ziemas\s*jaka/i, [
-    "https://images.unsplash.com/photo-1544923246-77307dd270b5?w=800",
+    "https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?w=800",
     "https://images.unsplash.com/photo-1608063615781-e2ef8c73d114?w=800",
   ]],
   [/tommy\s*hilfiger|dūnu\s*veste/i, [
@@ -306,8 +306,8 @@ const TITLE_IMAGE_MAP: [RegExp, string[]][] = [
     "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800",
   ]],
   [/franču\s*buldog|french\s*bulldog/i, [
-    "https://images.unsplash.com/photo-1583337130417-13104dec14a3?w=800",
-    "https://images.unsplash.com/photo-1609779160382-7e1f3fbc8a34?w=800",
+    "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800",
+    "https://images.unsplash.com/photo-1591769225440-811ad7d6eab3?w=800",
   ]],
   [/vācu\s*aitu|german\s*shepherd/i, [
     "https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=800",
@@ -324,10 +324,20 @@ const TITLE_IMAGE_MAP: [RegExp, string[]][] = [
     "https://images.unsplash.com/photo-1615497001839-b0a0eac3274c?w=800",
   ]],
 
+  // Real estate — castles/manors
+  [/caste|castle|pils|muiža|manor/i, [
+    "https://images.unsplash.com/photo-1533154683836-84ea7a0bc310?w=800",
+    "https://images.unsplash.com/photo-1546975490-e8b92a360b24?w=800",
+  ]],
+
   // Music instruments
   [/roland.*piano|digitāl.*klav|keyboard/i, [
     "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=800",
     "https://images.unsplash.com/photo-1552422535-c45813c61732?w=800",
+  ]],
+  [/gibson/i, [
+    "https://images.unsplash.com/photo-1564186763535-ebb21ef5277f?w=800",
+    "https://images.unsplash.com/photo-1516924962500-2b4b3b99ea02?w=800",
   ]],
   [/fender|stratocaster|ģitāra|guitar/i, [
     "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800",
@@ -341,17 +351,17 @@ const TITLE_IMAGE_MAP: [RegExp, string[]][] = [
   // Farm equipment
   [/traktors|john\s*deere|kubota/i, [
     "https://images.unsplash.com/photo-1530267981375-f0de937f5f13?w=800",
-    "https://images.unsplash.com/photo-1592805723127-004b174f6479?w=800",
+    "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800",
   ]],
   [/automower|robotpļāvējs|husqvarna.*mower/i, [
-    "https://images.unsplash.com/photo-1590856029826-c7a73142bbcd?w=800",
-    "https://images.unsplash.com/photo-1558290935-07a8e143fbb0?w=800",
+    "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800",
+    "https://images.unsplash.com/photo-1558171813-4c088753af8f?w=800",
   ]],
 
   // LEGO
   [/lego/i, [
-    "https://images.unsplash.com/photo-1587654780291-39c9404d7dd0?w=800",
-    "https://images.unsplash.com/photo-1472457897821-70d989ae1b9b?w=800",
+    "https://images.unsplash.com/photo-1518364538800-6bae3c2ea0f2?w=800",
+    "https://images.unsplash.com/photo-1596854407944-bf87f6fdd49e?w=800",
   ]],
 
   // Tools
