@@ -46,3 +46,6 @@ next-env.d.ts
 
 # Playwright
 .playwright-mcp/
+
+# Local-only personal-info pattern overrides
+scripts/.leak-patterns.local.txt
