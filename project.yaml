@@ -1,0 +1,22 @@
+name: turgo
+purpose: "Agent-first classifieds marketplace — peer-to-peer with AI agent orchestration and real-time messaging"
+users: "Buyers and sellers in the Baltic region"
+stage: active
+goals:
+  - "AI agent orchestration for listings, messaging, search"
+  - "Real-time messaging (WebSocket)"
+  - "Full-text search (Meilisearch)"
+  - "Multi-language i18n routing"
+  - "Push notifications and service worker"
+similar:
+  - "OLX"
+  - "Facebook Marketplace"
+  - "Airbnb"
+quality:
+  - tests
+  - ci-cd
+  - responsive
+  - api
+  - i18n
+  - pwa
+  - auth
