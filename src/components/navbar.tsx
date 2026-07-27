@@ -29,6 +29,8 @@ import { Link, useRouter, usePathname } from '@/i18n/navigation';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { RegionSelector } from '@/components/region-selector';
 import { useUiStore } from '@/stores/useUiStore';
+import { NotificationBell } from '@/components/messaging/notification-bell';
+import { useSocket } from '@/lib/socket-client';
 
 interface NavbarProps {
   locale: string;
@@ -41,6 +43,7 @@ export function Navbar({ locale, user }: NavbarProps) {
   const pathname = usePathname();
   const { isMobileNavOpen: mobileMenuOpen, toggleMobileNav, setMobileNavOpen } = useUiStore();
   const [searchQuery, setSearchQuery] = useState('');
+  const { unreadCount } = useSocket();
 
   // Rehydrate Zustand persisted state on mount
   useEffect(() => {
@@ -88,11 +91,7 @@ export function Navbar({ locale, user }: NavbarProps) {
                   <Heart className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button variant="ghost" size="icon" asChild>
-                <Link href="/messages">
-                  <MessageSquare className="h-4 w-4" />
-                </Link>
-              </Button>
+              <NotificationBell />
               <Button variant="ghost" size="icon" asChild>
                 <Link href="/profile">
                   <User className="h-4 w-4" />
@@ -177,7 +176,14 @@ export function Navbar({ locale, user }: NavbarProps) {
                 </Button>
                 <Button variant="ghost" asChild className="w-full justify-start">
                   <Link href="/messages">
-                    <MessageSquare className="h-4 w-4 mr-2" />
+                    <span className="relative mr-2">
+                      <MessageSquare className="h-4 w-4" />
+                      {unreadCount > 0 && (
+                        <span className="absolute -right-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
+                    </span>
                     {t('messages')}
                   </Link>
                 </Button>

@@ -8,6 +8,7 @@ import { Link, usePathname } from '@/i18n/navigation';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useSocket } from '@/lib/socket-client';
 
 interface Tab {
   href: string;
@@ -21,6 +22,7 @@ export function BottomNav() {
   const t = useTranslations('nav');
   const { data: session } = useSession();
   const [fabOpen, setFabOpen] = useState(false);
+  const { unreadCount: socketUnreadCount, isConnected } = useSocket();
 
   const tabs: Tab[] = [
     { href: '/', label: t('home'), icon: House },
@@ -30,12 +32,15 @@ export function BottomNav() {
     { href: '/profile', label: t('profile'), icon: User },
   ];
 
-  // Lightweight tRPC query for unread message count
-  const { data: unreadCount } = trpc.message.unreadCount.useQuery(undefined, {
+  // Polling fallback for when the socket is not connected
+  const { data: polledUnreadCount } = trpc.message.unreadCount.useQuery(undefined, {
     refetchInterval: 30_000,
     retry: false,
-    enabled: !!session,
+    enabled: !!session && !isConnected,
   });
+
+  // Real-time socket count takes priority; fall back to polling when offline
+  const unreadCount = isConnected ? socketUnreadCount : (polledUnreadCount ?? 0);
 
   return (
     <>

@@ -5,16 +5,22 @@ import { ThemeProvider } from 'next-themes';
 import { TRPCProvider } from '@/lib/trpc/client';
 import { SocketProvider } from '@/lib/socket-client';
 import { Toaster } from 'sonner';
+import { MessageNotificationToaster } from '@/components/messaging/message-notification-toaster';
 
 interface ProvidersProps {
   children: React.ReactNode;
 }
 
-/** Only mount SocketProvider when the user is authenticated */
+/** Only mount SocketProvider (and dependent real-time components) when authenticated */
 function ConditionalSocket({ children }: { children: React.ReactNode }) {
   const { status } = useSession();
   if (status === 'authenticated') {
-    return <SocketProvider>{children}</SocketProvider>;
+    return (
+      <SocketProvider>
+        <MessageNotificationToaster />
+        {children}
+      </SocketProvider>
+    );
   }
   return <>{children}</>;
 }

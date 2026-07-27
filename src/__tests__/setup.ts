@@ -86,6 +86,7 @@ export const mockDb = {
   escalationItem: createMockPrismaModel(),
   searchLog: createMockPrismaModel(),
   agentMetrics: createMockPrismaModel(),
+  pushSubscription: createMockPrismaModel(),
   $transaction: vi.fn((fnOrArray: unknown) => {
     if (typeof fnOrArray === 'function') return fnOrArray(mockDb);
     if (Array.isArray(fnOrArray)) return Promise.all(fnOrArray);
