@@ -76,9 +76,11 @@ export const searchRouter = createTRPCRouter({
   suggest: publicProcedure
     .input(z.object({ query: z.string().min(2).max(100) }))
     .query(async ({ ctx, input }) => {
+      const normalizedQuery = input.query.trim().toLowerCase();
+
       // Try Meilisearch suggestions first
       try {
-        const suggestions = await meiliSuggest(input.query, 8);
+        const suggestions = await meiliSuggest(normalizedQuery, 8);
         if (suggestions.length > 0) return suggestions;
       } catch {
         // fall through
@@ -98,25 +100,46 @@ export const searchRouter = createTRPCRouter({
       const categories = await ctx.db.category.findMany({
         where: {
           isActive: true,
-          OR: [{ slug: { contains: input.query.toLowerCase() } }],
         },
         select: { name: true, slug: true },
-        take: 3,
+        orderBy: { sortOrder: 'asc' },
+        take: 50,
       });
+
+      const categorySuggestions = categories
+        .map((category) => {
+          const localizedNames =
+            typeof category.name === 'object' && category.name !== null
+              ? Object.values(category.name as Record<string, unknown>).filter(
+                  (value): value is string => typeof value === 'string',
+                )
+              : [];
+          const categoryLabel =
+            localizedNames[0] ||
+            (typeof category.name === 'string' ? category.name : category.slug);
+          const matchesQuery =
+            category.slug.toLowerCase().includes(normalizedQuery) ||
+            localizedNames.some((name) => name.toLowerCase().includes(normalizedQuery));
+
+          if (!matchesQuery) return null;
+
+          return {
+            text: categoryLabel,
+            type: 'category' as const,
+            slug: category.slug,
+          };
+        })
+        .filter((category): category is { text: string; type: 'category'; slug: string } =>
+          category !== null,
+        )
+        .slice(0, 3);
 
       return {
         listings: listings.map((l) => ({
           text: l.title,
           type: 'listing' as const,
         })),
-        categories: categories.map((c) => ({
-          text:
-            typeof c.name === 'object'
-              ? (c.name as Record<string, string>).en || c.slug
-              : String(c.name),
-          type: 'category' as const,
-          slug: c.slug,
-        })),
+        categories: categorySuggestions,
       };
     }),
 

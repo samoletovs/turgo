@@ -193,6 +193,22 @@ describe('suggest', () => {
     expect(result).toHaveProperty('listings');
     expect(result).toHaveProperty('categories');
   });
+
+  it('matches fallback categories by localized name', async () => {
+    mockMeiliSuggest.mockRejectedValue(new Error('unavailable'));
+    mockDb.listing.findMany.mockResolvedValue([]);
+    mockDb.category.findMany.mockResolvedValue([
+      { name: { en: 'Cars', lv: 'Automašīnas' }, slug: 'vehicles' },
+      { name: { en: 'Phones' }, slug: 'phones' },
+    ]);
+
+    const result = await publicCaller().suggest({ query: 'auto' });
+
+    expect(result).toHaveProperty('categories');
+    expect((result as { categories: { slug: string }[] }).categories).toEqual([
+      expect.objectContaining({ slug: 'vehicles' }),
+    ]);
+  });
 });
 
 // ──────────────────────────────────────────────────────────────
