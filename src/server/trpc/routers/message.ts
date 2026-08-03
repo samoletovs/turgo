@@ -3,7 +3,7 @@ import { createTRPCRouter, protectedProcedure, createRateLimitedProcedure } from
 import { sendMessageSchema } from '@/lib/validators';
 import { RATE_LIMITS } from '@/lib/constants';
 import { sanitizeHtml } from '@/lib/sanitize';
-import { emitMessage } from '@/server/socket';
+import { emitMessage, emitReadReceipt } from '@/server/socket';
 import {
   processAutoRespond,
   processAutoNegotiate,
@@ -442,6 +442,45 @@ export const messageRouter = createTRPCRouter({
       }
 
       return conversation;
+    }),
+
+  /** Mark messages in a conversation as read and notify sender via socket */
+  markAsRead: protectedProcedure
+    .input(
+      z.object({
+        conversationId: z.string().cuid(),
+        lastMessageId: z.string().cuid(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Verify the caller is a conversation participant
+      const conversation = await ctx.db.conversation.findUnique({
+        where: { id: input.conversationId },
+        select: { buyerId: true, sellerId: true },
+      });
+
+      if (
+        !conversation ||
+        (conversation.buyerId !== ctx.session.user.id &&
+          conversation.sellerId !== ctx.session.user.id)
+      ) {
+        throw new Error('Conversation not found');
+      }
+
+      // Mark all unread received messages as read in the DB
+      await ctx.db.message.updateMany({
+        where: {
+          conversationId: input.conversationId,
+          receiverId: ctx.session.user.id!,
+          isRead: false,
+        },
+        data: { isRead: true },
+      });
+
+      // Broadcast real-time read receipt so the sender's UI updates immediately
+      emitReadReceipt(input.conversationId, ctx.session.user.id!, input.lastMessageId);
+
+      return { success: true };
     }),
 
   /** Get unread message count across all conversations */

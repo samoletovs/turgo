@@ -6,6 +6,7 @@ import { mockDb } from '@/__tests__/setup';
 // Mock socket
 vi.mock('@/server/socket', () => ({
   emitMessage: vi.fn(),
+  emitReadReceipt: vi.fn(),
 }));
 
 // Mock messaging service
@@ -390,8 +391,79 @@ describe('message.rejectMessage', () => {
 });
 
 // ──────────────────────────────────────────────
-// message.getMessages — authorization edge case
+// message.markAsRead
 // ──────────────────────────────────────────────
+describe('message.markAsRead', () => {
+  it('marks messages as read and returns success', async () => {
+    mockDb.conversation.findUnique.mockResolvedValue({
+      buyerId: 'user-1',
+      sellerId: 'seller-1',
+    });
+    mockDb.message.updateMany.mockResolvedValue({ count: 3 });
+
+    const caller = createCaller(authedCtx());
+    const result = await caller.message.markAsRead({
+      conversationId: validCuid,
+      lastMessageId: validCuid2,
+    });
+
+    expect(result).toEqual({ success: true });
+    expect(mockDb.message.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          conversationId: validCuid,
+          receiverId: 'user-1',
+          isRead: false,
+        }),
+        data: { isRead: true },
+      }),
+    );
+  });
+
+  it('throws when user is not a conversation participant', async () => {
+    mockDb.conversation.findUnique.mockResolvedValue({
+      buyerId: 'other-user-1',
+      sellerId: 'other-user-2',
+    });
+
+    const caller = createCaller(authedCtx());
+    await expect(
+      caller.message.markAsRead({ conversationId: validCuid, lastMessageId: validCuid2 }),
+    ).rejects.toThrow('Conversation not found');
+  });
+
+  it('throws when conversation does not exist', async () => {
+    mockDb.conversation.findUnique.mockResolvedValue(null);
+
+    const caller = createCaller(authedCtx());
+    await expect(
+      caller.message.markAsRead({ conversationId: validCuid, lastMessageId: validCuid2 }),
+    ).rejects.toThrow('Conversation not found');
+  });
+
+  it('throws UNAUTHORIZED without session', async () => {
+    const caller = createCaller(anonCtx());
+    await expect(
+      caller.message.markAsRead({ conversationId: validCuid, lastMessageId: validCuid2 }),
+    ).rejects.toThrow(/UNAUTHORIZED/);
+  });
+
+  it('allows seller to mark messages as read', async () => {
+    mockDb.conversation.findUnique.mockResolvedValue({
+      buyerId: 'buyer-1',
+      sellerId: 'user-1',
+    });
+    mockDb.message.updateMany.mockResolvedValue({ count: 1 });
+
+    const caller = createCaller(authedCtx('user-1'));
+    const result = await caller.message.markAsRead({
+      conversationId: validCuid,
+      lastMessageId: validCuid2,
+    });
+
+    expect(result).toEqual({ success: true });
+  });
+});
 describe('message.getMessages', () => {
   it('throws when user is not a conversation participant', async () => {
     mockDb.conversation.findUnique.mockResolvedValue({

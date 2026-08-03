@@ -79,10 +79,11 @@ export function ChatWindow({ conversationId, locale = 'en' }: ChatWindowProps) {
   const approveMutation = trpc.message.approveMessage.useMutation();
   const rejectMutation = trpc.message.rejectMessage.useMutation();
   const translateMutation = trpc.message.translate.useMutation();
+  const markAsReadMutation = trpc.message.markAsRead.useMutation();
   const utils = trpc.useUtils();
 
   // Socket.IO real-time messages
-  const { newMessages, typingUsers, sendTyping, sendReadReceipt } =
+  const { newMessages, typingUsers, sendTyping, sendReadReceipt, readReceipts } =
     useConversationSocket(conversationId);
 
   const conversation = conversationQuery.data as ConversationData | undefined;
@@ -95,7 +96,7 @@ export function ChatWindow({ conversationId, locale = 'en' }: ChatWindowProps) {
   // Combine DB messages with real-time socket messages
   const allMessages = useMemo(() => {
     const dbMsgs = messagesQuery.data?.messages ?? [];
-    return [
+    const msgs = [
       ...dbMsgs.slice().reverse(),
       ...newMessages.map((m: SocketMessage) => ({
         ...m,
@@ -109,7 +110,28 @@ export function ChatWindow({ conversationId, locale = 'en' }: ChatWindowProps) {
         listingId: null,
       })),
     ];
-  }, [messagesQuery.data?.messages, newMessages]);
+
+    // Apply real-time read receipts — mark own messages as read when the
+    // other participant has acknowledged them via socket.
+    if (readReceipts.size > 0 && userId) {
+      let lastReadIndex = -1;
+      readReceipts.forEach((lastReadMessageId, readerId) => {
+        if (readerId !== userId) {
+          const idx = msgs.findIndex((m) => m.id === lastReadMessageId);
+          if (idx > lastReadIndex) lastReadIndex = idx;
+        }
+      });
+
+      if (lastReadIndex >= 0) {
+        return msgs.map((m, idx) => ({
+          ...m,
+          isRead: m.isRead || (m.senderId === userId && idx <= lastReadIndex),
+        }));
+      }
+    }
+
+    return msgs;
+  }, [messagesQuery.data?.messages, newMessages, readReceipts, userId]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -131,13 +153,19 @@ export function ChatWindow({ conversationId, locale = 'en' }: ChatWindowProps) {
     setShowScrollButton(!isAtBottom);
   }, []);
 
-  // Mark messages as read
+  // Mark messages as read and notify sender via socket + DB
   useEffect(() => {
     const lastMessage = allMessages[allMessages.length - 1];
     if (lastMessage && lastMessage.senderId !== userId) {
       sendReadReceipt(lastMessage.id);
+      markAsReadMutation.mutate({
+        conversationId,
+        lastMessageId: lastMessage.id,
+      });
     }
-  }, [allMessages, userId, sendReadReceipt]);
+    // Use allMessages.length to avoid re-running when readReceipts update isRead fields
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allMessages.length, userId, conversationId]);
 
   // ── HANDLERS ─────────────────────────────
 

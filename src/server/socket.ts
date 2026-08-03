@@ -291,6 +291,20 @@ export function emitPendingApproval(
   io.to(`user:${userId}`).emit('message:pending-approval', payload);
 }
 
+/** Emit a read receipt to all participants in a conversation */
+export function emitReadReceipt(
+  conversationId: string,
+  userId: string,
+  lastReadMessageId: string,
+): void {
+  if (!io) return;
+  io.to(`conversation:${conversationId}`).emit('read:receipt', {
+    conversationId,
+    userId,
+    lastReadMessageId,
+  });
+}
+
 /** Get count of online users (connected to this instance) */
 export async function getOnlineUserCount(): Promise<number> {
   if (!io) return 0;
