@@ -395,10 +395,12 @@ describe('message.rejectMessage', () => {
 // ──────────────────────────────────────────────
 describe('message.markAsRead', () => {
   it('marks messages as read and returns success', async () => {
+    const readAt = new Date();
     mockDb.conversation.findUnique.mockResolvedValue({
       buyerId: 'user-1',
       sellerId: 'seller-1',
     });
+    mockDb.message.findFirst.mockResolvedValue({ createdAt: readAt });
     mockDb.message.updateMany.mockResolvedValue({ count: 3 });
 
     const caller = createCaller(authedCtx());
@@ -408,16 +410,27 @@ describe('message.markAsRead', () => {
     });
 
     expect(result).toEqual({ success: true });
+    expect(mockDb.message.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: validCuid2,
+        conversationId: validCuid,
+        receiverId: 'user-1',
+      },
+      select: { createdAt: true },
+    });
     expect(mockDb.message.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
           conversationId: validCuid,
           receiverId: 'user-1',
           isRead: false,
+          createdAt: { lte: readAt },
         }),
         data: { isRead: true },
       }),
     );
+    const { emitReadReceipt } = await import('@/server/socket');
+    expect(emitReadReceipt).toHaveBeenCalledWith(validCuid, 'user-1', validCuid2);
   });
 
   it('throws when user is not a conversation participant', async () => {
@@ -441,6 +454,22 @@ describe('message.markAsRead', () => {
     ).rejects.toThrow('Conversation not found');
   });
 
+  it('throws when the acknowledged message was not received by the caller', async () => {
+    mockDb.conversation.findUnique.mockResolvedValue({
+      buyerId: 'user-1',
+      sellerId: 'seller-1',
+    });
+    mockDb.message.findFirst.mockResolvedValue(null);
+
+    const caller = createCaller(authedCtx());
+    await expect(
+      caller.message.markAsRead({ conversationId: validCuid, lastMessageId: validCuid2 }),
+    ).rejects.toThrow('Message not found');
+    expect(mockDb.message.updateMany).not.toHaveBeenCalled();
+    const { emitReadReceipt } = await import('@/server/socket');
+    expect(emitReadReceipt).not.toHaveBeenCalled();
+  });
+
   it('throws UNAUTHORIZED without session', async () => {
     const caller = createCaller(anonCtx());
     await expect(
@@ -453,6 +482,7 @@ describe('message.markAsRead', () => {
       buyerId: 'buyer-1',
       sellerId: 'user-1',
     });
+    mockDb.message.findFirst.mockResolvedValue({ createdAt: new Date() });
     mockDb.message.updateMany.mockResolvedValue({ count: 1 });
 
     const caller = createCaller(authedCtx('user-1'));
@@ -487,6 +517,7 @@ describe('message.getMessages', () => {
         id: 'msg-1',
         content: 'Hello',
         senderId: 'seller-1',
+        receiverId: 'user-1',
         createdAt: new Date(),
         sender: { id: 'seller-1', name: 'Seller', avatar: null },
       },
@@ -510,6 +541,8 @@ describe('message.getMessages', () => {
         data: { isRead: true },
       }),
     ) as unknown;
+    const { emitReadReceipt } = await import('@/server/socket');
+    expect(emitReadReceipt).toHaveBeenCalledWith(validCuid, 'user-1', 'msg-1');
   });
 
   it('throws UNAUTHORIZED without session', async () => {

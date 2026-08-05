@@ -83,7 +83,7 @@ export function ChatWindow({ conversationId, locale = 'en' }: ChatWindowProps) {
   const utils = trpc.useUtils();
 
   // Socket.IO real-time messages
-  const { newMessages, typingUsers, sendTyping, sendReadReceipt, readReceipts } =
+  const { newMessages, typingUsers, sendTyping, readReceipts } =
     useConversationSocket(conversationId);
 
   const conversation = conversationQuery.data as ConversationData | undefined;
@@ -157,7 +157,6 @@ export function ChatWindow({ conversationId, locale = 'en' }: ChatWindowProps) {
   useEffect(() => {
     const lastMessage = allMessages[allMessages.length - 1];
     if (lastMessage && lastMessage.senderId !== userId) {
-      sendReadReceipt(lastMessage.id);
       markAsReadMutation.mutate({
         conversationId,
         lastMessageId: lastMessage.id,
@@ -183,6 +182,7 @@ export function ChatWindow({ conversationId, locale = 'en' }: ChatWindowProps) {
         content: input.trim(),
       });
       setInput('');
+      sendTyping(false);
       inputRef.current?.focus();
       utils.message.getMessages.invalidate({ conversationId });
     } catch (error) {
@@ -252,6 +252,13 @@ export function ChatWindow({ conversationId, locale = 'en' }: ChatWindowProps) {
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => sendTyping(false), 2000);
   };
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      sendTyping(false);
+    };
+  }, [sendTyping]);
 
   // ── NEGOTIATION HISTORY ──────────────────
 
@@ -467,6 +474,7 @@ export function ChatWindow({ conversationId, locale = 'en' }: ChatWindowProps) {
             ref={inputRef}
             value={input}
             onChange={(e) => handleInputChange(e.target.value)}
+            onBlur={() => sendTyping(false)}
             placeholder="Type a message..."
             disabled={sendMutation.isPending}
             className="rounded-full text-sm"

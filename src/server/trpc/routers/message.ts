@@ -380,7 +380,7 @@ export const messageRouter = createTRPCRouter({
       });
 
       // Mark unread messages as read
-      await ctx.db.message.updateMany({
+      const readResult = await ctx.db.message.updateMany({
         where: {
           conversationId: input.conversationId,
           receiverId: ctx.session.user.id!,
@@ -388,6 +388,13 @@ export const messageRouter = createTRPCRouter({
         },
         data: { isRead: true },
       });
+
+      const lastReceivedMessage = messages.find(
+        (message) => message.receiverId === ctx.session.user.id,
+      );
+      if (readResult.count > 0 && lastReceivedMessage) {
+        emitReadReceipt(input.conversationId, ctx.session.user.id!, lastReceivedMessage.id);
+      }
 
       let nextCursor: string | undefined;
       if (messages.length > input.limit) {
@@ -467,12 +474,26 @@ export const messageRouter = createTRPCRouter({
         throw new Error('Conversation not found');
       }
 
-      // Mark all unread received messages as read in the DB
+      const lastMessage = await ctx.db.message.findFirst({
+        where: {
+          id: input.lastMessageId,
+          conversationId: input.conversationId,
+          receiverId: ctx.session.user.id!,
+        },
+        select: { createdAt: true },
+      });
+
+      if (!lastMessage) {
+        throw new Error('Message not found');
+      }
+
+      // Mark unread received messages up to the acknowledged message as read in the DB
       await ctx.db.message.updateMany({
         where: {
           conversationId: input.conversationId,
           receiverId: ctx.session.user.id!,
           isRead: false,
+          createdAt: { lte: lastMessage.createdAt },
         },
         data: { isRead: true },
       });

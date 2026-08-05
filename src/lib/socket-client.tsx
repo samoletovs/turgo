@@ -308,13 +308,21 @@ export function useConversationSocket(conversationId: string) {
   }, [socket, conversationId, joinConversation, leaveConversation]);
 
   const clearMessages = useCallback(() => setNewMessages([]), []);
+  const sendConversationTyping = useCallback(
+    (isTyping: boolean) => sendTyping(conversationId, isTyping),
+    [conversationId, sendTyping],
+  );
+  const sendConversationReadReceipt = useCallback(
+    (messageId: string) => sendReadReceipt(conversationId, messageId),
+    [conversationId, sendReadReceipt],
+  );
 
   return {
     newMessages,
     typingUsers,
     readReceipts,
     clearMessages,
-    sendTyping: (isTyping: boolean) => sendTyping(conversationId, isTyping),
-    sendReadReceipt: (messageId: string) => sendReadReceipt(conversationId, messageId),
+    sendTyping: sendConversationTyping,
+    sendReadReceipt: sendConversationReadReceipt,
   };
 }

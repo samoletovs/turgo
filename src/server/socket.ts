@@ -15,6 +15,7 @@ import type { Server as HTTPServer } from 'http';
 import { decode } from 'next-auth/jwt';
 import { createAdapter } from '@socket.io/redis-streams-adapter';
 import { REDIS_URL } from '@/lib/redis';
+import { db } from '@/server/db';
 
 let io: SocketIOServer | null = null;
 
@@ -49,6 +50,23 @@ function extractSessionToken(
   }
 
   return null;
+}
+
+async function isConversationParticipant(conversationId: string, userId: string): Promise<boolean> {
+  try {
+    const conversation = await db.conversation.findUnique({
+      where: { id: conversationId },
+      select: { buyerId: true, sellerId: true },
+    });
+
+    return conversation?.buyerId === userId || conversation?.sellerId === userId;
+  } catch (err) {
+    console.warn(
+      '[Socket] Conversation access check failed:',
+      err instanceof Error ? err.message : err,
+    );
+    return false;
+  }
 }
 
 export interface SocketMessagePayload {
@@ -188,30 +206,65 @@ export async function initSocketServer(httpServer: HTTPServer): Promise<SocketIO
 
     // Join conversation rooms
     socket.on('join:conversation', (conversationId: string) => {
-      socket.join(`conversation:${conversationId}`);
-      console.log(`[Socket] User ${userId} joined conversation ${conversationId}`);
+      void (async () => {
+        if (
+          typeof conversationId !== 'string' ||
+          !(await isConversationParticipant(conversationId, userId))
+        ) {
+          socket.emit('conversation:error', { conversationId, error: 'Conversation not found' });
+          return;
+        }
+
+        socket.join(`conversation:${conversationId}`);
+        console.log(`[Socket] User ${userId} joined conversation ${conversationId}`);
+      })();
     });
 
     socket.on('leave:conversation', (conversationId: string) => {
+      if (typeof conversationId !== 'string') return;
       socket.leave(`conversation:${conversationId}`);
     });
 
     // Handle typing indicators
     socket.on('typing', (payload: TypingPayload) => {
-      socket.to(`conversation:${payload.conversationId}`).emit('typing', {
-        conversationId: payload.conversationId,
-        userId,
-        isTyping: payload.isTyping,
-      });
+      void (async () => {
+        if (
+          !payload ||
+          typeof payload.conversationId !== 'string' ||
+          typeof payload.isTyping !== 'boolean'
+        ) {
+          return;
+        }
+
+        if (!(await isConversationParticipant(payload.conversationId, userId))) return;
+
+        socket.to(`conversation:${payload.conversationId}`).emit('typing', {
+          conversationId: payload.conversationId,
+          userId,
+          isTyping: payload.isTyping,
+        });
+      })();
     });
 
     // Handle read receipts
     socket.on('read:receipt', (payload: ReadReceiptPayload) => {
-      socket.to(`conversation:${payload.conversationId}`).emit('read:receipt', {
-        conversationId: payload.conversationId,
-        userId,
-        lastReadMessageId: payload.lastReadMessageId,
-      });
+      void (async () => {
+        if (
+          !payload ||
+          typeof payload.conversationId !== 'string' ||
+          typeof payload.lastReadMessageId !== 'string'
+        ) {
+          return;
+        }
+
+        if (!(await isConversationParticipant(payload.conversationId, userId))) return;
+
+        socket.to(`conversation:${payload.conversationId}`).emit('read:receipt', {
+          conversationId: payload.conversationId,
+          userId,
+          lastReadMessageId: payload.lastReadMessageId,
+        });
+      })();
     });
 
     // Handle disconnect
