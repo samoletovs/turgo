@@ -5,6 +5,11 @@ import { Bot, Check, CheckCheck, Clock, Globe, Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import {
+  MESSAGE_REACTIONS,
+  parseMessageReactions,
+  type MessageReactionEmoji,
+} from '@/lib/message-reactions';
 
 // ──────────────────────────────────────────────
 // TYPES
@@ -29,6 +34,8 @@ export interface MessageBubbleProps {
   onApprove?: (messageId: string, editedContent?: string) => void;
   onReject?: (messageId: string) => void;
   onTranslate?: (messageId: string, locale: string) => void;
+  onReact?: (messageId: string, emoji: MessageReactionEmoji) => void;
+  currentUserId?: string;
 }
 
 // ──────────────────────────────────────────────
@@ -53,6 +60,8 @@ export function MessageBubble({
   onApprove,
   onReject,
   onTranslate,
+  onReact,
+  currentUserId,
 }: MessageBubbleProps) {
   const [showTranslation, setShowTranslation] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -65,6 +74,8 @@ export function MessageBubble({
 
   const translation = translatedContent?.[locale];
   const displayContent = showTranslation && translation ? translation : content;
+  const reactions = parseMessageReactions(metadata?.reactions);
+  const reactionEntries = Object.entries(reactions).filter(([, users]) => users.length > 0);
 
   // Pending approval state — show as draft with edit/approve/reject
   const isPending = requiresApproval && !approvedAt;
@@ -141,6 +152,55 @@ export function MessageBubble({
             displayContent
           )}
         </div>
+
+        {/* Reactions */}
+        {(reactionEntries.length > 0 || onReact) && (
+          <div className={cn('flex flex-wrap items-center gap-1 px-1', isOwn && 'justify-end')}>
+            {reactionEntries.map(([emoji, users]) => {
+              const reactedByMe = !!currentUserId && users.includes(currentUserId);
+              return (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => onReact?.(id, emoji)}
+                  aria-label={`React with ${emoji}, ${users.length} reaction${users.length === 1 ? '' : 's'}`}
+                  className={cn(
+                    'rounded-full border px-2 py-0.5 text-[11px] transition-colors',
+                    reactedByMe
+                      ? 'border-primary/40 bg-primary/10 text-primary'
+                      : 'border-border bg-background hover:bg-muted',
+                  )}
+                >
+                  {emoji} {users.length}
+                </button>
+              );
+            })}
+
+            {onReact && messageType !== 'SYSTEM' && (
+              <div className="flex items-center gap-1">
+                {MESSAGE_REACTIONS.map((emoji) => {
+                  const reactedByMe = !!currentUserId && (reactions[emoji] ?? []).includes(currentUserId);
+                  return (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => onReact(id, emoji)}
+                      className={cn(
+                        'rounded-full border px-1.5 py-0.5 text-[11px] transition-colors',
+                        reactedByMe
+                          ? 'border-primary/40 bg-primary/10 text-primary'
+                          : 'border-dashed hover:bg-muted',
+                      )}
+                      aria-label={reactedByMe ? `Remove ${emoji} reaction` : `React with ${emoji}`}
+                    >
+                      {emoji}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Bottom row: time, read status, actions */}
         <div className="flex items-center gap-2 px-1">

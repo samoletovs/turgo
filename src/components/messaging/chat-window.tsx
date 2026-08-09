@@ -11,6 +11,7 @@ import { NegotiationFlow } from './negotiation-flow';
 import { useConversationSocket } from '@/lib/socket-client';
 import { trpc } from '@/lib/trpc/client';
 import type { SocketMessage } from '@/lib/socket-client';
+import type { MessageReactionEmoji } from '@/lib/message-reactions';
 
 // ──────────────────────────────────────────────
 // TYPES
@@ -80,10 +81,11 @@ export function ChatWindow({ conversationId, locale = 'en' }: ChatWindowProps) {
   const rejectMutation = trpc.message.rejectMessage.useMutation();
   const translateMutation = trpc.message.translate.useMutation();
   const markAsReadMutation = trpc.message.markAsRead.useMutation();
+  const reactMutation = trpc.message.react.useMutation();
   const utils = trpc.useUtils();
 
   // Socket.IO real-time messages
-  const { newMessages, typingUsers, sendTyping, readReceipts } =
+  const { newMessages, typingUsers, sendTyping, readReceipts, reactionUpdates } =
     useConversationSocket(conversationId);
 
   const conversation = conversationQuery.data as ConversationData | undefined;
@@ -111,27 +113,40 @@ export function ChatWindow({ conversationId, locale = 'en' }: ChatWindowProps) {
       })),
     ];
 
+    const withReactions = msgs.map((message) => {
+      const reactions = reactionUpdates.get(message.id);
+      if (!reactions) return message;
+
+      return {
+        ...message,
+        metadata: {
+          ...((message.metadata as Record<string, unknown> | null) ?? {}),
+          reactions,
+        },
+      };
+    });
+
     // Apply real-time read receipts — mark own messages as read when the
     // other participant has acknowledged them via socket.
     if (readReceipts.size > 0 && userId) {
       let lastReadIndex = -1;
       readReceipts.forEach((lastReadMessageId, readerId) => {
         if (readerId !== userId) {
-          const idx = msgs.findIndex((m) => m.id === lastReadMessageId);
+          const idx = withReactions.findIndex((m) => m.id === lastReadMessageId);
           if (idx > lastReadIndex) lastReadIndex = idx;
         }
       });
 
       if (lastReadIndex >= 0) {
-        return msgs.map((m, idx) => ({
+        return withReactions.map((m, idx) => ({
           ...m,
           isRead: m.isRead || (m.senderId === userId && idx <= lastReadIndex),
         }));
       }
     }
 
-    return msgs;
-  }, [messagesQuery.data?.messages, newMessages, readReceipts, userId]);
+    return withReactions;
+  }, [messagesQuery.data?.messages, newMessages, reactionUpdates, readReceipts, userId]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -241,6 +256,14 @@ export function ChatWindow({ conversationId, locale = 'en' }: ChatWindowProps) {
       utils.message.getMessages.invalidate({ conversationId });
     } catch (error) {
       console.error('Failed to translate:', error);
+    }
+  };
+
+  const handleReact = async (messageId: string, emoji: MessageReactionEmoji) => {
+    try {
+      await reactMutation.mutateAsync({ messageId, emoji });
+    } catch (error) {
+      console.error('Failed to react to message:', error);
     }
   };
 
@@ -385,6 +408,8 @@ export function ChatWindow({ conversationId, locale = 'en' }: ChatWindowProps) {
             onApprove={handleApprove}
             onReject={handleReject}
             onTranslate={handleTranslate}
+            onReact={handleReact}
+            currentUserId={userId}
           />
         ))}
 

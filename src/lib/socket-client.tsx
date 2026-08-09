@@ -79,6 +79,12 @@ export interface ReadReceiptEvent {
   lastReadMessageId: string;
 }
 
+export interface MessageReactionEvent {
+  conversationId: string;
+  messageId: string;
+  reactions: Record<string, string[]>;
+}
+
 // ──────────────────────────────────────────────
 // SOCKET CONTEXT
 // ──────────────────────────────────────────────
@@ -241,6 +247,9 @@ export function useConversationSocket(conversationId: string) {
   const [newMessages, setNewMessages] = useState<SocketMessage[]>([]);
   const [typingUsers, setTypingUsers] = useState<Map<string, boolean>>(new Map());
   const [readReceipts, setReadReceipts] = useState<Map<string, string>>(new Map());
+  const [reactionUpdates, setReactionUpdates] = useState<Map<string, Record<string, string[]>>>(
+    new Map(),
+  );
   const typingTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   useEffect(() => {
@@ -292,15 +301,27 @@ export function useConversationSocket(conversationId: string) {
       }
     };
 
+    const handleMessageReaction = (event: MessageReactionEvent) => {
+      if (event.conversationId === conversationId) {
+        setReactionUpdates((prev) => {
+          const next = new Map(prev);
+          next.set(event.messageId, event.reactions);
+          return next;
+        });
+      }
+    };
+
     socket.on('message:new', handleNewMessage);
     socket.on('typing', handleTyping);
     socket.on('read:receipt', handleReadReceipt);
+    socket.on('message:reaction', handleMessageReaction);
 
     return () => {
       leaveConversation(conversationId);
       socket.off('message:new', handleNewMessage);
       socket.off('typing', handleTyping);
       socket.off('read:receipt', handleReadReceipt);
+      socket.off('message:reaction', handleMessageReaction);
       // Clear typing timeouts
       currentTimeouts.forEach((t) => clearTimeout(t));
       currentTimeouts.clear();
@@ -321,6 +342,7 @@ export function useConversationSocket(conversationId: string) {
     newMessages,
     typingUsers,
     readReceipts,
+    reactionUpdates,
     clearMessages,
     sendTyping: sendConversationTyping,
     sendReadReceipt: sendConversationReadReceipt,

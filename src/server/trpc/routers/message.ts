@@ -1,9 +1,12 @@
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
+import { TRPCError } from '@trpc/server';
 import { createTRPCRouter, protectedProcedure, createRateLimitedProcedure } from '@/server/trpc';
 import { sendMessageSchema } from '@/lib/validators';
 import { RATE_LIMITS } from '@/lib/constants';
 import { sanitizeHtml } from '@/lib/sanitize';
-import { emitMessage, emitReadReceipt } from '@/server/socket';
+import { emitMessage, emitReadReceipt, emitMessageReaction } from '@/server/socket';
+import { MESSAGE_REACTIONS, parseMessageReactions } from '@/lib/message-reactions';
 import {
   processAutoRespond,
   processAutoNegotiate,
@@ -514,4 +517,98 @@ export const messageRouter = createTRPCRouter({
     });
     return count;
   }),
+
+  /** Toggle a reaction on a message */
+  react: protectedProcedure
+    .input(
+      z.object({
+        messageId: z.string().cuid(),
+        emoji: z.enum(MESSAGE_REACTIONS),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const message = await ctx.db.message.findUnique({
+        where: { id: input.messageId },
+        select: {
+          id: true,
+          conversationId: true,
+          metadata: true,
+          conversation: {
+            select: { buyerId: true, sellerId: true },
+          },
+        },
+      });
+
+      if (!message) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Message not found' });
+      }
+
+      const isParticipant =
+        message.conversation.buyerId === ctx.session.user.id ||
+        message.conversation.sellerId === ctx.session.user.id;
+
+      if (!isParticipant) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Unauthorized' });
+      }
+
+      const metadata =
+        message.metadata && typeof message.metadata === 'object' && !Array.isArray(message.metadata)
+          ? (message.metadata as Record<string, unknown>)
+          : {};
+      const reactions = parseMessageReactions(metadata.reactions);
+
+      const userId = ctx.session.user.id!;
+      const currentUsers = reactions[input.emoji] ?? [];
+      const hasReacted = currentUsers.includes(userId);
+
+      const nextUsers = hasReacted
+        ? currentUsers.filter((id) => id !== userId)
+        : [...currentUsers, userId];
+
+      if (nextUsers.length > 0) {
+        reactions[input.emoji] = nextUsers;
+      } else {
+        delete reactions[input.emoji];
+      }
+
+      const nextMetadata: Record<string, unknown> = { ...metadata };
+      if (Object.keys(reactions).length > 0) {
+        nextMetadata.reactions = reactions;
+      } else {
+        delete nextMetadata.reactions;
+      }
+
+      const updated = await ctx.db.message.update({
+        where: { id: input.messageId },
+        data: {
+          metadata:
+            Object.keys(nextMetadata).length > 0
+              ? (nextMetadata as Prisma.InputJsonValue)
+              : Prisma.JsonNull,
+        },
+        select: {
+          id: true,
+          conversationId: true,
+          metadata: true,
+        },
+      });
+
+      const updatedMetadata =
+        updated.metadata && typeof updated.metadata === 'object' && !Array.isArray(updated.metadata)
+          ? (updated.metadata as Record<string, unknown>)
+          : {};
+      const updatedReactions = parseMessageReactions(updatedMetadata.reactions);
+
+      emitMessageReaction({
+        conversationId: message.conversationId,
+        messageId: message.id,
+        reactions: updatedReactions,
+      });
+
+      return {
+        id: updated.id,
+        conversationId: updated.conversationId,
+        reactions: updatedReactions,
+      };
+    }),
 });

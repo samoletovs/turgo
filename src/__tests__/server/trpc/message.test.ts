@@ -7,6 +7,7 @@ import { mockDb } from '@/__tests__/setup';
 vi.mock('@/server/socket', () => ({
   emitMessage: vi.fn(),
   emitReadReceipt: vi.fn(),
+  emitMessageReaction: vi.fn(),
 }));
 
 // Mock messaging service
@@ -550,5 +551,106 @@ describe('message.getMessages', () => {
     await expect(caller.message.getMessages({ conversationId: validCuid })).rejects.toThrow(
       /UNAUTHORIZED/,
     );
+  });
+});
+
+// ──────────────────────────────────────────────
+// message.react
+// ──────────────────────────────────────────────
+describe('message.react', () => {
+  it('adds a reaction when user has not reacted yet', async () => {
+    mockDb.message.findUnique.mockResolvedValue({
+      id: validCuid2,
+      conversationId: validCuid,
+      metadata: null,
+      conversation: { buyerId: 'user-1', sellerId: 'seller-1' },
+    });
+    mockDb.message.update.mockResolvedValue({
+      id: validCuid2,
+      conversationId: validCuid,
+      metadata: { reactions: { '👍': ['user-1'] } },
+    });
+
+    const caller = createCaller(authedCtx());
+    const result = await caller.message.react({ messageId: validCuid2, emoji: '👍' });
+
+    expect(result).toEqual({
+      id: validCuid2,
+      conversationId: validCuid,
+      reactions: { '👍': ['user-1'] },
+    });
+    expect(mockDb.message.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: validCuid2 },
+        data: { metadata: { reactions: { '👍': ['user-1'] } } },
+      }),
+    );
+    const { emitMessageReaction } = await import('@/server/socket');
+    expect(emitMessageReaction).toHaveBeenCalledWith({
+      conversationId: validCuid,
+      messageId: validCuid2,
+      reactions: { '👍': ['user-1'] },
+    });
+  });
+
+  it('removes user from an existing reaction (toggle off)', async () => {
+    mockDb.message.findUnique.mockResolvedValue({
+      id: validCuid2,
+      conversationId: validCuid,
+      metadata: { reactions: { '👍': ['user-1', 'seller-1'], '❤️': ['seller-1'] } },
+      conversation: { buyerId: 'user-1', sellerId: 'seller-1' },
+    });
+    mockDb.message.update.mockResolvedValue({
+      id: validCuid2,
+      conversationId: validCuid,
+      metadata: { reactions: { '👍': ['seller-1'], '❤️': ['seller-1'] } },
+    });
+
+    const caller = createCaller(authedCtx());
+    await caller.message.react({ messageId: validCuid2, emoji: '👍' });
+
+    const updateArg = (mockDb.message.update as ReturnType<typeof vi.fn>).mock.calls[0]?.[0];
+    const updatedReactions = (updateArg?.data?.metadata as { reactions?: Record<string, string[]> })
+      ?.reactions;
+
+    expect(updatedReactions?.['👍']).toEqual(['seller-1']);
+    expect(updatedReactions?.['👍']).not.toContain('user-1');
+    expect(updatedReactions?.['❤️']).toEqual(['seller-1']);
+  });
+
+  it('throws when user is not a participant', async () => {
+    mockDb.message.findUnique.mockResolvedValue({
+      id: validCuid2,
+      conversationId: validCuid,
+      metadata: null,
+      conversation: { buyerId: 'buyer-2', sellerId: 'seller-2' },
+    });
+
+    const caller = createCaller(authedCtx());
+    await expect(caller.message.react({ messageId: validCuid2, emoji: '👍' })).rejects.toThrow(
+      'Unauthorized',
+    );
+    expect(mockDb.message.update).not.toHaveBeenCalled();
+  });
+
+  it('throws when message is not found', async () => {
+    mockDb.message.findUnique.mockResolvedValue(null);
+
+    const caller = createCaller(authedCtx());
+    await expect(caller.message.react({ messageId: validCuid2, emoji: '👍' })).rejects.toThrow(
+      'Message not found',
+    );
+  });
+
+  it('throws UNAUTHORIZED without session', async () => {
+    const caller = createCaller(anonCtx());
+    await expect(caller.message.react({ messageId: validCuid2, emoji: '👍' })).rejects.toThrow(
+      /UNAUTHORIZED/,
+    );
+  });
+
+  it('rejects non-emoji reactions', async () => {
+    const caller = createCaller(authedCtx());
+    await expect(caller.message.react({ messageId: validCuid2, emoji: 'abc' })).rejects.toThrow();
   });
 });

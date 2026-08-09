@@ -101,6 +101,12 @@ export interface ReadReceiptPayload {
   lastReadMessageId: string;
 }
 
+export interface MessageReactionPayload {
+  conversationId: string;
+  messageId: string;
+  reactions: Record<string, string[]>;
+}
+
 export interface NotificationPayload {
   id: string;
   type: string;
@@ -356,6 +362,12 @@ export function emitReadReceipt(
     userId,
     lastReadMessageId,
   });
+}
+
+/** Emit message reaction updates to all conversation participants */
+export function emitMessageReaction(payload: MessageReactionPayload): void {
+  if (!io) return;
+  io.to(`conversation:${payload.conversationId}`).emit('message:reaction', payload);
 }
 
 /** Get count of online users (connected to this instance) */
