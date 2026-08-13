@@ -21,5 +21,7 @@ export function sanitizeHtml(input: string): string {
   return DOMPurify.sanitize(input, {
     ALLOWED_TAGS,
     ALLOWED_ATTR: [], // no attributes allowed
+    ALLOW_DATA_ATTR: false,
+    ALLOW_ARIA_ATTR: false,
   });
 }
