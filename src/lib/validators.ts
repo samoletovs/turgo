@@ -133,12 +133,19 @@ export const sendMessageSchema = z.object({
 // SEARCH VALIDATORS
 // ──────────────────────────────────────────────
 
+export const searchSortSchema = z.enum(['newest', 'oldest', 'price_asc', 'price_desc', 'views']);
+
 export const searchSchema = z.object({
   query: z.string().min(1).max(200),
   categoryId: z.string().optional(),
+  categorySlug: z.string().max(100).optional(),
   locationId: z.string().optional(),
+  locationSlug: z.string().max(100).optional(),
+  condition: z.enum(['NEW', 'USED', 'REFURBISHED']).optional(),
+  countryCode: z.string().length(2).optional(),
   minPrice: z.number().min(0).optional(),
   maxPrice: z.number().min(0).optional(),
+  sort: searchSortSchema.default('newest'),
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(100).default(24),
 });

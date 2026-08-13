@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { Prisma } from '@prisma/client';
 import { createTRPCRouter, publicProcedure, protectedProcedure } from '@/server/trpc';
-import { searchSchema } from '@/lib/validators';
+import { searchSchema, type SearchInput } from '@/lib/validators';
 import {
   searchListings as meiliSearch,
   searchSuggestions as meiliSuggest,
@@ -9,18 +9,52 @@ import {
   type SearchDocument,
 } from '@/server/services/search';
 
+/** Map a sort key to a Prisma orderBy clause (fallback path) */
+function buildPrismaOrderBy(sort: SearchInput['sort']): Prisma.ListingOrderByWithRelationInput {
+  switch (sort) {
+    case 'price_asc':
+      return { price: 'asc' };
+    case 'price_desc':
+      return { price: 'desc' };
+    case 'oldest':
+      return { createdAt: 'asc' };
+    case 'views':
+      return { viewCount: 'desc' };
+    case 'newest':
+    default:
+      return { createdAt: 'desc' };
+  }
+}
+
 export const searchRouter = createTRPCRouter({
   /** Full-text search — tries Meilisearch, falls back to Prisma */
   search: publicProcedure.input(searchSchema).query(async ({ ctx, input }) => {
-    const { query, categoryId, locationId, minPrice, maxPrice, page, limit } = input;
+    const {
+      query,
+      categoryId,
+      categorySlug,
+      locationId,
+      locationSlug,
+      condition,
+      countryCode,
+      minPrice,
+      maxPrice,
+      sort,
+      page,
+      limit,
+    } = input;
 
     // ── Try Meilisearch first ──
     try {
       const result = await meiliSearch({
         query,
+        categorySlug,
+        locationSlug,
+        condition,
+        countryCode,
         minPrice,
         maxPrice,
-        sort: 'newest',
+        sort,
         page,
         limit,
       });
@@ -46,18 +80,26 @@ export const searchRouter = createTRPCRouter({
     };
 
     if (categoryId) where.categoryId = categoryId;
+    if (categorySlug) where.category = { slug: categorySlug };
     if (locationId) where.locationId = locationId;
-    if (minPrice || maxPrice) {
+    if (locationSlug || countryCode) {
+      where.location = {
+        ...(locationSlug ? { slug: locationSlug } : {}),
+        ...(countryCode ? { countryCode } : {}),
+      };
+    }
+    if (condition) where.condition = condition;
+    if (minPrice != null || maxPrice != null) {
       where.price = {
-        ...(minPrice ? { gte: minPrice } : {}),
-        ...(maxPrice ? { lte: maxPrice } : {}),
+        ...(minPrice != null ? { gte: minPrice } : {}),
+        ...(maxPrice != null ? { lte: maxPrice } : {}),
       };
     }
 
     const [listings, total] = await Promise.all([
       ctx.db.listing.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: buildPrismaOrderBy(sort),
         skip: (page - 1) * limit,
         take: limit,
         include: {

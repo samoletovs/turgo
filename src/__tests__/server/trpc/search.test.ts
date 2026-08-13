@@ -150,6 +150,92 @@ describe('search', () => {
     expect(callArgs.where.locationId).toBe('loc-1');
   });
 
+  it('applies condition, slug and country filters in Prisma fallback', async () => {
+    mockMeiliSearch.mockRejectedValue(new Error('unavailable'));
+    mockDb.listing.findMany.mockResolvedValue([]);
+    mockDb.listing.count.mockResolvedValue(0);
+
+    await publicCaller().search({
+      query: 'bike',
+      categorySlug: 'vehicles',
+      locationSlug: 'riga',
+      condition: 'USED',
+      countryCode: 'LV',
+      minPrice: 0,
+      page: 1,
+      limit: 24,
+    });
+
+    const callArgs = mockDb.listing.findMany.mock.calls[0][0];
+    expect(callArgs.where.category).toEqual({ slug: 'vehicles' });
+    expect(callArgs.where.location).toEqual({ slug: 'riga', countryCode: 'LV' });
+    expect(callArgs.where.condition).toBe('USED');
+    expect(callArgs.where.price).toEqual({ gte: 0 });
+  });
+
+  it('sorts Prisma fallback by the requested order', async () => {
+    mockMeiliSearch.mockRejectedValue(new Error('unavailable'));
+    mockDb.listing.findMany.mockResolvedValue([]);
+    mockDb.listing.count.mockResolvedValue(0);
+
+    await publicCaller().search({
+      query: 'phone',
+      sort: 'price_asc',
+      page: 1,
+      limit: 24,
+    });
+
+    expect(mockDb.listing.findMany.mock.calls[0][0].orderBy).toEqual({ price: 'asc' });
+  });
+
+  it('defaults Prisma fallback sort to newest first', async () => {
+    mockMeiliSearch.mockRejectedValue(new Error('unavailable'));
+    mockDb.listing.findMany.mockResolvedValue([]);
+    mockDb.listing.count.mockResolvedValue(0);
+
+    await publicCaller().search({ query: 'phone', page: 1, limit: 24 });
+
+    expect(mockDb.listing.findMany.mock.calls[0][0].orderBy).toEqual({ createdAt: 'desc' });
+  });
+
+  it('forwards all filters and sort to the search service', async () => {
+    mockMeiliSearch.mockResolvedValue({
+      hits: [],
+      totalHits: 0,
+      page: 1,
+      totalPages: 0,
+      processingTimeMs: 0,
+    });
+    mockDb.listing.findMany.mockResolvedValue([]);
+    mockDb.listing.count.mockResolvedValue(0);
+
+    await publicCaller().search({
+      query: 'car',
+      categorySlug: 'vehicles',
+      locationSlug: 'riga',
+      condition: 'NEW',
+      countryCode: 'LV',
+      minPrice: 100,
+      maxPrice: 500,
+      sort: 'price_desc',
+      page: 2,
+      limit: 12,
+    });
+
+    expect(mockMeiliSearch).toHaveBeenCalledWith({
+      query: 'car',
+      categorySlug: 'vehicles',
+      locationSlug: 'riga',
+      condition: 'NEW',
+      countryCode: 'LV',
+      minPrice: 100,
+      maxPrice: 500,
+      sort: 'price_desc',
+      page: 2,
+      limit: 12,
+    });
+  });
+
   it('paginates Prisma fallback correctly', async () => {
     mockMeiliSearch.mockRejectedValue(new Error('unavailable'));
     mockDb.listing.findMany.mockResolvedValue([]);
