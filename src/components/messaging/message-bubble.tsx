@@ -75,7 +75,12 @@ export function MessageBubble({
   const translation = translatedContent?.[locale];
   const displayContent = showTranslation && translation ? translation : content;
   const reactions = parseMessageReactions(metadata?.reactions);
-  const reactionEntries = Object.entries(reactions).filter(([, users]) => users.length > 0);
+  // Iterate the known reaction set rather than the parsed object's keys:
+  // Object.entries widens keys to `string`, which cannot be handed back to
+  // onReact (typed MessageReactionEmoji). This also fixes the display order.
+  const reactionEntries = MESSAGE_REACTIONS.map(
+    (emoji) => [emoji, reactions[emoji] ?? []] as const,
+  ).filter(([, users]) => users.length > 0);
 
   // Pending approval state — show as draft with edit/approve/reject
   const isPending = requiresApproval && !approvedAt;
@@ -179,7 +184,8 @@ export function MessageBubble({
             {onReact && messageType !== 'SYSTEM' && (
               <div className="flex items-center gap-1">
                 {MESSAGE_REACTIONS.map((emoji) => {
-                  const reactedByMe = !!currentUserId && (reactions[emoji] ?? []).includes(currentUserId);
+                  const reactedByMe =
+                    !!currentUserId && (reactions[emoji] ?? []).includes(currentUserId);
                   return (
                     <button
                       key={emoji}

@@ -651,6 +651,9 @@ describe('message.react', () => {
 
   it('rejects non-emoji reactions', async () => {
     const caller = createCaller(authedCtx());
+    // Deliberately invalid input: the point of this test is that the runtime
+    // zod guard rejects it, so the compile-time error here is expected.
+    // @ts-expect-error - 'abc' is not a MessageReactionEmoji
     await expect(caller.message.react({ messageId: validCuid2, emoji: 'abc' })).rejects.toThrow();
   });
 });
