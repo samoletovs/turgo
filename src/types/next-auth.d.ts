@@ -6,6 +6,7 @@ import { type DefaultSession } from 'next-auth';
 
 declare module 'next-auth' {
   interface Session {
+    error?: string;
     user: {
       id: string;
       role: 'USER' | 'MODERATOR' | 'ADMIN';

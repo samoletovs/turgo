@@ -3,13 +3,14 @@
  */
 
 import NextAuth from 'next-auth';
-import type { NextAuthConfig } from 'next-auth';
+import type { NextAuthConfig, Session } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import GitHubProvider from 'next-auth/providers/github';
 import bcrypt from 'bcryptjs';
 import { db } from '@/server/db';
 import { getRedis } from '@/lib/redis';
+import { hasValidSession } from '@/lib/auth-session';
 
 /** Set a force-refresh flag so the JWT callback re-queries the DB on next request. */
 export async function triggerAuthRefresh(userId: string): Promise<void> {
@@ -219,7 +220,12 @@ export const authConfig: NextAuthConfig = {
 
 export const {
   handlers: { GET, POST },
-  auth,
+  auth: nextAuth,
   signIn,
   signOut,
 } = NextAuth(authConfig);
+
+export async function auth(): Promise<Session | null> {
+  const session = await nextAuth();
+  return hasValidSession(session) ? session : null;
+}
