@@ -49,3 +49,16 @@ next-env.d.ts
 
 # Local-only personal-info pattern overrides
 scripts/.leak-patterns.local.txt
+
+# Runtime uploads
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Test output
+playwright-report/
+test-results/
+
+# IDE / OS
+.vscode/
+.idea/
+Thumbs.db
