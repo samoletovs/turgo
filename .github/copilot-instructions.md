@@ -28,17 +28,21 @@ Turgo is an agent-first classifieds platform for the Baltic market. Users don't 
 ## Build and test
 
 ```bash
-pnpm install
-pnpm dev              # Start dev server
-pnpm build            # Production build
-pnpm test             # Unit tests (vitest)
-pnpm test:e2e         # E2E tests (playwright)
-pnpm lint             # Lint
-pnpm db:push          # Push Prisma schema
-pnpm db:migrate       # Run migrations
-pnpm db:seed          # Seed categories + test data
+npm ci
+npm run dev           # Start dev server
+npm run build         # Production build
+npm test              # Unit tests (vitest)
+npm run test:e2e      # E2E tests (playwright)
+npm run lint          # Lint
+npm run db:push       # Push Prisma schema
+npm run db:migrate    # Run migrations
+npm run db:seed       # Seed categories + test data
 docker compose up -d  # Start local services
 ```
+
+> This project builds with **npm** (`package-lock.json`). CI and the Dockerfile both
+> run `npm ci`. Do not use pnpm or yarn — a second lockfile drifts from the one that
+> ships and reintroduces advisories that `package-lock.json` has already patched.
 
 ## Conventions
 

@@ -9,13 +9,17 @@ Turgo — agent-first classifieds platform. Next.js 16 + React 19 + TypeScript +
 ## Build & verify
 
 ```bash
-pnpm install
-pnpm build        # MUST pass
-pnpm test         # MUST pass
-pnpm lint         # MUST pass
+npm ci
+npm run build      # MUST pass
+npm test           # MUST pass
+npm run lint       # MUST pass
 ```
 
 Always run all three before creating a PR.
+
+> This project builds with **npm** (`package-lock.json`). CI and the Dockerfile both
+> run `npm ci`. Do not use pnpm or yarn — a second lockfile drifts from the one that
+> ships and reintroduces advisories that `package-lock.json` has already patched.
 
 ## Project structure
 
@@ -53,5 +57,5 @@ src/
 1. Read issue description and labels
 2. Check existing patterns in the most similar file
 3. Minimal, focused changes — don't refactor unrelated code
-4. Run `pnpm build && pnpm test && pnpm lint` before committing
+4. Run `npm run build && npm test && npm run lint` before committing
 5. Create PR targeting `main`
