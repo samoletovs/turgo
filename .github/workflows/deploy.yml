@@ -170,17 +170,23 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      # A direct `az containerapp update`, not azure/container-apps-deploy-action.
+      # That action has no `containerName` input (verified against its action.yml),
+      # so on a multi-container app it always fails with "--container-name is
+      # required when adding or updating a container". This app runs two containers,
+      # `turgo` and `redis-sidecar`, so the action cannot deploy it at all.
+      #
+      # Naming the container is also what stops the sidecar being overwritten by
+      # the app image.
       - name: Deploy to Container Apps
-        uses: azure/container-apps-deploy-action@v2
+        uses: azure/CLI@v2
         with:
-          resourceGroup: ${{ env.RESOURCE_GROUP }}
-          containerAppName: ${{ env.CONTAINER_APP_NAME }}
-          # Required because this app runs TWO containers - `turgo` and
-          # `redis-sidecar`. Without it az cannot tell which one the image belongs
-          # to and fails with "--container-name is required when adding or updating
-          # a container". Omitting it would also risk replacing the sidecar.
-          containerName: ${{ env.CONTAINER_APP_NAME }}
-          imageToDeploy: ${{ env.ACR_LOGIN_SERVER }}/turgo:latest
+          inlineScript: |
+            az containerapp update \
+              --name "${{ env.CONTAINER_APP_NAME }}" \
+              --resource-group "${{ env.RESOURCE_GROUP }}" \
+              --container-name "${{ env.CONTAINER_APP_NAME }}" \
+              --image "${{ env.ACR_LOGIN_SERVER }}/turgo:latest"
 
       - name: Sync database schema
         continue-on-error: true
