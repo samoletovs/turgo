@@ -20,6 +20,19 @@ on:
 env:
   CONTAINER_APP_NAME: turgo
   RESOURCE_GROUP: rg-turgo
+  # The registry, named rather than kept as a secret. A registry hostname is not a
+  # credential - it is public the moment an image is pulled - and keeping it in a
+  # secret only made the workflow harder to read and impossible to fix without
+  # write access to the secret store.
+  ACR_NAME: acragentsfzmqgv
+  ACR_LOGIN_SERVER: acragentsfzmqgv.azurecr.io
+
+# Required for OIDC. Without id-token: write the runner cannot mint the token that
+# azure/login exchanges, and the login fails with a message about the audience
+# rather than about the missing permission.
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   # ────────────────────────────────────────────
@@ -103,18 +116,26 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Azure Container Registry
-        uses: docker/login-action@v3
+      # OIDC, not admin credentials. `acragentsfzmqgv` has adminUserEnabled=false,
+      # so ACR_USERNAME / ACR_PASSWORD could never have held a working value - this
+      # job had been failing on a secret that cannot exist. sp-turgo now holds
+      # AcrPush on the registry and a federated credential for this repo, so the
+      # token below is short-lived and there is nothing to rotate or leak.
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
         with:
-          registry: ${{ secrets.ACR_LOGIN_SERVER }}
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to Azure Container Registry
+        run: az acr login --name ${{ env.ACR_NAME }}
 
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.ACR_LOGIN_SERVER }}/turgo
+          images: ${{ env.ACR_LOGIN_SERVER }}/turgo
           tags: |
             type=sha,prefix=
             type=raw,value=latest
@@ -140,14 +161,16 @@ jobs:
       - name: Azure Login
         uses: azure/login@v2
         with:
-          creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy to Container Apps
         uses: azure/container-apps-deploy-action@v2
         with:
           resourceGroup: ${{ env.RESOURCE_GROUP }}
           containerAppName: ${{ env.CONTAINER_APP_NAME }}
-          imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/turgo:latest
+          imageToDeploy: ${{ env.ACR_LOGIN_SERVER }}/turgo:latest
 
       - name: Sync database schema
         continue-on-error: true
