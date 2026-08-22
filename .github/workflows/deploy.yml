@@ -106,7 +106,12 @@ jobs:
     name: Build & Push Image
     runs-on: ubuntu-latest
     needs: quality
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.DEPLOY_ENABLED == 'true'
+    # `workflow_dispatch` is included deliberately. The previous condition allowed
+    # only `push`, which made this job untestable: a manual run always skipped, so
+    # the ACR credential fault below went unnoticed for as long as nobody happened
+    # to push to main. A deploy path that cannot be exercised on demand is a deploy
+    # path nobody can verify.
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && vars.DEPLOY_ENABLED == 'true'
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
 
