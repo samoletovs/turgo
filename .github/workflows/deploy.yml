@@ -175,6 +175,11 @@ jobs:
         with:
           resourceGroup: ${{ env.RESOURCE_GROUP }}
           containerAppName: ${{ env.CONTAINER_APP_NAME }}
+          # Required because this app runs TWO containers - `turgo` and
+          # `redis-sidecar`. Without it az cannot tell which one the image belongs
+          # to and fails with "--container-name is required when adding or updating
+          # a container". Omitting it would also risk replacing the sidecar.
+          containerName: ${{ env.CONTAINER_APP_NAME }}
           imageToDeploy: ${{ env.ACR_LOGIN_SERVER }}/turgo:latest
 
       - name: Sync database schema
