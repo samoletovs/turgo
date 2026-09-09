@@ -93,6 +93,7 @@ export const mockDb = {
     return fnOrArray;
   }),
   $queryRaw: vi.fn().mockResolvedValue([]),
+  $executeRaw: vi.fn().mockResolvedValue(0),
   $connect: vi.fn(),
   $disconnect: vi.fn(),
 };

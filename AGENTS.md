@@ -4,7 +4,7 @@
 
 ## Project
 
-Turgo — agent-first classifieds platform. Next.js 16 + React 19 + TypeScript + Prisma + tRPC + PostgreSQL + Redis + Meilisearch.
+Turgo — agent-first classifieds platform. Next.js 16 + React 19 + TypeScript + Prisma + tRPC + PostgreSQL + Redis + Azure AI Search.
 
 ## Build & verify
 
@@ -51,6 +51,10 @@ src/
 - Images: Sharp for processing, Azure Blob for storage
 - All monetary values in EUR cents (integer)
 - Mobile-first responsive design
+- Search reads use `services/search-read.ts` and request-driven reconciliation in
+  `services/search-sync.ts`; do not return raw index documents or bypass the
+  authoritative public-record checks. Operator backfill uses
+  `node .\scripts\bootstrap-search.mjs --sync` with inherited credentials.
 
 ## When implementing an issue
 

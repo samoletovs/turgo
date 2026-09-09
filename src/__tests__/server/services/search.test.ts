@@ -6,7 +6,7 @@ const mockDeleteDocuments = vi.fn().mockResolvedValue({ results: [] });
 const mockSearchResults = vi.fn();
 const mockSuggestResults = vi.fn();
 const mockCreateOrUpdateIndex = vi.fn().mockResolvedValue({});
-const mockGetIndex = vi.fn();
+const mockGetDocumentsCount = vi.fn();
 
 vi.mock('@azure/search-documents', () => {
   return {
@@ -15,10 +15,10 @@ vi.mock('@azure/search-documents', () => {
       deleteDocuments = mockDeleteDocuments;
       search = mockSearchResults;
       suggest = mockSuggestResults;
+      getDocumentsCount = mockGetDocumentsCount;
     },
     SearchIndexClient: class MockSearchIndexClient {
       createOrUpdateIndex = mockCreateOrUpdateIndex;
-      getIndex = mockGetIndex;
     },
     AzureKeyCredential: class MockAzureKeyCredential {
       constructor(_key: string) {}
@@ -172,6 +172,23 @@ describe('searchListings', () => {
     expect(filter).toContain("countryCode eq 'LV'");
   });
 
+  it('applies ID filters and escapes quoted OData values', async () => {
+    mockSearchResults.mockResolvedValue({
+      results: (async function* () {})(),
+      count: 0,
+    });
+    await searchListings({
+      query: 'test',
+      categoryId: "cat'one",
+      locationId: "loc'one",
+      categorySlug: "owner's",
+      locationSlug: "city's",
+    });
+    expect(mockSearchResults.mock.calls[0][1].filter).toContain("categoryId eq 'cat''one'");
+    expect(mockSearchResults.mock.calls[0][1].filter).toContain("locationId eq 'loc''one'");
+    expect(mockSearchResults.mock.calls[0][1].filter).toContain("categorySlug eq 'owner''s'");
+  });
+
   it('applies geo filter when provided', async () => {
     mockSearchResults.mockResolvedValue({
       results: (async function* () {})(),
@@ -221,14 +238,12 @@ describe('searchListings', () => {
     expect(mockSearchResults.mock.calls[0][1].top).toBe(10);
   });
 
-  it('returns empty results on Azure AI Search error', async () => {
+  it('propagates Azure failure so the authoritative reader can report database fallback', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     mockSearchResults.mockRejectedValue(new Error('Connection refused'));
 
-    const result = await searchListings({ query: 'car' });
-
-    expect(result.hits).toEqual([]);
-    expect(result.totalHits).toBe(0);
+    await expect(searchListings({ query: 'car' })).rejects.toThrow('Connection refused');
+    expect(warnSpy).not.toHaveBeenCalled();
     warnSpy.mockRestore();
   });
 });
@@ -460,7 +475,7 @@ describe('bulkIndexListings', () => {
 // ──────────────────────────────────────────────────────────────
 describe('isSearchHealthy', () => {
   it('returns true when Azure AI Search is available', async () => {
-    mockGetIndex.mockResolvedValue({ name: 'listings' });
+    mockGetDocumentsCount.mockResolvedValue(0);
 
     const result = await isSearchHealthy();
 
@@ -468,7 +483,7 @@ describe('isSearchHealthy', () => {
   });
 
   it('returns false when Azure AI Search is unavailable', async () => {
-    mockGetIndex.mockRejectedValue(new Error('Connection refused'));
+    mockGetDocumentsCount.mockRejectedValue(new Error('Connection refused'));
 
     const result = await isSearchHealthy();
 

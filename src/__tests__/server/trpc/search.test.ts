@@ -1,11 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mockDb } from '@/__tests__/setup';
 
-// Mock Meilisearch service
+// Keep the authoritative reader real; mock only external search I/O.
 vi.mock('@/server/services/search', () => ({
   searchListings: vi.fn(),
   searchSuggestions: vi.fn(),
   savedSearchMatchesListing: vi.fn(),
+  withSearchDeadline: (operation: () => Promise<unknown>) => operation(),
+}));
+vi.mock('@/server/services/search-sync', () => ({
+  synchronizeSearch: vi.fn().mockResolvedValue({ documents: 0, uploaded: 0, deleted: 0 }),
+  SEARCH_SYNC_LIMIT: 500,
+  SearchSyncError: class extends Error {},
+  reportSearchFallback: vi.fn(),
 }));
 
 import {
@@ -57,6 +64,8 @@ describe('search', () => {
       totalPages: 1,
       processingTimeMs: 5,
     });
+    mockDb.listing.findMany.mockResolvedValue([{ id: '1', title: 'Car' }]);
+    mockDb.listing.count.mockResolvedValue(1);
 
     const result = await publicCaller().search({
       query: 'car',
@@ -98,6 +107,39 @@ describe('search', () => {
     expect(result.listings).toHaveLength(1);
     expect(result.total).toBe(1);
   });
+
+  it.each([1, 7])(
+    'preserves database results on page %i when a new Azure index is empty',
+    async (page) => {
+      const total = 153;
+      const limit = 24;
+      const skip = (page - 1) * limit;
+      const listings = Array.from({ length: Math.min(limit, total - skip) }, (_, offset) => ({
+        id: `synthetic-${skip + offset}`,
+      }));
+      mockMeiliSearch.mockResolvedValue({
+        hits: [],
+        totalHits: 0,
+        page,
+        totalPages: 0,
+        processingTimeMs: 0,
+      });
+      mockDb.listing.findMany.mockResolvedValue(listings);
+      mockDb.listing.count.mockResolvedValue(total);
+
+      const result = await publicCaller().search({ query: 'synthetic', page, limit });
+
+      expect(result).toEqual({ listings, total, page, totalPages: 7 });
+      expect(mockDb.listing.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skip,
+          take: limit,
+          where: expect.objectContaining({ status: 'ACTIVE' }),
+        }),
+      );
+      expect(mockDb.listing.count).toHaveBeenCalled();
+    },
+  );
 
   it('falls back to Prisma when Meilisearch throws', async () => {
     mockMeiliSearch.mockRejectedValue(new Error('Connection refused'));
@@ -185,7 +227,10 @@ describe('search', () => {
       limit: 24,
     });
 
-    expect(mockDb.listing.findMany.mock.calls[0][0].orderBy).toEqual({ price: 'asc' });
+    expect(mockDb.listing.findMany.mock.calls[0][0].orderBy).toEqual([
+      { price: 'asc' },
+      { id: 'asc' },
+    ]);
   });
 
   it('defaults Prisma fallback sort to newest first', async () => {
@@ -195,7 +240,10 @@ describe('search', () => {
 
     await publicCaller().search({ query: 'phone', page: 1, limit: 24 });
 
-    expect(mockDb.listing.findMany.mock.calls[0][0].orderBy).toEqual({ createdAt: 'desc' });
+    expect(mockDb.listing.findMany.mock.calls[0][0].orderBy).toEqual([
+      { createdAt: 'desc' },
+      { id: 'asc' },
+    ]);
   });
 
   it('forwards all filters and sort to the search service', async () => {
@@ -231,8 +279,8 @@ describe('search', () => {
       minPrice: 100,
       maxPrice: 500,
       sort: 'price_desc',
-      page: 2,
-      limit: 12,
+      page: 1,
+      limit: 501,
     });
   });
 
@@ -258,15 +306,22 @@ describe('search', () => {
 // suggest
 // ──────────────────────────────────────────────────────────────
 describe('suggest', () => {
-  it('returns Meilisearch suggestions when available', async () => {
-    mockMeiliSuggest.mockResolvedValue([
-      { text: 'Car', type: 'listing' },
-      { text: 'Electronics', type: 'category', slug: 'electronics' },
-    ]);
+  it('returns hydrated suggestions in the same shape as database fallback', async () => {
+    mockMeiliSearch.mockResolvedValue({
+      hits: [],
+      totalHits: 0,
+      page: 1,
+      totalPages: 0,
+      processingTimeMs: 0,
+    });
+    mockDb.listing.findMany.mockResolvedValue([{ id: '1', title: 'Car' }]);
+    mockDb.listing.count.mockResolvedValue(1);
+    mockDb.category.findMany.mockResolvedValue([]);
 
     const result = await publicCaller().suggest({ query: 'ca' });
 
-    expect(result).toHaveLength(2);
+    expect(result).toEqual({ listings: [{ text: 'Car', type: 'listing' }], categories: [] });
+    expect(mockMeiliSuggest).not.toHaveBeenCalled();
   });
 
   it('falls back to Prisma when Meilisearch unavailable', async () => {
