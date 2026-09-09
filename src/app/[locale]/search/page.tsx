@@ -1,5 +1,6 @@
 import { db } from '@/server/db';
 import { getLocalizedName } from '@/lib/utils';
+import { searchPublicListings } from '@/server/services/search-read';
 import { SearchPageClient } from './search-client';
 
 interface SearchPageProps {
@@ -21,142 +22,62 @@ interface SearchPageProps {
 export default async function SearchPage({ params, searchParams }: SearchPageProps) {
   const { locale } = await params;
   const filters = await searchParams;
-  const page = parseInt(filters.page || '1', 10);
+  const requestedPage = Number(filters.page || '1');
+  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const perPage = 24;
-
-  // Build Prisma where clause
-  const where: Record<string, unknown> = {
-    status: 'ACTIVE',
-  };
-
-  if (filters.q) {
-    where.OR = [
-      { title: { contains: filters.q, mode: 'insensitive' } },
-      { description: { contains: filters.q, mode: 'insensitive' } },
-    ];
-  }
-
-  if (filters.category) {
-    where.category = { slug: filters.category };
-  }
-
-  if (filters.location) {
-    where.location = { slug: filters.location };
-  }
-
-  if (filters.minPrice || filters.maxPrice) {
-    where.price = {};
-    if (filters.minPrice)
-      (where.price as Record<string, number>).gte = parseFloat(filters.minPrice);
-    if (filters.maxPrice)
-      (where.price as Record<string, number>).lte = parseFloat(filters.maxPrice);
-  }
-
-  if (filters.condition) {
-    where.condition = filters.condition;
-  }
-
-  if (filters.countryCode) {
-    where.location = {
-      ...((where.location as object) || {}),
-      countryCode: filters.countryCode,
-    };
-  }
-
-  // Determine sort
-  const orderBy: Record<string, string> = {};
-  switch (filters.sort) {
-    case 'price_asc':
-      orderBy.price = 'asc';
-      break;
-    case 'price_desc':
-      orderBy.price = 'desc';
-      break;
-    case 'oldest':
-      orderBy.createdAt = 'asc';
-      break;
-    case 'views':
-      orderBy.viewCount = 'desc';
-      break;
-    default:
-      orderBy.createdAt = 'desc';
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let listings: any[] = [];
-  let totalCount = 0;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let categories: any[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let locations: any[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let categoryAttributes: any[] = [];
-
-  try {
-    const [listingsResult, countResult, categoriesResult, locationsResult] = await Promise.all([
-      db.listing.findMany({
-        where,
-        orderBy,
-        skip: (page - 1) * perPage,
-        take: perPage,
-        include: {
-          images: { take: 1, orderBy: { sortOrder: 'asc' } },
-          category: true,
-          location: true,
-          _count: { select: { favorites: true } },
-          boosts: { where: { endAt: { gt: new Date() } } },
-        },
-      }),
-      db.listing.count({ where }),
-      db.category.findMany({
-        where: { parentId: null, isActive: true },
-        orderBy: { sortOrder: 'asc' },
-        include: {
-          children: {
-            where: { isActive: true },
-            orderBy: { sortOrder: 'asc' },
-            include: {
-              _count: {
-                select: { listings: { where: { status: 'ACTIVE' } } },
-              },
+  const [result, categories, locations] = await Promise.all([
+    searchPublicListings(
+      db,
+      {
+        query: filters.q || '',
+        categorySlug: filters.category,
+        locationSlug: filters.location,
+        condition: filters.condition,
+        countryCode: filters.countryCode,
+        minPrice: filters.minPrice ? Number(filters.minPrice) : undefined,
+        maxPrice: filters.maxPrice ? Number(filters.maxPrice) : undefined,
+        sort: filters.sort,
+        page,
+        limit: perPage,
+      },
+      false,
+    ),
+    db.category.findMany({
+      where: { parentId: null, isActive: true },
+      orderBy: { sortOrder: 'asc' },
+      include: {
+        children: {
+          where: { isActive: true },
+          orderBy: { sortOrder: 'asc' },
+          include: {
+            _count: {
+              select: { listings: { where: { status: 'ACTIVE' } } },
             },
           },
-          _count: {
-            select: { listings: { where: { status: 'ACTIVE' } } },
-          },
         },
-      }),
-      db.location.findMany({
-        where: { parentId: null },
-        orderBy: { name: 'asc' },
-        include: {
-          _count: {
-            select: { listings: { where: { status: 'ACTIVE' } } },
-          },
+        _count: {
+          select: { listings: { where: { status: 'ACTIVE' } } },
         },
-      }),
-    ]);
-
-    listings = listingsResult;
-    totalCount = countResult;
-    categories = categoriesResult;
-    locations = locationsResult;
-
-    // Load category-specific attributes if a category is selected
-    if (filters.category) {
-      const selectedCat = await db.category.findUnique({
+      },
+    }),
+    db.location.findMany({
+      where: { parentId: null },
+      orderBy: { name: 'asc' },
+      include: {
+        _count: {
+          select: { listings: { where: { status: 'ACTIVE' } } },
+        },
+      },
+    }),
+  ]);
+  const { listings, total: totalCount, totalPages } = result;
+  const selectedCategory = filters.category
+    ? await db.category.findUnique({
         where: { slug: filters.category },
         include: { attributes: { orderBy: { sortOrder: 'asc' } } },
-      });
-      if (selectedCat?.attributes) {
-        categoryAttributes = selectedCat.attributes;
-      }
-    }
-  } catch (e) {
-    console.error('Failed to load search data:', e);
-  }
-
-  const totalPages = Math.ceil(totalCount / perPage);
+      })
+    : null;
+  const categoryAttributes = selectedCategory?.attributes ?? [];
 
   // Serialize for client component
   const serializedListings = listings.map((listing) => ({
@@ -197,7 +118,7 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
     slug: cat.slug,
     icon: cat.icon,
     count: cat._count.listings,
-    children: (cat.children || []).map((child: typeof cat) => ({
+    children: (cat.children || []).map((child) => ({
       id: child.id,
       name:
         typeof child.name === 'object'

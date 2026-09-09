@@ -8,6 +8,7 @@ import {
   SearchClient,
   SearchIndexClient,
   AzureKeyCredential,
+  type GeographyPoint,
   type SearchOptions,
 } from '@azure/search-documents';
 
@@ -28,7 +29,7 @@ function getCredential(): AzureKeyCredential {
   return new AzureKeyCredential(key || 'dev-key');
 }
 
-function getSearchClient(): SearchClient<SearchDocument> {
+export function getSearchClient(): SearchClient<SearchDocument> {
   if (!_searchClient) {
     _searchClient = new SearchClient<SearchDocument>(
       getEndpoint(),
@@ -50,72 +51,87 @@ const LISTINGS_INDEX = 'listings';
 
 // ─── Index initialisation ────────────────────────────────
 
+export function getListingsIndexDefinition() {
+  return {
+    name: LISTINGS_INDEX,
+    fields: [
+      { name: 'id', type: 'Edm.String' as const, key: true, filterable: true },
+      { name: 'title', type: 'Edm.String' as const, searchable: true },
+      { name: 'slug', type: 'Edm.String' as const, filterable: true },
+      { name: 'description', type: 'Edm.String' as const, searchable: true },
+      {
+        name: 'price',
+        type: 'Edm.Double' as const,
+        filterable: true,
+        sortable: true,
+        facetable: true,
+      },
+      { name: 'currency', type: 'Edm.String' as const, filterable: true },
+      { name: 'condition', type: 'Edm.String' as const, filterable: true, facetable: true },
+      { name: 'status', type: 'Edm.String' as const, filterable: true },
+      { name: 'negotiable', type: 'Edm.Boolean' as const, filterable: true },
+      { name: 'categoryId', type: 'Edm.String' as const, filterable: true },
+      { name: 'categorySlug', type: 'Edm.String' as const, filterable: true },
+      { name: 'categoryName', type: 'Edm.String' as const, searchable: true, filterable: true },
+      { name: 'locationId', type: 'Edm.String' as const, filterable: true },
+      { name: 'locationSlug', type: 'Edm.String' as const, filterable: true },
+      { name: 'locationName', type: 'Edm.String' as const, searchable: true },
+      { name: 'countryCode', type: 'Edm.String' as const, filterable: true },
+      { name: 'managedByAgent', type: 'Edm.Boolean' as const, filterable: true },
+      { name: 'viewCount', type: 'Edm.Int32' as const, sortable: true },
+      { name: 'imageUrl', type: 'Edm.String' as const },
+      { name: 'imageCount', type: 'Edm.Int32' as const },
+      { name: 'hasImages', type: 'Edm.Boolean' as const, filterable: true },
+      { name: 'attributeValues', type: 'Edm.String' as const, searchable: true },
+      { name: 'location', type: 'Edm.GeographyPoint' as const, filterable: true },
+      {
+        name: 'createdAt',
+        type: 'Edm.DateTimeOffset' as const,
+        sortable: true,
+        filterable: true,
+      },
+    ],
+    suggesters: [
+      {
+        name: 'sg',
+        searchMode: 'analyzingInfixMatching' as const,
+        sourceFields: ['title', 'categoryName'],
+      },
+    ],
+    scoringProfiles: [
+      {
+        name: 'boostTitle',
+        textWeights: {
+          weights: { title: 3, description: 1, categoryName: 2, attributeValues: 1.5 },
+        },
+      },
+    ],
+    defaultScoringProfile: 'boostTitle',
+  };
+}
+
 /** Initialize Azure AI Search index with schema (call once on app boot) */
 export async function initSearchIndex() {
   try {
     const indexClient = getIndexClient();
-
-    const indexDef = {
-      name: LISTINGS_INDEX,
-      fields: [
-        { name: 'id', type: 'Edm.String' as const, key: true, filterable: true },
-        { name: 'title', type: 'Edm.String' as const, searchable: true },
-        { name: 'slug', type: 'Edm.String' as const, filterable: true },
-        { name: 'description', type: 'Edm.String' as const, searchable: true },
-        {
-          name: 'price',
-          type: 'Edm.Double' as const,
-          filterable: true,
-          sortable: true,
-          facetable: true,
-        },
-        { name: 'currency', type: 'Edm.String' as const, filterable: true },
-        { name: 'condition', type: 'Edm.String' as const, filterable: true, facetable: true },
-        { name: 'status', type: 'Edm.String' as const, filterable: true },
-        { name: 'negotiable', type: 'Edm.Boolean' as const, filterable: true },
-        { name: 'categoryId', type: 'Edm.String' as const, filterable: true },
-        { name: 'categorySlug', type: 'Edm.String' as const, filterable: true },
-        { name: 'categoryName', type: 'Edm.String' as const, searchable: true, filterable: true },
-        { name: 'locationId', type: 'Edm.String' as const, filterable: true },
-        { name: 'locationSlug', type: 'Edm.String' as const, filterable: true },
-        { name: 'locationName', type: 'Edm.String' as const, searchable: true },
-        { name: 'countryCode', type: 'Edm.String' as const, filterable: true },
-        { name: 'managedByAgent', type: 'Edm.Boolean' as const, filterable: true },
-        { name: 'viewCount', type: 'Edm.Int32' as const, sortable: true },
-        { name: 'imageUrl', type: 'Edm.String' as const },
-        { name: 'imageCount', type: 'Edm.Int32' as const },
-        { name: 'hasImages', type: 'Edm.Boolean' as const, filterable: true },
-        { name: 'attributeValues', type: 'Edm.String' as const, searchable: true },
-        { name: 'location', type: 'Edm.GeographyPoint' as const, filterable: true },
-        {
-          name: 'createdAt',
-          type: 'Edm.DateTimeOffset' as const,
-          sortable: true,
-          filterable: true,
-        },
-      ],
-      suggesters: [
-        {
-          name: 'sg',
-          searchMode: 'analyzingInfixMatching' as const,
-          sourceFields: ['title', 'categoryName'],
-        },
-      ],
-      scoringProfiles: [
-        {
-          name: 'boostTitle',
-          textWeights: {
-            weights: { title: 3, description: 1, categoryName: 2, attributeValues: 1.5 },
-          },
-        },
-      ],
-      defaultScoringProfile: 'boostTitle',
-    };
-
-    await indexClient.createOrUpdateIndex(indexDef);
+    await indexClient.createOrUpdateIndex(getListingsIndexDefinition());
     console.log('[Search] Azure AI Search index initialized');
   } catch (error) {
     console.warn('[Search] Azure AI Search not available:', error);
+  }
+}
+
+/** Operator-only creation: an existing index is never overwritten. */
+export async function bootstrapSearchIndex(): Promise<void> {
+  if (!process.env.AZURE_SEARCH_API_KEY?.trim()) {
+    throw new Error('AZURE_SEARCH_API_KEY is required for index bootstrap');
+  }
+  await withSearchDeadline(
+    (abortSignal) => getIndexClient().createIndex(getListingsIndexDefinition(), { abortSignal }),
+    10_000,
+  );
+  if (!(await isSearchHealthy())) {
+    throw new Error('Index creation completed but authenticated read verification failed');
   }
 }
 
@@ -145,11 +161,16 @@ export interface SearchDocument {
   hasImages: boolean;
   attributeValues?: string;
   /** Azure AI Search GeographyPoint (GeoJSON) */
-  location?: { type: 'Point'; coordinates: [number, number] } | null;
+  location?: { type: 'Point'; coordinates: [number, number] } | GeographyPoint | null;
   createdAt: string; // ISO 8601 (Azure AI Search DateTimeOffset)
 }
 
 // ─── Indexing helpers ────────────────────────────────────
+
+export function searchCoordinates(longitude: number, latitude: number): [number, number] {
+  // Azure's geographic round-trip can change the last floating-point bit.
+  return [Number(longitude.toFixed(9)), Number(latitude.toFixed(9))];
+}
 
 /** Convert a listing row into a search document */
 export function toSearchDocument(listing: {
@@ -191,16 +212,16 @@ export function toSearchDocument(listing: {
     categoryId: listing.categoryId,
     categorySlug: listing.categorySlug ?? '',
     categoryName: listing.categoryName ?? '',
-    locationId: listing.locationId,
+    locationId: listing.locationId ?? '',
     locationSlug: listing.locationSlug ?? '',
     locationName: listing.locationName ?? '',
-    countryCode: listing.countryCode,
+    countryCode: listing.countryCode ?? '',
     managedByAgent: listing.managedByAgent,
     viewCount: listing.viewCount,
-    imageUrl: listing.imageUrl,
+    imageUrl: listing.imageUrl ?? '',
     imageCount: listing.imageCount ?? 0,
     hasImages: (listing.imageCount ?? 0) > 0,
-    attributeValues: listing.attributeValues,
+    attributeValues: listing.attributeValues ?? '',
     location: null,
     createdAt: listing.createdAt.toISOString(),
   };
@@ -209,7 +230,7 @@ export function toSearchDocument(listing: {
   if (listing.latitude != null && listing.longitude != null) {
     doc.location = {
       type: 'Point',
-      coordinates: [listing.longitude, listing.latitude],
+      coordinates: searchCoordinates(listing.longitude, listing.latitude),
     };
   }
 
@@ -255,7 +276,9 @@ export async function removeListing(listingId: string) {
 
 export interface SearchListingsParams {
   query: string;
+  categoryId?: string;
   categorySlug?: string;
+  locationId?: string;
   locationSlug?: string;
   condition?: string;
   minPrice?: number;
@@ -271,11 +294,14 @@ export interface SearchListingsParams {
 /** Build an Azure AI Search OData filter string from structured params */
 function buildFilter(params: SearchListingsParams): string {
   const parts: string[] = ["status eq 'ACTIVE'"];
+  const quote = (value: string) => value.replaceAll("'", "''");
 
-  if (params.categorySlug) parts.push(`categorySlug eq '${params.categorySlug}'`);
-  if (params.locationSlug) parts.push(`locationSlug eq '${params.locationSlug}'`);
-  if (params.condition) parts.push(`condition eq '${params.condition}'`);
-  if (params.countryCode) parts.push(`countryCode eq '${params.countryCode}'`);
+  if (params.categoryId) parts.push(`categoryId eq '${quote(params.categoryId)}'`);
+  if (params.categorySlug) parts.push(`categorySlug eq '${quote(params.categorySlug)}'`);
+  if (params.locationId) parts.push(`locationId eq '${quote(params.locationId)}'`);
+  if (params.locationSlug) parts.push(`locationSlug eq '${quote(params.locationSlug)}'`);
+  if (params.condition) parts.push(`condition eq '${quote(params.condition)}'`);
+  if (params.countryCode) parts.push(`countryCode eq '${quote(params.countryCode)}'`);
   if (params.minPrice != null) parts.push(`price ge ${params.minPrice}`);
   if (params.maxPrice != null) parts.push(`price le ${params.maxPrice}`);
 
@@ -316,7 +342,7 @@ export async function searchListings(params: SearchListingsParams): Promise<{
   const page = params.page ?? 1;
   const limit = params.limit ?? 24;
 
-  try {
+  return withSearchDeadline(async (abortSignal) => {
     const client = getSearchClient();
     const start = Date.now();
 
@@ -329,16 +355,20 @@ export async function searchListings(params: SearchListingsParams): Promise<{
       highlightPreTag: '<mark>',
       highlightPostTag: '</mark>',
       includeTotalCount: true,
+      abortSignal,
     };
 
     const result = await client.search(params.query || '*', searchOptions);
 
     const hits: SearchDocument[] = [];
     for await (const r of result.results) {
+      abortSignal.throwIfAborted();
       hits.push(r.document);
+      if (hits.length > limit) throw new Error('Search result exceeded requested limit');
     }
 
-    const totalHits = result.count ?? 0;
+    if (result.count === undefined) throw new Error('Search result count missing');
+    const totalHits = result.count;
     const processingTimeMs = Date.now() - start;
 
     return {
@@ -348,10 +378,7 @@ export async function searchListings(params: SearchListingsParams): Promise<{
       totalPages: Math.ceil(totalHits / limit),
       processingTimeMs,
     };
-  } catch (error) {
-    console.warn('[Search] Search failed, falling back to empty:', error);
-    return { hits: [], totalHits: 0, page, totalPages: 0, processingTimeMs: 0 };
-  }
+  }, 3000);
 }
 
 // ─── Suggestions / autocomplete ──────────────────────────
@@ -429,12 +456,35 @@ export function savedSearchMatchesListing(
 
 // ─── Health check ────────────────────────────────────────
 
-/** Returns true if Azure AI Search is reachable */
+export async function withSearchDeadline<T>(
+  operation: (signal: AbortSignal) => Promise<T>,
+  timeoutMs: number,
+): Promise<T> {
+  const controller = new AbortController();
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      operation(controller.signal),
+      new Promise<never>((_, reject) => {
+        timeout = setTimeout(() => {
+          controller.abort();
+          reject(new Error('Azure AI Search operation timed out'));
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+/** Check authenticated index reads without requiring index-management permissions. */
 export async function isSearchHealthy(): Promise<boolean> {
   try {
-    const indexClient = getIndexClient();
-    const index = await indexClient.getIndex(LISTINGS_INDEX);
-    return !!index;
+    const count = await withSearchDeadline(
+      (abortSignal) => getSearchClient().getDocumentsCount({ abortSignal }),
+      3000,
+    );
+    return count >= 0;
   } catch {
     return false;
   }

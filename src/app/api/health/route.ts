@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import Redis from 'ioredis';
+import { isSearchHealthy } from '@/server/services/search';
 
 interface ServiceStatus {
   status: 'ok' | 'error' | 'unavailable';
@@ -12,88 +14,90 @@ async function checkDatabase(): Promise<ServiceStatus> {
     const { db } = await import('@/server/db');
     await db.$queryRawUnsafe('SELECT 1');
     return { status: 'ok', latencyMs: Date.now() - start };
-  } catch (error) {
+  } catch {
     return {
       status: 'error',
       latencyMs: Date.now() - start,
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message: 'Database check failed',
     };
   }
 }
 
 async function checkRedis(): Promise<ServiceStatus> {
   const start = Date.now();
+  let redis: Redis | undefined;
   try {
-    const Redis = (await import('ioredis')).default;
-    const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+    redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
       connectTimeout: 3000,
+      commandTimeout: 3000,
+      retryStrategy: () => null,
       lazyConnect: true,
     });
     await redis.connect();
     await redis.ping();
-    await redis.disconnect();
     return { status: 'ok', latencyMs: Date.now() - start };
-  } catch (error) {
+  } catch {
     return {
       status: 'error',
       latencyMs: Date.now() - start,
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message: 'Redis check failed',
     };
+  } finally {
+    redis?.disconnect();
   }
 }
 
-async function checkMeilisearch(): Promise<ServiceStatus> {
+async function checkAzureSearch(): Promise<ServiceStatus> {
   const start = Date.now();
   try {
-    const url = process.env.MEILISEARCH_URL || 'http://localhost:7700';
-    const res = await fetch(`${url}/health`, {
-      signal: AbortSignal.timeout(3000),
-    });
-    if (res.ok) {
+    if (await isSearchHealthy()) {
       return { status: 'ok', latencyMs: Date.now() - start };
     }
-    return { status: 'error', latencyMs: Date.now() - start, message: `HTTP ${res.status}` };
-  } catch (error) {
-    return {
-      status: 'error',
-      latencyMs: Date.now() - start,
-      message: error instanceof Error ? error.message : 'Unknown error',
-    };
+  } catch {
+    // Health responses are public; never return SDK errors or request credentials.
   }
+  return {
+    status: 'error',
+    latencyMs: Date.now() - start,
+    message: 'Azure AI Search check failed',
+  };
 }
 
 async function checkBullMQ(): Promise<ServiceStatus> {
   const start = Date.now();
+  let redis: Redis | undefined;
   try {
     // BullMQ depends on Redis, so we check the connection
-    const Redis = (await import('ioredis')).default;
-    const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+    redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
       connectTimeout: 3000,
+      commandTimeout: 3000,
+      retryStrategy: () => null,
       lazyConnect: true,
     });
     await redis.connect();
     const pong = await redis.ping();
-    await redis.disconnect();
     return {
       status: pong === 'PONG' ? 'ok' : 'error',
       latencyMs: Date.now() - start,
     };
-  } catch (error) {
+  } catch {
     return {
       status: 'error',
       latencyMs: Date.now() - start,
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message: 'Queue check failed',
     };
+  } finally {
+    redis?.disconnect();
   }
 }
 
 export async function GET() {
   const startTime = Date.now();
 
-  const [database, redis, meilisearch, bullmq] = await Promise.allSettled([
+  const [database, redis, azureSearch, bullmq] = await Promise.allSettled([
     checkDatabase(),
     checkRedis(),
-    checkMeilisearch(),
+    checkAzureSearch(),
     checkBullMQ(),
   ]);
 
@@ -106,9 +110,9 @@ export async function GET() {
       redis.status === 'fulfilled'
         ? redis.value
         : { status: 'error' as const, message: 'Check failed' },
-    meilisearch:
-      meilisearch.status === 'fulfilled'
-        ? meilisearch.value
+    azureSearch:
+      azureSearch.status === 'fulfilled'
+        ? azureSearch.value
         : { status: 'error' as const, message: 'Check failed' },
     bullmq:
       bullmq.status === 'fulfilled'

@@ -113,7 +113,7 @@ jobs:
     # path nobody can verify.
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && vars.DEPLOY_ENABLED == 'true'
     outputs:
-      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
 
     steps:
       - uses: actions/checkout@v5
@@ -142,10 +142,10 @@ jobs:
         with:
           images: ${{ env.ACR_LOGIN_SERVER }}/turgo
           tags: |
-            type=sha,prefix=
-            type=raw,value=latest
+            type=sha,prefix=,format=long
 
       - name: Build & push
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -177,7 +177,8 @@ jobs:
       # `turgo` and `redis-sidecar`, so the action cannot deploy it at all.
       #
       # Naming the container is also what stops the sidecar being overwritten by
-      # the app image.
+      # the app image. The secret must already exist; bind it only with the new
+      # synchronization-capable image, preserving every unrelated environment value.
       - name: Deploy to Container Apps
         uses: azure/CLI@v2
         with:
@@ -186,27 +187,20 @@ jobs:
               --name "${{ env.CONTAINER_APP_NAME }}" \
               --resource-group "${{ env.RESOURCE_GROUP }}" \
               --container-name "${{ env.CONTAINER_APP_NAME }}" \
-              --image "${{ env.ACR_LOGIN_SERVER }}/turgo:latest"
+              --image "${{ env.ACR_LOGIN_SERVER }}/turgo@${{ needs.build.outputs.image-digest }}" \
+              --set-env-vars \
+                "AZURE_SEARCH_API_KEY=secretref:azure-search-api-key" \
+                "AZURE_SEARCH_ENDPOINT=https://search-turgo.search.windows.net" \
+              --output none
 
-      - name: Sync database schema
-        continue-on-error: true
-        uses: azure/CLI@v2
-        with:
-          inlineScript: |
-            az containerapp exec \
-              --resource-group ${{ env.RESOURCE_GROUP }} \
-              --name ${{ env.CONTAINER_APP_NAME }} \
-              --command "npx --yes prisma db push --accept-data-loss --skip-generate"
-
-      - name: Seed database (categories, locations, plans)
-        continue-on-error: true
-        uses: azure/CLI@v2
-        with:
-          inlineScript: |
-            az containerapp exec \
-              --resource-group ${{ env.RESOURCE_GROUP }} \
-              --name ${{ env.CONTAINER_APP_NAME }} \
-              --command "npx --yes prisma db seed"
+      - name: Verify dependency health
+        shell: bash
+        run: |
+          curl --fail --silent --show-error \
+            --connect-timeout 10 --max-time 20 \
+            --retry 8 --retry-delay 10 --retry-all-errors \
+            "https://turgo.naurolabs.com/api/health" |
+            jq -e '.status == "healthy" and .services.azureSearch.status == "ok"'
 
       - name: Sync landing page order
         if: success()

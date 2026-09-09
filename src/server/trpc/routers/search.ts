@@ -1,188 +1,21 @@
 import { z } from 'zod';
 import type { Prisma } from '@prisma/client';
 import { createTRPCRouter, publicProcedure, protectedProcedure } from '@/server/trpc';
-import { searchSchema, type SearchInput } from '@/lib/validators';
-import {
-  searchListings as meiliSearch,
-  searchSuggestions as meiliSuggest,
-  savedSearchMatchesListing,
-  type SearchDocument,
-} from '@/server/services/search';
-
-/** Map a sort key to a Prisma orderBy clause (fallback path) */
-function buildPrismaOrderBy(sort: SearchInput['sort']): Prisma.ListingOrderByWithRelationInput {
-  switch (sort) {
-    case 'price_asc':
-      return { price: 'asc' };
-    case 'price_desc':
-      return { price: 'desc' };
-    case 'oldest':
-      return { createdAt: 'asc' };
-    case 'views':
-      return { viewCount: 'desc' };
-    case 'newest':
-    default:
-      return { createdAt: 'desc' };
-  }
-}
+import { searchSchema } from '@/lib/validators';
+import { savedSearchMatchesListing, type SearchDocument } from '@/server/services/search';
+import { searchPublicListings, suggestPublicListings } from '@/server/services/search-read';
 
 export const searchRouter = createTRPCRouter({
-  /** Full-text search — tries Meilisearch, falls back to Prisma */
+  /** Reconcile Azure Search, then hydrate/filter authoritative public database records. */
   search: publicProcedure.input(searchSchema).query(async ({ ctx, input }) => {
-    const {
-      query,
-      categoryId,
-      categorySlug,
-      locationId,
-      locationSlug,
-      condition,
-      countryCode,
-      minPrice,
-      maxPrice,
-      sort,
-      page,
-      limit,
-    } = input;
-
-    // ── Try Meilisearch first ──
-    try {
-      const result = await meiliSearch({
-        query,
-        categorySlug,
-        locationSlug,
-        condition,
-        countryCode,
-        minPrice,
-        maxPrice,
-        sort,
-        page,
-        limit,
-      });
-      if (result.hits.length > 0 || result.totalHits > 0) {
-        return {
-          listings: result.hits,
-          total: result.totalHits,
-          page: result.page,
-          totalPages: result.totalPages,
-        };
-      }
-    } catch {
-      // Meilisearch unavailable — fall through
-    }
-
-    // ── Prisma fallback ──
-    const where: Prisma.ListingWhereInput = {
-      status: 'ACTIVE',
-      OR: [
-        { title: { contains: query, mode: 'insensitive' } },
-        { description: { contains: query, mode: 'insensitive' } },
-      ],
-    };
-
-    if (categoryId) where.categoryId = categoryId;
-    if (categorySlug) where.category = { slug: categorySlug };
-    if (locationId) where.locationId = locationId;
-    if (locationSlug || countryCode) {
-      where.location = {
-        ...(locationSlug ? { slug: locationSlug } : {}),
-        ...(countryCode ? { countryCode } : {}),
-      };
-    }
-    if (condition) where.condition = condition;
-    if (minPrice != null || maxPrice != null) {
-      where.price = {
-        ...(minPrice != null ? { gte: minPrice } : {}),
-        ...(maxPrice != null ? { lte: maxPrice } : {}),
-      };
-    }
-
-    const [listings, total] = await Promise.all([
-      ctx.db.listing.findMany({
-        where,
-        orderBy: buildPrismaOrderBy(sort),
-        skip: (page - 1) * limit,
-        take: limit,
-        include: {
-          images: { where: { isPrimary: true }, take: 1 },
-          location: true,
-          category: true,
-        },
-      }),
-      ctx.db.listing.count({ where }),
-    ]);
-
-    return { listings, total, page, totalPages: Math.ceil(total / limit) };
+    return searchPublicListings(ctx.db, input);
   }),
 
   /** Search suggestions/autocomplete */
   suggest: publicProcedure
     .input(z.object({ query: z.string().min(2).max(100) }))
     .query(async ({ ctx, input }) => {
-      const normalizedQuery = input.query.trim().toLowerCase();
-
-      // Try Meilisearch suggestions first
-      try {
-        const suggestions = await meiliSuggest(normalizedQuery, 8);
-        if (suggestions.length > 0) return suggestions;
-      } catch {
-        // fall through
-      }
-
-      // Database fallback
-      const listings = await ctx.db.listing.findMany({
-        where: {
-          status: 'ACTIVE',
-          title: { contains: input.query, mode: 'insensitive' },
-        },
-        select: { title: true, categoryId: true },
-        take: 5,
-        distinct: ['title'],
-      });
-
-      const categories = await ctx.db.category.findMany({
-        where: {
-          isActive: true,
-        },
-        select: { name: true, slug: true },
-        orderBy: { sortOrder: 'asc' },
-        take: 50,
-      });
-
-      const categorySuggestions = categories
-        .map((category) => {
-          const localizedNames =
-            typeof category.name === 'object' && category.name !== null
-              ? Object.values(category.name as Record<string, unknown>).filter(
-                  (value): value is string => typeof value === 'string',
-                )
-              : [];
-          const categoryLabel =
-            localizedNames[0] ||
-            (typeof category.name === 'string' ? category.name : category.slug);
-          const matchesQuery =
-            category.slug.toLowerCase().includes(normalizedQuery) ||
-            localizedNames.some((name) => name.toLowerCase().includes(normalizedQuery));
-
-          if (!matchesQuery) return null;
-
-          return {
-            text: categoryLabel,
-            type: 'category' as const,
-            slug: category.slug,
-          };
-        })
-        .filter((category): category is { text: string; type: 'category'; slug: string } =>
-          category !== null,
-        )
-        .slice(0, 3);
-
-      return {
-        listings: listings.map((l) => ({
-          text: l.title,
-          type: 'listing' as const,
-        })),
-        categories: categorySuggestions,
-      };
+      return suggestPublicListings(ctx.db, input.query);
     }),
 
   /** Save a search for notifications */
