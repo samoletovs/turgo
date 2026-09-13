@@ -179,12 +179,16 @@ resource containerEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
   tags: tags
   properties: {
     appLogsConfiguration: {
-      destination: 'log-analytics'
-      logAnalyticsConfiguration: {
-        customerId: logAnalytics.properties.customerId
-        sharedKey: logAnalytics.listKeys().primarySharedKey
-      }
+      destination: 'azure-monitor'
     }
+  }
+}
+
+module containerLogs '../../.github/infrastructure/modules/container-app-logs.bicep' = {
+  name: 'container-logs-${projectName}'
+  params: {
+    environmentName: containerEnv.name
+    workspaceResourceId: logAnalytics.id
   }
 }
 
