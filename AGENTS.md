@@ -10,16 +10,27 @@ Turgo — agent-first classifieds platform. Next.js 16 + React 19 + TypeScript +
 
 ```bash
 npm ci
+npm run db:generate # Required on a fresh checkout, before checks below
+npm run typecheck  # MUST pass
 npm run build      # MUST pass
 npm test           # MUST pass
 npm run lint       # MUST pass
 ```
 
-Always run all three before creating a PR.
+Always generate the Prisma client and run all four checks before creating a PR.
+`npm ci` alone does not generate the schema-specific Prisma types and runtime
+exports. CI and the Dockerfile explicitly run generation; local and health-check
+runs must do the same. `db:generate` does not connect to or migrate a database.
+For production builds without local database configuration, use the dummy
+`DATABASE_URL` from `.github/workflows/deploy.yml`, never production credentials.
 
 > This project builds with **npm** (`package-lock.json`). CI and the Dockerfile both
 > run `npm ci`. Do not use pnpm or yarn — a second lockfile drifts from the one that
 > ships and reintroduces advisories that `package-lock.json` has already patched.
+
+The scoped `prisma` → `mysql2` override patches the CLI's transitive MySQL driver
+while Turgo continues to use PostgreSQL. Remove it only when Prisma's resolved
+dependency is itself patched (currently `mysql2 >= 3.23.1`).
 
 ## Project structure
 
@@ -61,5 +72,5 @@ src/
 1. Read issue description and labels
 2. Check existing patterns in the most similar file
 3. Minimal, focused changes — don't refactor unrelated code
-4. Run `npm run build && npm test && npm run lint` before committing
+4. Run `npm run validate && npm test && npm run build` before committing
 5. Create PR targeting `main`
