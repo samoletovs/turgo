@@ -1,5 +1,9 @@
 # Turgo — Copilot Coding Agent Instructions
 
+Feedback triage uses `gpt-6-luna` on the existing personal-agents Azure account,
+with reasoning disabled and a 300-token output ceiling. Marketplace models and
+their provider routing are unchanged by this retirement migration.
+
 > Read by GitHub Copilot coding agent when auto-implementing issues.
 
 ## Project
