@@ -83,9 +83,9 @@ describe('ErrorBoundary', () => {
     const tree = ErrorFallback();
     const button = findElements(tree).find(({ props }) => props.onClick !== undefined);
 
-    expect(getText(tree)).toContain('errors.boundary.title');
-    expect(getText(tree)).toContain('errors.boundary.description');
-    expect(getText(tree)).toContain('errors.boundary.cta');
+    expect(getText(tree)).toContain('title');
+    expect(getText(tree)).toContain('description');
+    expect(getText(tree)).toContain('cta');
     expect(button).toBeDefined();
 
     button?.props.onClick?.();

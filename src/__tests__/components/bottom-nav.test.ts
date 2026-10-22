@@ -125,12 +125,7 @@ describe('BottomNav', () => {
     const links = findElements(tree, (props) => props.href !== undefined);
 
     expect(nav.props['aria-label']).toBe('mobileNav');
-    expect(links.map(({ props }) => props.href)).toEqual([
-      '/',
-      '/search',
-      '/messages',
-      '/profile',
-    ]);
+    expect(links.map(({ props }) => props.href)).toEqual(['/', '/search', '/messages', '/profile']);
     expect(links.find(({ props }) => props.href === '/messages')?.props['aria-current']).toBe(
       'page',
     );
