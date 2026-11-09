@@ -5,7 +5,7 @@
 # Prerequisites: Azure CLI installed and logged in (az login)
 #
 # Cost breakdown (pay-per-token, NO monthly base fee):
-#   GPT-4o-mini:              $0.15/1M input, $0.60/1M output tokens
+#   GPT-6 Luna:              $0.10/1M input, $0.50/1M output tokens
 #   text-embedding-3-small:   $0.02/1M tokens
 #   Estimated monthly cost:   $0.10-$2.00 for light/moderate usage
 # ──────────────────────────────────────────────────────────
@@ -22,10 +22,10 @@ $OPENAI_NAME    = "oai-$PROJECT"
 $SKU            = "S0"                   # Pay-per-use, no monthly base cost
 
 # Model deployments — using cheapest capable models
-$CHAT_MODEL           = "gpt-4o-mini"
-$CHAT_DEPLOYMENT      = "gpt-4o-mini"
+$CHAT_MODEL           = "gpt-6-luna"
+$CHAT_DEPLOYMENT      = "gpt-6-luna"
 $CHAT_TPM             = 30              # 30K tokens/min — low to control costs
-$CHAT_MODEL_VERSION   = "2024-07-18"
+$CHAT_MODEL_VERSION   = "2026-09-22"
 
 $EMBED_MODEL          = "text-embedding-3-small"
 $EMBED_DEPLOYMENT     = "text-embedding-3-small"
@@ -37,7 +37,7 @@ Write-Host "╔═════════════════════�
 Write-Host "║  Azure OpenAI Setup — Cost-Optimized for Turgo          ║" -ForegroundColor Cyan
 Write-Host "║  Resource Group: $RESOURCE_GROUP                         ║" -ForegroundColor Cyan
 Write-Host "║  Location:       $LOCATION                       ║" -ForegroundColor Cyan
-Write-Host "║  Chat Model:     $CHAT_MODEL (15x cheaper than GPT-4o)    ║" -ForegroundColor Cyan
+Write-Host "║  Chat Model:     $CHAT_MODEL (reasoning disabled)       ║" -ForegroundColor Cyan
 Write-Host "║  Embed Model:    $EMBED_MODEL (5x cheaper)  ║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
@@ -83,7 +83,7 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host "  Azure OpenAI resource already exists." -ForegroundColor Green
 }
 
-# ── 3. Deploy GPT-4o-mini (chat/vision) ──
+# ── 3. Deploy GPT-6 Luna (chat/vision) ──
 Write-Host "▸ Deploying model: $CHAT_MODEL (${CHAT_TPM}K TPM)..." -ForegroundColor Yellow
 $existingChat = az cognitiveservices account deployment show `
     --resource-group $RESOURCE_GROUP `
@@ -98,7 +98,7 @@ if ($LASTEXITCODE -ne 0) {
         --model-name $CHAT_MODEL `
         --model-version $CHAT_MODEL_VERSION `
         --model-format "OpenAI" `
-        --sku-name "Standard" `
+        --sku-name "GlobalStandard" `
         --sku-capacity $CHAT_TPM `
         --output none
     Write-Host "  Deployed $CHAT_MODEL." -ForegroundColor Green
@@ -157,11 +157,16 @@ if (Test-Path $envPath) {
     $envContent = $envContent -replace 'AZURE_OPENAI_API_KEY="[^"]*"', "AZURE_OPENAI_API_KEY=`"$API_KEY`""
     $envContent = $envContent -replace 'AZURE_OPENAI_ENDPOINT="[^"]*"', "AZURE_OPENAI_ENDPOINT=`"$ENDPOINT`""
     $envContent = $envContent -replace 'AZURE_OPENAI_DEPLOYMENT_NAME="[^"]*"', "AZURE_OPENAI_DEPLOYMENT_NAME=`"$CHAT_DEPLOYMENT`""
+    $envContent = $envContent -replace 'AZURE_OPENAI_VISION_DEPLOYMENT="[^"]*"', "AZURE_OPENAI_VISION_DEPLOYMENT=`"$CHAT_DEPLOYMENT`""
 
-    # Add embedding and vision deployment if not present
+    # Add missing deployment settings independently.
     if ($envContent -notmatch "AZURE_OPENAI_EMBEDDING_DEPLOYMENT") {
         $envContent = $envContent -replace '(AZURE_OPENAI_DEPLOYMENT_NAME="[^"]*")',
-            "`$1`nAZURE_OPENAI_EMBEDDING_DEPLOYMENT=`"$EMBED_DEPLOYMENT`"`nAZURE_OPENAI_VISION_DEPLOYMENT=`"$CHAT_DEPLOYMENT`"`nAZURE_OPENAI_API_VERSION=`"2024-12-01-preview`""
+            "`$1`nAZURE_OPENAI_EMBEDDING_DEPLOYMENT=`"$EMBED_DEPLOYMENT`"`nAZURE_OPENAI_API_VERSION=`"2024-12-01-preview`""
+    }
+    if ($envContent -notmatch "AZURE_OPENAI_VISION_DEPLOYMENT") {
+        $envContent = $envContent -replace '(AZURE_OPENAI_DEPLOYMENT_NAME="[^"]*")',
+            "`$1`nAZURE_OPENAI_VISION_DEPLOYMENT=`"$CHAT_DEPLOYMENT`""
     }
 
     Set-Content -Path $envPath -Value $envContent.TrimEnd() -NoNewline
@@ -193,7 +198,7 @@ Write-Host "AZURE_OPENAI_API_VERSION=`"2024-12-01-preview`"" -ForegroundColor Da
 Write-Host ""
 Write-Host "─── Estimated Cost ──────────────────────────────────────" -ForegroundColor DarkGray
 Write-Host "Azure OpenAI base:     $0/month (pay-per-token only)" -ForegroundColor DarkGray
-Write-Host "GPT-4o-mini:           ~$0.15/1M input, $0.60/1M output" -ForegroundColor DarkGray
+Write-Host "GPT-6 Luna:           ~$0.10/1M input, $0.50/1M output" -ForegroundColor DarkGray
 Write-Host "Embeddings:            ~$0.02/1M tokens" -ForegroundColor DarkGray
 Write-Host "Estimated monthly:     $0.10-$2.00 for light usage" -ForegroundColor DarkGray
 Write-Host ""

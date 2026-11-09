@@ -3,7 +3,7 @@
  *
  * Routing logic:
  *   AI_PROVIDER="github"  → GitHub Models API (dev/test, free with Copilot)
- *   AI_PROVIDER="azure"   → Azure OpenAI GPT-4o (production)
+ *   AI_PROVIDER="azure"   → Azure OpenAI (production, configured deployment)
  *
  * All providers implement the same interface so agents are provider-agnostic.
  */

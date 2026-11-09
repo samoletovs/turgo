@@ -34,26 +34,33 @@ afterEach(() => {
 });
 
 describe('Azure AI diagnostics', () => {
-  it('executes v1 with the same deployment and reports the supported API', async () => {
-    fetchMock.mockResolvedValue(
-      Response.json({ choices: [{ message: { content: 'OK' } }], model: 'existing-model' }),
-    );
-    const result = await caller().diagnosticStatus();
-    expect(result.azureConfig.apiVersion).toBe('v1');
-    expect(result.azureStatus).toBe('connected');
-    expect(result.azureResponse).toBe('OK');
-    expect(fetchMock).toHaveBeenCalledWith(
-      'https://example.openai.azure.com/openai/v1/chat/completions',
-      expect.objectContaining({
-        body: JSON.stringify({
-          model: 'existing-deployment',
-          messages: [{ role: 'user', content: "Say 'OK' in one word." }],
-          max_tokens: 5,
-          temperature: 0,
+  it.each(['gpt-4o-mini', 'gpt-6-luna', 'gpt-6-luna-custom', undefined, ''])(
+    'uses compatible diagnostic options for deployment %s',
+    async (configuredDeployment) => {
+      vi.stubEnv('AZURE_OPENAI_DEPLOYMENT_NAME', configuredDeployment);
+      const deployment = configuredDeployment || 'gpt-6-luna';
+      fetchMock.mockResolvedValue(
+        Response.json({ choices: [{ message: { content: 'OK' } }], model: 'existing-model' }),
+      );
+      const result = await caller().diagnosticStatus();
+      expect(result.azureConfig.apiVersion).toBe('v1');
+      expect(result.azureConfig.deployment).toBe(deployment);
+      expect(result.azureStatus).toBe('connected');
+      expect(result.azureResponse).toBe('OK');
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://example.openai.azure.com/openai/v1/chat/completions',
+        expect.objectContaining({
+          body: JSON.stringify({
+            model: deployment,
+            messages: [{ role: 'user', content: "Say 'OK' in one word." }],
+            max_completion_tokens: 5,
+            ...(deployment === 'gpt-6-luna' ? { reasoning_effort: 'none' } : {}),
+            temperature: 0,
+          }),
         }),
-      }),
-    );
-  });
+      );
+    },
+  );
 
   it('still requires authentication before making an inference call', async () => {
     await expect(caller(false).diagnosticStatus()).rejects.toThrow();

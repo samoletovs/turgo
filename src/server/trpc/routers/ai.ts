@@ -8,7 +8,11 @@ import {
   getAiProviderInfo,
 } from '@/server/services/ai';
 import type { UserTier } from '@/server/services/ai';
-import { azureOpenAiUrl } from '@/server/services/ai-premium';
+import {
+  azureOpenAiTokenOptions,
+  azureOpenAiUrl,
+  DEFAULT_AZURE_OPENAI_DEPLOYMENT,
+} from '@/server/services/ai-premium';
 
 export const aiRouter = createTRPCRouter({
   /** Concierge chat — intent detection and routing (authenticated users only) */
@@ -210,7 +214,7 @@ Respond in JSON: {"suggestedPrice": number, "reasoning": "string", "confidence":
     const azureConfig = {
       endpoint: process.env.AZURE_OPENAI_ENDPOINT ? 'SET' : 'MISSING',
       apiKey: process.env.AZURE_OPENAI_API_KEY ? 'SET' : 'MISSING',
-      deployment: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt-4o-mini',
+      deployment: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || DEFAULT_AZURE_OPENAI_DEPLOYMENT,
       apiVersion: 'v1',
     };
 
@@ -226,7 +230,7 @@ Respond in JSON: {"suggestedPrice": number, "reasoning": "string", "confidence":
     ) {
       try {
         const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
-        const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt-4o-mini';
+        const deployment = azureConfig.deployment;
 
         const response = await fetch(azureOpenAiUrl(endpoint, 'chat/completions'), {
           method: 'POST',
@@ -237,7 +241,7 @@ Respond in JSON: {"suggestedPrice": number, "reasoning": "string", "confidence":
           body: JSON.stringify({
             model: deployment,
             messages: [{ role: 'user', content: "Say 'OK' in one word." }],
-            max_tokens: 5,
+            ...azureOpenAiTokenOptions(deployment, 5),
             temperature: 0,
           }),
         });

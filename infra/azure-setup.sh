@@ -126,7 +126,7 @@ STORAGE_CONNECTION=$(az storage account show-connection-string \
   --name "$STORAGE_ACCOUNT" \
   --query connectionString -o tsv)
 
-# ── 5b. Azure OpenAI (GPT-4o-mini — cost-optimized) ──
+# ── 5b. Azure OpenAI (GPT-6 Luna — cost-optimized) ──
 OPENAI_NAME="oai-${PROJECT}"
 OPENAI_LOCATION="swedencentral"   # Best model availability in EU
 echo "▸ Creating Azure OpenAI resource: $OPENAI_NAME..."
@@ -139,15 +139,15 @@ az cognitiveservices account create \
   --custom-domain "$OPENAI_NAME" \
   --output none
 
-echo "▸ Deploying GPT-4o-mini (30K TPM)..."
+echo "▸ Deploying GPT-6 Luna (30K TPM)..."
 az cognitiveservices account deployment create \
   --resource-group "$RESOURCE_GROUP" \
   --name "$OPENAI_NAME" \
-  --deployment-name gpt-4o-mini \
-  --model-name gpt-4o-mini \
-  --model-version "2024-07-18" \
+  --deployment-name gpt-6-luna \
+  --model-name gpt-6-luna \
+  --model-version "2026-09-22" \
   --model-format OpenAI \
-  --sku-name Standard \
+  --sku-name GlobalStandard \
   --sku-capacity 30 \
   --output none
 
@@ -222,9 +222,9 @@ az containerapp create \
     "AI_PROVIDER=azure" \
     "AZURE_OPENAI_API_KEY=${OPENAI_KEY}" \
     "AZURE_OPENAI_ENDPOINT=${OPENAI_ENDPOINT}" \
-    "AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4o-mini" \
+    "AZURE_OPENAI_DEPLOYMENT_NAME=gpt-6-luna" \
     "AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-3-small" \
-    "AZURE_OPENAI_VISION_DEPLOYMENT=gpt-4o-mini" \
+    "AZURE_OPENAI_VISION_DEPLOYMENT=gpt-6-luna" \
     "AZURE_OPENAI_API_VERSION=2024-12-01-preview" \
     "NODE_ENV=production" \
   --output none
@@ -284,7 +284,7 @@ echo "Container Apps (app):        ~\$5-15/mo (scales to zero)"
 echo "Container Apps (meilisearch): ~\$5/mo"
 echo "Container Registry (Basic):  ~\$5/mo"
 echo "Blob Storage:                ~\$1/mo"
-echo "Azure OpenAI (GPT-4o-mini):  ~\$0-2/mo (pay-per-token)"
+echo "Azure OpenAI (GPT-6 Luna):  ~\$0-2/mo (pay-per-token)"
 echo "────────────────────────────────────────────────────"
 echo "TOTAL ESTIMATED:             ~\$44-56/mo"
 echo ""

@@ -7,7 +7,7 @@
 //   - Azure Database for PostgreSQL Flexible Server (B1ms) + pgvector
 //   - Azure AI Search (Free tier)
 //   - Azure Storage Account (Blob for listing images)
-//   - Azure OpenAI (gpt-4o-mini + text-embedding-3-small)
+//   - Azure OpenAI (gpt-6-luna + text-embedding-3-small)
 //   - Log Analytics + Application Insights
 //
 // Deploy:
@@ -141,6 +141,7 @@ resource listingsContainer 'Microsoft.Storage/storageAccounts/blobServices/conta
 }
 
 // ── Azure OpenAI ──────────────────────────────────────────────────
+// Legacy standalone account, not the live app's shared personal-agents account.
 resource openai 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = {
   name: 'oai-${projectName}'
   location: openaiLocation
@@ -153,12 +154,12 @@ resource openai 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = {
   }
 }
 
-resource gpt4oMini 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01-preview' = {
+resource gpt6Luna 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01-preview' = {
   parent: openai
-  name: 'gpt-4o-mini'
-  sku: { name: 'Standard', capacity: 30 }
+  name: 'gpt-6-luna'
+  sku: { name: 'GlobalStandard', capacity: 30 }
   properties: {
-    model: { format: 'OpenAI', name: 'gpt-4o-mini', version: '2024-07-18' }
+    model: { format: 'OpenAI', name: 'gpt-6-luna', version: '2026-09-22' }
   }
 }
 
@@ -169,7 +170,7 @@ resource embedding 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01-
   properties: {
     model: { format: 'OpenAI', name: 'text-embedding-3-small', version: '1' }
   }
-  dependsOn: [gpt4oMini] // sequential deployment to avoid conflicts
+  dependsOn: [gpt6Luna] // sequential deployment to avoid conflicts
 }
 
 // ── Container Apps Environment ────────────────────────────────────

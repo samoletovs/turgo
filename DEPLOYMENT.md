@@ -46,19 +46,39 @@ does not deploy this Bicep template.
 Chat, embeddings, image analysis and the authenticated AI diagnostic use the
 supported `/openai/v1/` API. Deployment names are sent as `model` in the request
 body; no dated `api-version` query is sent. The previous production configuration
-used `2024-12-01-preview`. Existing models, provider routing and API-key secret
-references are unchanged.
+used `2024-12-01-preview`. Provider routing and API-key secret references are
+unchanged.
 
 Use the resource root for `AZURE_OPENAI_ENDPOINT` (a trailing slash is accepted),
 `AZURE_OPENAI_API_KEY` for the existing runtime secret, and
-`AZURE_OPENAI_DEPLOYMENT_NAME` for chat. Optional embedding/vision deployment
-overrides retain their existing defaults. Do not reintroduce a dated API setting:
+`AZURE_OPENAI_DEPLOYMENT_NAME` for chat and `AZURE_OPENAI_VISION_DEPLOYMENT`
+for image analysis. Both default to `gpt-6-luna`; embeddings remain
+`text-embedding-3-small`. Do not reintroduce a dated API setting:
 the deployment workflow removes it when releasing the compatible image.
 
-Validate all three inference operations with synthetic input and the authenticated
-diagnostic after release. For application rollback, redeploy the previous image
-digest; its legacy code has a version default, so no unrelated environment changes
-or full infrastructure deployment are needed.
+Chat, vision and diagnostics send `max_completion_tokens`, preserving their
+existing ceilings (1000 by default, 800, and 5) and temperatures (0.7 by default,
+0.3, and 0). Only an exact runtime deployment name of `gpt-6-luna` adds
+`reasoning_effort: "none"`. Existing deployment overrides omit reasoning, so the
+compatible code can be released before changing the live model settings.
+
+The live app uses the shared `oai-agents-s6vbks3oteo4y` account. Deploy the
+compatible immutable image first, then change both chat/vision settings to the
+existing `gpt-6-luna` deployment. The supported workflow does not set either
+model setting or the Azure OpenAI endpoint, so routine releases preserve this
+flip. Verify the healthy revision's image digest against the merged commit's ACR
+image, re-read both settings, and run synthetic chat, vision and the authenticated
+diagnostic after the flip. A healthy `/api/health` alone does not verify inference.
+For rollback, restore both pre-flip deployment settings **before** rolling back
+to an older image that sends `max_tokens`; that older code is incompatible with
+Luna.
+
+The legacy Bicep and setup scripts create a separate `oai-turgo` account rather
+than referencing the live shared account. Their future provisioning default is
+Luna `2026-09-22`, `GlobalStandard`, with the existing 30-unit capacity. This is
+not a live provisioning instruction: reconcile the documented infrastructure
+drift and confirm model availability/quota before using them. Do not apply them
+to perform the live model flip.
 
 ## Search configuration
 
