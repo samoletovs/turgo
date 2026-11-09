@@ -10,6 +10,13 @@
 
 import type { AiCompletionOptions, AiCompletionResult, AiEmbeddingResult } from '@/types';
 
+export function azureOpenAiUrl(
+  endpoint: string,
+  operation: 'chat/completions' | 'embeddings',
+): string {
+  return `${endpoint.replace(/\/+$/, '')}/openai/v1/${operation}`;
+}
+
 /** Chat completion via Azure OpenAI */
 export async function azureOpenAiComplete(
   options: AiCompletionOptions,
@@ -17,28 +24,25 @@ export async function azureOpenAiComplete(
   const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
   const apiKey = process.env.AZURE_OPENAI_API_KEY;
   const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt-4o-mini';
-  const apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-12-01-preview';
 
   if (!endpoint || !apiKey) {
     throw new Error('[AI-Premium] AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY required');
   }
 
-  const response = await fetch(
-    `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': apiKey,
-      },
-      body: JSON.stringify({
-        messages: options.messages,
-        temperature: options.temperature ?? 0.7,
-        max_tokens: options.maxTokens ?? 1000,
-        ...(options.responseFormat ? { response_format: options.responseFormat } : {}),
-      }),
+  const response = await fetch(azureOpenAiUrl(endpoint, 'chat/completions'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
     },
-  );
+    body: JSON.stringify({
+      model: deployment,
+      messages: options.messages,
+      temperature: options.temperature ?? 0.7,
+      max_tokens: options.maxTokens ?? 1000,
+      ...(options.responseFormat ? { response_format: options.responseFormat } : {}),
+    }),
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -60,25 +64,22 @@ export async function azureOpenAiEmbed(texts: string[]): Promise<AiEmbeddingResu
   const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
   const apiKey = process.env.AZURE_OPENAI_API_KEY;
   const deployment = process.env.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-3-small';
-  const apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-12-01-preview';
 
   if (!endpoint || !apiKey) {
     throw new Error('[AI-Premium] AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY required');
   }
 
-  const response = await fetch(
-    `${endpoint}/openai/deployments/${deployment}/embeddings?api-version=${apiVersion}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': apiKey,
-      },
-      body: JSON.stringify({
-        input: texts,
-      }),
+  const response = await fetch(azureOpenAiUrl(endpoint, 'embeddings'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
     },
-  );
+    body: JSON.stringify({
+      model: deployment,
+      input: texts,
+    }),
+  });
 
   if (!response.ok) {
     console.error('[AI-Premium] Azure embeddings error:', response.status);
@@ -102,25 +103,23 @@ export async function azureAnalyzeImage(
   const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
   const apiKey = process.env.AZURE_OPENAI_API_KEY;
   const deployment = process.env.AZURE_OPENAI_VISION_DEPLOYMENT || 'gpt-4o-mini';
-  const apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-12-01-preview';
 
   if (!endpoint || !apiKey) {
     throw new Error('[AI-Premium] Azure credentials required for vision');
   }
 
-  const response = await fetch(
-    `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': apiKey,
-      },
-      body: JSON.stringify({
-        messages: [
-          {
-            role: 'system',
-            content: `You are an expert classifieds photo analyzer for the Baltic region marketplace.
+  const response = await fetch(azureOpenAiUrl(endpoint, 'chat/completions'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    },
+    body: JSON.stringify({
+      model: deployment,
+      messages: [
+        {
+          role: 'system',
+          content: `You are an expert classifieds photo analyzer for the Baltic region marketplace.
 Analyze the image and return JSON with:
 - description: clear description of the item
 - tags: array of relevant search tags
@@ -128,29 +127,28 @@ Analyze the image and return JSON with:
 - suggestedTitle: suggested listing title
 - condition: NEW, USED, or REFURBISHED based on visual analysis
 - confidence: 0-1 how confident you are`,
-          },
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text:
-                  prompt ||
-                  'Analyze this image for a classifieds listing. What is it? Condition? Suggest a price category.',
-              },
-              {
-                type: 'image_url',
-                image_url: { url: imageUrl, detail: 'high' },
-              },
-            ],
-          },
-        ],
-        temperature: 0.3,
-        max_tokens: 800,
-        response_format: { type: 'json_object' },
-      }),
-    },
-  );
+        },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text:
+                prompt ||
+                'Analyze this image for a classifieds listing. What is it? Condition? Suggest a price category.',
+            },
+            {
+              type: 'image_url',
+              image_url: { url: imageUrl, detail: 'high' },
+            },
+          ],
+        },
+      ],
+      temperature: 0.3,
+      max_tokens: 800,
+      response_format: { type: 'json_object' },
+    }),
+  });
 
   if (!response.ok) {
     const errorText = await response.text();

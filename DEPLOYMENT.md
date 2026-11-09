@@ -7,7 +7,8 @@ Meilisearch. PostgreSQL and Blob Storage are separate dependencies.
 ## Preserve the existing application
 
 Routine releases update **the image and two search bindings of the named `turgo`
-container in one command**. Keep the existing Redis sidecar, all other environment
+container in one command**, and remove the obsolete `AZURE_OPENAI_API_VERSION`.
+Keep the existing Redis sidecar, all other environment
 variables and secret references, registry configuration, ingress, and scaling
 settings. `minReplicas` remains **0**.
 
@@ -39,6 +40,25 @@ CI runs `node scripts/check-postgres-api.mjs` to prevent regressions in all thre
 declarations. Before any future infrastructure deployment, compile the template,
 reconcile its known drift and review Azure what-if output. An application release
 does not deploy this Bicep template.
+
+## Azure OpenAI inference
+
+Chat, embeddings, image analysis and the authenticated AI diagnostic use the
+supported `/openai/v1/` API. Deployment names are sent as `model` in the request
+body; no dated `api-version` query is sent. The previous production configuration
+used `2024-12-01-preview`. Existing models, provider routing and API-key secret
+references are unchanged.
+
+Use the resource root for `AZURE_OPENAI_ENDPOINT` (a trailing slash is accepted),
+`AZURE_OPENAI_API_KEY` for the existing runtime secret, and
+`AZURE_OPENAI_DEPLOYMENT_NAME` for chat. Optional embedding/vision deployment
+overrides retain their existing defaults. Do not reintroduce a dated API setting:
+the deployment workflow removes it when releasing the compatible image.
+
+Validate all three inference operations with synthetic input and the authenticated
+diagnostic after release. For application rollback, redeploy the previous image
+digest; its legacy code has a version default, so no unrelated environment changes
+or full infrastructure deployment are needed.
 
 ## Search configuration
 

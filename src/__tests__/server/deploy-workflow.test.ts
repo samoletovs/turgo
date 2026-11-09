@@ -24,7 +24,7 @@ describe('Container Apps image deployment', () => {
     expect(imageUpdate).toBeDefined();
     expect(imageUpdate).toContain('--container-name "${{ env.CONTAINER_APP_NAME }}"');
     expect(imageUpdate).not.toMatch(
-      /--(?:yaml|replace-env-vars|remove-env-vars|remove-all-env-vars|min-replicas|max-replicas|registry-server|cpu|memory)\b/,
+      /--(?:yaml|replace-env-vars|remove-all-env-vars|min-replicas|max-replicas|registry-server|cpu|memory)\b/,
     );
     expect(workflow).not.toMatch(/az deployment (?:group|sub) create/);
     expect(workflow).not.toContain('--accept-data-loss');
@@ -38,13 +38,18 @@ describe('Container Apps image deployment', () => {
     expect(command).toContain('--container-name "${{ env.CONTAINER_APP_NAME }}"');
     expect(command).toContain('/turgo@${{ needs.build.outputs.image-digest }}');
     const bindings = command
-      .match(/--set-env-vars([\s\S]*?)--output/)?.[1]
+      .match(/--set-env-vars([\s\S]*?)--remove-env-vars/)?.[1]
       .replaceAll('\\', '')
       .match(/"[^"]*"|\S+/g);
     expect(bindings).toEqual([
       '"AZURE_SEARCH_API_KEY=secretref:azure-search-api-key"',
       '"AZURE_SEARCH_ENDPOINT=https://search-turgo.search.windows.net"',
     ]);
+    const removed = command
+      .match(/--remove-env-vars([\s\S]*?)--output/)?.[1]
+      .replaceAll('\\', '')
+      .match(/\S+/g);
+    expect(removed).toEqual(['AZURE_OPENAI_API_VERSION']);
     expect(workflow).not.toMatch(/az containerapp secret set/);
   });
 

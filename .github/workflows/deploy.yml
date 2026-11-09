@@ -201,6 +201,7 @@ jobs:
               --set-env-vars \
                 "AZURE_SEARCH_API_KEY=secretref:azure-search-api-key" \
                 "AZURE_SEARCH_ENDPOINT=https://search-turgo.search.windows.net" \
+              --remove-env-vars AZURE_OPENAI_API_VERSION \
               --output none
 
       - name: Verify dependency health
