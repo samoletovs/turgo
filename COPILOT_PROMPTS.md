@@ -35,7 +35,7 @@ I need to build a revolutionary AGENT-FIRST classifieds platform called Turgo. T
 - **File Upload**: Azure Blob Storage (or local filesystem for dev)
 - **AI (Dev/Test)**: **GitHub Copilot CLI / GitHub Models API** as primary LLM — free with Copilot subscription, used for agent reasoning, text generation, descriptions, NL search during development
 - **AI (Free tier)**: CLIP via Transformers.js for image categorization, all-MiniLM-L6-v2 embeddings, GitHub Models (rate-limited)
-- **AI (Paid tier production)**: Azure OpenAI GPT-4o for premium agent AI, Azure AI Vision for image analysis
+- **AI (Paid tier production)**: Azure OpenAI GPT-6 Luna for premium agent AI, Azure AI Vision for image analysis
 - **Market Data**: SsLvScraper — aggregates public market data from ss.lv (prices, durations, categories) to bootstrap pricing engine. Respects robots.txt, collects statistics only (no personal data, no verbatim text). Phased out once own data is sufficient.
 - **Real-time**: Socket.io for messaging
 - **Background Jobs**: BullMQ + Redis for agent task orchestration (selling agents, buying agents, price adjustments, scraper CRON)
@@ -722,13 +722,15 @@ Implement the subscription system and AI provider routing:
 **AI Provider Router (server/services/ai.ts):**
 1. Create a unified AI service that routes based on AI_PROVIDER env var + user tier:
    - AI_PROVIDER="github" → use GitHub Models API (dev/test, free with Copilot)
-   - AI_PROVIDER="azure" + paid user → use Azure OpenAI GPT-4o (production)
-   - AI_PROVIDER="azure" → use Azure OpenAI GPT-4o (production)
+   - AI_PROVIDER="azure" + paid user → use Azure OpenAI GPT-6 Luna (production)
+   - AI_PROVIDER="azure" → use Azure OpenAI GPT-6 Luna (production)
 2. Build server/services/ai-dev.ts: GitHub Copilot CLI / GitHub Models integration
    - Use GITHUB_TOKEN and GITHUB_MODELS_ENDPOINT
    - Implement chat completions compatible API (same interface as Azure OpenAI)
    - All agents use this during development — zero Azure costs
-3. Build server/services/ai-premium.ts: Azure OpenAI GPT-4o, Azure AI Vision
+3. Build server/services/ai-premium.ts: Azure OpenAI GPT-6 Luna, Azure AI Vision
+   - Send max_completion_tokens with the existing token ceilings and temperature.
+   - Send reasoning_effort="none" only for runtime deployment name "gpt-6-luna".
 4. Agents automatically use the correct provider — all have the same interface
 
 **SS.lv Market Data Scraper (server/services/scraper-sslv.ts):**
@@ -872,7 +874,8 @@ GITHUB_MODELS_MODEL="gpt-4o"  # Or other available model via GitHub Models
 # Azure OpenAI (Production — Paid tier only)
 AZURE_OPENAI_API_KEY=""
 AZURE_OPENAI_ENDPOINT=""
-AZURE_OPENAI_DEPLOYMENT_NAME="gpt-4o"
+AZURE_OPENAI_DEPLOYMENT_NAME="gpt-6-luna"
+AZURE_OPENAI_VISION_DEPLOYMENT="gpt-6-luna"
 
 # Azure AI Vision (Production — Paid tier)
 AZURE_VISION_API_KEY=""

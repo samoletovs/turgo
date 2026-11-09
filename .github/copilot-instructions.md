@@ -15,7 +15,7 @@ Turgo is an agent-first classifieds platform for the Baltic market. Users don't 
 - **Queue**: BullMQ + Redis (agent orchestration)
 - **i18n**: next-intl (EN, LV, RU, LT, ET)
 - **AI (Dev)**: GitHub Models API (free)
-- **AI (Prod)**: Azure OpenAI GPT-4o (paid tier), Transformers.js CLIP (free tier)
+- **AI (Prod)**: Azure OpenAI GPT-6 Luna (paid tier), Transformers.js CLIP (free tier)
 - **Testing**: Vitest + Playwright
 - **Dev env**: Docker Compose (PostgreSQL+pgvector, Redis, Meilisearch, Mailpit)
 
@@ -63,7 +63,7 @@ docker compose up -d  # Start local services
 
 - Dev/test: GitHub Models API (free with Copilot subscription)
 - Free tier: CLIP client-side + MiniLM embeddings + GitHub Models (rate-limited)
-- Paid tier: Azure OpenAI GPT-4o, Azure AI Vision
+- Paid tier: Azure OpenAI GPT-6 Luna (reasoning disabled), Azure AI Vision
 - AI service router: `src/server/services/ai.ts` delegates to dev/free/premium based on env + tier
 
 ## Three user paths

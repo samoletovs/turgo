@@ -1,14 +1,24 @@
 /**
- * AI Premium Provider — Azure OpenAI GPT-4o-mini + Azure AI Vision
+ * AI Premium Provider — Azure OpenAI GPT-6 Luna + Azure AI Vision
  * Used for paid-tier users in production
  *
  * Capabilities:
- * - Chat completions via Azure OpenAI (GPT-4o-mini — 15x cheaper than GPT-4o)
+ * - Chat completions via Azure OpenAI (GPT-6 Luna, reasoning disabled)
  * - Embeddings via Azure OpenAI (text-embedding-3-small — 5x cheaper than large)
- * - Image analysis via Azure OpenAI GPT-4o-mini vision
+ * - Image analysis via Azure OpenAI GPT-6 Luna vision
  */
 
 import type { AiCompletionOptions, AiCompletionResult, AiEmbeddingResult } from '@/types';
+
+export const DEFAULT_AZURE_OPENAI_DEPLOYMENT = 'gpt-6-luna';
+
+export function azureOpenAiTokenOptions(deployment: string, maxTokens: number) {
+  return {
+    max_completion_tokens: maxTokens,
+    // Existing deployments must keep working between the code release and model flip.
+    ...(deployment === 'gpt-6-luna' ? { reasoning_effort: 'none' as const } : {}),
+  };
+}
 
 export function azureOpenAiUrl(
   endpoint: string,
@@ -23,7 +33,7 @@ export async function azureOpenAiComplete(
 ): Promise<AiCompletionResult> {
   const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
   const apiKey = process.env.AZURE_OPENAI_API_KEY;
-  const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt-4o-mini';
+  const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME || DEFAULT_AZURE_OPENAI_DEPLOYMENT;
 
   if (!endpoint || !apiKey) {
     throw new Error('[AI-Premium] AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY required');
@@ -39,7 +49,7 @@ export async function azureOpenAiComplete(
       model: deployment,
       messages: options.messages,
       temperature: options.temperature ?? 0.7,
-      max_tokens: options.maxTokens ?? 1000,
+      ...azureOpenAiTokenOptions(deployment, options.maxTokens ?? 1000),
       ...(options.responseFormat ? { response_format: options.responseFormat } : {}),
     }),
   });
@@ -95,14 +105,14 @@ export async function azureOpenAiEmbed(texts: string[]): Promise<AiEmbeddingResu
   };
 }
 
-/** Analyze image via Azure OpenAI GPT-4o Vision */
+/** Analyze image via Azure OpenAI vision */
 export async function azureAnalyzeImage(
   imageUrl: string,
   prompt?: string,
 ): Promise<AiCompletionResult> {
   const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
   const apiKey = process.env.AZURE_OPENAI_API_KEY;
-  const deployment = process.env.AZURE_OPENAI_VISION_DEPLOYMENT || 'gpt-4o-mini';
+  const deployment = process.env.AZURE_OPENAI_VISION_DEPLOYMENT || DEFAULT_AZURE_OPENAI_DEPLOYMENT;
 
   if (!endpoint || !apiKey) {
     throw new Error('[AI-Premium] Azure credentials required for vision');
@@ -145,7 +155,7 @@ Analyze the image and return JSON with:
         },
       ],
       temperature: 0.3,
-      max_tokens: 800,
+      ...azureOpenAiTokenOptions(deployment, 800),
       response_format: { type: 'json_object' },
     }),
   });
@@ -167,7 +177,7 @@ Analyze the image and return JSON with:
 
 /**
  * Azure AI Vision — Dedicated image analysis service
- * (Separate from GPT-4o, uses Azure Computer Vision 4.0)
+ * (Separate from Azure OpenAI, uses Azure Computer Vision 4.0)
  */
 export async function azureVisionAnalyze(imageUrl: string): Promise<{
   description: string;
@@ -178,7 +188,7 @@ export async function azureVisionAnalyze(imageUrl: string): Promise<{
   const apiKey = process.env.AZURE_VISION_API_KEY;
 
   if (!endpoint || !apiKey) {
-    // Fall back to GPT-4o vision
+    // Fall back to Azure OpenAI vision
     const result = await azureAnalyzeImage(imageUrl);
     try {
       const parsed = JSON.parse(result.content);

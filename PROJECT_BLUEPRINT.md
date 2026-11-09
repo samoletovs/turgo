@@ -255,7 +255,7 @@ SS.lv's publicly available data is our **bootstrap market intelligence** — we 
 | **CLIP (ViT-B/32)** | Free image categorization (client-side via Transformers.js) | All |
 | **all-MiniLM-L6-v2** | Free sentence embeddings for similar listings (via pgvector) | All |
 | **pHash + SimHash** | Free duplicate/spam detection via perceptual and text hashing | All |
-| **Azure OpenAI (GPT-4o)** | Production LLM for paid tier — premium agents, NL search, translation | Production (Paid) |
+| **Azure OpenAI (GPT-6 Luna)** | Production LLM for paid tier — premium agents, NL search, translation; reasoning disabled | Production (Paid) |
 | **Azure AI Vision** | Production image analysis, auto-tagging, attribute extraction | Production (Paid) |
 | **Azure AI Content Safety** | Moderate listings for inappropriate content | Production |
 | **Embeddings + pgvector** | Semantic search, personalized recommendations | All |
