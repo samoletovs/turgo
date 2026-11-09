@@ -34,6 +34,13 @@ permissions:
   contents: read
   id-token: write
 
+# One run at a time per branch or PR. Batch merges otherwise start overlapping
+# deploys, the platform cancels one of them, and the newest commit can be the
+# casualty. A superseded pending run is dropped; the latest one still deploys.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
 jobs:
   # ────────────────────────────────────────────
   # Job 1: Lint, Type Check & Test
