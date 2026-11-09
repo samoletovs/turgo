@@ -54,6 +54,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: PostgreSQL management API regression check
+        run: node scripts/check-postgres-api.mjs
+
       - name: Validate Prisma schema
         run: npx prisma validate
 
