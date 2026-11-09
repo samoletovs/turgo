@@ -77,7 +77,7 @@ resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
 }
 
 // ── PostgreSQL Flexible Server ────────────────────────────────────
-resource postgres 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = {
+resource postgres 'Microsoft.DBforPostgreSQL/flexibleServers@2026-10-01' = {
   name: 'psql-${projectName}'
   location: location
   tags: tags
@@ -98,13 +98,13 @@ resource postgres 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview'
   }
 }
 
-resource postgresDb 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2023-12-01-preview' = {
+resource postgresDb 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2026-10-01' = {
   parent: postgres
   name: projectName
-  properties: { charset: 'UTF8' collation: 'en_US.utf8' }
+  properties: { charset: 'UTF8', collation: 'en_US.utf8' }
 }
 
-resource postgresFirewallAzure 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2023-12-01-preview' = {
+resource postgresFirewallAzure 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2026-10-01' = {
   parent: postgres
   name: 'AllowAzureServices'
   properties: {
@@ -156,18 +156,18 @@ resource openai 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = {
 resource gpt4oMini 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01-preview' = {
   parent: openai
   name: 'gpt-4o-mini'
-  sku: { name: 'Standard' capacity: 30 }
+  sku: { name: 'Standard', capacity: 30 }
   properties: {
-    model: { format: 'OpenAI' name: 'gpt-4o-mini' version: '2024-07-18' }
+    model: { format: 'OpenAI', name: 'gpt-4o-mini', version: '2024-07-18' }
   }
 }
 
 resource embedding 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01-preview' = {
   parent: openai
   name: 'text-embedding-3-small'
-  sku: { name: 'GlobalStandard' capacity: 30 }
+  sku: { name: 'GlobalStandard', capacity: 30 }
   properties: {
-    model: { format: 'OpenAI' name: 'text-embedding-3-small' version: '1' }
+    model: { format: 'OpenAI', name: 'text-embedding-3-small', version: '1' }
   }
   dependsOn: [gpt4oMini] // sequential deployment to avoid conflicts
 }
@@ -225,7 +225,7 @@ resource turgoApp 'Microsoft.App/containerApps@2024-03-01' = {
         }
       ]
       secrets: [
-        { name: 'acr-password' value: acr.listCredentials().passwords[0].value }
+        { name: 'acr-password', value: acr.listCredentials().passwords[0].value }
       ]
     }
     template: {
@@ -233,13 +233,13 @@ resource turgoApp 'Microsoft.App/containerApps@2024-03-01' = {
         {
           name: projectName
           image: '${acr.properties.loginServer}/${projectName}:latest'
-          resources: { cpu: json('0.5') memory: '1Gi' }
+          resources: { cpu: json('0.5'), memory: '1Gi' }
           env: [
-            { name: 'NODE_ENV' value: 'production' }
+            { name: 'NODE_ENV', value: 'production' }
           ]
         }
       ]
-      scale: { minReplicas: 0 maxReplicas: 3 }
+      scale: { minReplicas: 0, maxReplicas: 3 }
     }
   }
 }

@@ -18,6 +18,28 @@ Likewise, the legacy `deploy.ps1`, `deploy.sh`, and quick-deploy helpers are not
 the supported release path: some use mutable `:latest` references and do not
 select the app container explicitly.
 
+## PostgreSQL management API retirement
+
+The server, database and firewall declarations in
+[`infrastructure/main.bicep`](infrastructure/main.bicep) use **2026-10-01 (GA)**.
+They previously used `2023-12-01-preview`, which retires on **2027-01-30**
+([Microsoft lifecycle guidance](https://learn.microsoft.com/rest/api/postgresql/preview-api-lifecycle)).
+Use Azure CLI **2.82.0 or later** for PostgreSQL management commands; keep it
+current rather than pinning a preview management SDK.
+
+This changes the API used by infrastructure clients, not the PostgreSQL engine
+version, schema, data or application connection string. There is no stored server
+API-version setting to migrate and no reason to redeploy the legacy full template.
+On 2026-11-09, read-only server, database-list and firewall-list requests succeeded
+against `psql-turgo` using `2026-10-01`; the server remained Ready on PostgreSQL 16.
+The 90-day Activity Log query returned no management events, which does not prove
+the absence of other clients using old APIs.
+
+CI runs `node scripts/check-postgres-api.mjs` to prevent regressions in all three
+declarations. Before any future infrastructure deployment, compile the template,
+reconcile its known drift and review Azure what-if output. An application release
+does not deploy this Bicep template.
+
 ## Search configuration
 
 Set these **runtime** values on the Container App, not in the image or source:
