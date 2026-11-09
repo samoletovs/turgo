@@ -8,6 +8,7 @@ import {
   getAiProviderInfo,
 } from '@/server/services/ai';
 import type { UserTier } from '@/server/services/ai';
+import { azureOpenAiUrl } from '@/server/services/ai-premium';
 
 export const aiRouter = createTRPCRouter({
   /** Concierge chat — intent detection and routing (authenticated users only) */
@@ -210,7 +211,7 @@ Respond in JSON: {"suggestedPrice": number, "reasoning": "string", "confidence":
       endpoint: process.env.AZURE_OPENAI_ENDPOINT ? 'SET' : 'MISSING',
       apiKey: process.env.AZURE_OPENAI_API_KEY ? 'SET' : 'MISSING',
       deployment: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt-4o-mini',
-      apiVersion: process.env.AZURE_OPENAI_API_VERSION || '2024-12-01-preview',
+      apiVersion: 'v1',
     };
 
     let azureStatus = 'not_tested';
@@ -226,23 +227,20 @@ Respond in JSON: {"suggestedPrice": number, "reasoning": "string", "confidence":
       try {
         const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
         const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt-4o-mini';
-        const apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-12-01-preview';
 
-        const response = await fetch(
-          `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'api-key': process.env.AZURE_OPENAI_API_KEY!,
-            },
-            body: JSON.stringify({
-              messages: [{ role: 'user', content: "Say 'OK' in one word." }],
-              max_tokens: 5,
-              temperature: 0,
-            }),
+        const response = await fetch(azureOpenAiUrl(endpoint, 'chat/completions'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'api-key': process.env.AZURE_OPENAI_API_KEY!,
           },
-        );
+          body: JSON.stringify({
+            model: deployment,
+            messages: [{ role: 'user', content: "Say 'OK' in one word." }],
+            max_tokens: 5,
+            temperature: 0,
+          }),
+        });
 
         if (response.ok) {
           const data = await response.json();
