@@ -1,33 +1,45 @@
 /**
- * AI Dev Provider — GitHub Models API
- * Used during development/testing — free with GitHub Copilot subscription
- * Same OpenAI-compatible interface as Azure OpenAI
+ * AI Dev Provider — OpenAI-compatible development endpoint
+ *
+ * GitHub Models, the original free dev backend, was retired on 2026-07-30 and its
+ * host no longer resolves. With no endpoint configured (or the retired one still
+ * in a local .env) this provider returns the same mocks it always fell back to,
+ * without calling the network. Set GITHUB_MODELS_ENDPOINT to any OpenAI-compatible
+ * server to get real dev completions; production uses AI_PROVIDER=azure.
  */
 
 import type { AiCompletionOptions, AiCompletionResult, AiEmbeddingResult } from '@/types';
 
-const DEFAULT_ENDPOINT = 'https://models.inference.ai.azure.com';
+const RETIRED_HOSTS = new Set(['models.inference.ai.azure.com']);
 const DEFAULT_MODEL = 'gpt-4o';
 const DEFAULT_EMBEDDING_MODEL = 'text-embedding-3-small';
 
-function getEndpoint(): string {
-  return process.env.GITHUB_MODELS_ENDPOINT || DEFAULT_ENDPOINT;
+/** The configured dev endpoint, or null when there is nothing live to call. */
+export function devModelsEndpoint(): string | null {
+  const configured = process.env.GITHUB_MODELS_ENDPOINT?.trim();
+  if (!configured) return null;
+  try {
+    if (RETIRED_HOSTS.has(new URL(configured).hostname.toLowerCase())) return null;
+  } catch {
+    return null;
+  }
+  return configured.replace(/\/+$/, '');
 }
 
 function getToken(): string | undefined {
   return process.env.GITHUB_TOKEN;
 }
 
-/** Chat completion via GitHub Models API */
+/** Chat completion via the configured dev endpoint */
 export async function githubModelsComplete(
   options: AiCompletionOptions,
 ): Promise<AiCompletionResult> {
-  const endpoint = getEndpoint();
+  const endpoint = devModelsEndpoint();
   const model = options.model || process.env.GITHUB_MODELS_MODEL || DEFAULT_MODEL;
   const token = getToken();
 
-  if (!token) {
-    console.warn('[AI-Dev] GITHUB_TOKEN not set, returning mock response');
+  if (!endpoint || !token) {
+    console.warn('[AI-Dev] No dev model endpoint or token configured, returning mock response');
     return mockComplete(options);
   }
 
@@ -66,14 +78,14 @@ export async function githubModelsComplete(
   }
 }
 
-/** Generate embeddings via GitHub Models API */
+/** Generate embeddings via the configured dev endpoint */
 export async function githubModelsEmbed(texts: string[]): Promise<AiEmbeddingResult> {
-  const endpoint = getEndpoint();
+  const endpoint = devModelsEndpoint();
   const model = process.env.GITHUB_MODELS_EMBEDDING_MODEL || DEFAULT_EMBEDDING_MODEL;
   const token = getToken();
 
-  if (!token) {
-    console.warn('[AI-Dev] GITHUB_TOKEN not set, returning zero embeddings');
+  if (!endpoint || !token) {
+    console.warn('[AI-Dev] No dev model endpoint or token configured, returning zero embeddings');
     return {
       embeddings: texts.map(() => new Array(1536).fill(0)),
       model,
@@ -120,16 +132,16 @@ export async function githubModelsEmbed(texts: string[]): Promise<AiEmbeddingRes
   }
 }
 
-/** Analyze image via GitHub Models (GPT-4o vision) */
+/** Analyze image via the configured dev endpoint (vision-capable model) */
 export async function githubModelsAnalyzeImage(
   imageUrl: string,
   prompt?: string,
 ): Promise<AiCompletionResult> {
-  const endpoint = getEndpoint();
+  const endpoint = devModelsEndpoint();
   const model = process.env.GITHUB_MODELS_VISION_MODEL || 'gpt-4o';
   const token = getToken();
 
-  if (!token) {
+  if (!endpoint || !token) {
     return mockComplete({
       messages: [{ role: 'user', content: prompt || 'Analyze this image' }],
     });
