@@ -2,7 +2,7 @@
  * AI Service Router — Unified interface for all AI providers
  *
  * Routing logic:
- *   AI_PROVIDER="github"  → GitHub Models API (dev/test, free with Copilot)
+ *   AI_PROVIDER="github"  → dev provider (ai-dev.ts): mocks unless an OpenAI-compatible endpoint is set
  *   AI_PROVIDER="azure"   → Azure OpenAI (production, configured deployment)
  *
  * All providers implement the same interface so agents are provider-agnostic.
@@ -32,7 +32,7 @@ function getEnvProvider(): AiProvider {
 /**
  * Resolve the effective provider for a request.
  * In production (AI_PROVIDER=azure), uses Azure OpenAI.
- * In dev (AI_PROVIDER=github), always uses GitHub Models.
+ * In dev (AI_PROVIDER=github), always uses the dev provider.
  */
 function resolveProvider(userTier?: UserTier): AiProvider {
   const envProvider = getEnvProvider();
