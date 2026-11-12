@@ -34,6 +34,8 @@ npm run dev
 
 Supporting services and required environment variables are documented in
 [DEPLOYMENT.md](DEPLOYMENT.md) and [.env.example](.env.example).
+Releases go through the reviewed [GitHub Actions deployment workflow](.github/workflows/deploy.yml);
+see [DEPLOYMENT.md](DEPLOYMENT.md) for release instructions.
 
 Search uses the Azure AI Search `listings` index and requires
 `AZURE_SEARCH_API_KEY` in production. `/api/health` checks authenticated index
