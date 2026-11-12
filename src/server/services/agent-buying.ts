@@ -3,12 +3,13 @@
  */
 
 import { db } from '@/server/db';
-import type { Prisma } from '@prisma/client';
 import type { DealScoreBreakdown } from '@/types';
 import { getBuyingStrategy } from './strategies/registry';
 import { processIncomingOffer } from './agent-selling';
 import type { BuyingAgentContext, ListingContext, OfferContext } from './strategies/types';
 import { URGENCY_HOURS } from '@/lib/constants';
+import { searchPublicListings } from './search-read';
+import type { SearchListingsParams } from './search';
 
 /** Calculate deal score (0-100) for a listing match */
 export async function calculateDealScore(params: {
@@ -124,41 +125,40 @@ export async function monitorForMatches(buyingAgentId: string): Promise<number> 
 
   const criteria = agent.searchCriteria as Record<string, unknown>;
   const existingMatchIds = agent.matches.map((m) => m.listingId);
+  const locationId = typeof criteria.locationId === 'string' ? criteria.locationId : undefined;
 
-  // Build query from criteria
-  const where: Prisma.ListingWhereInput = {
-    status: 'ACTIVE',
-    id: { notIn: existingMatchIds },
-    price: { lte: agent.maxBudget },
+  const searchCriteria: SearchListingsParams = {
+    query: typeof criteria.keywords === 'string' ? criteria.keywords : '',
+    maxPrice: agent.maxBudget,
+    limit: 100,
   };
 
-  if (criteria.categoryId) where.categoryId = criteria.categoryId as string;
-  if (criteria.locationId) where.locationId = criteria.locationId as string;
-  if (criteria.condition) where.condition = criteria.condition as Prisma.EnumListingConditionFilter;
-  if (criteria.minPrice) {
-    where.price = {
-      ...((where.price as object) || {}),
-      gte: criteria.minPrice as number,
-    };
+  if (typeof criteria.categoryId === 'string' && criteria.categoryId) {
+    searchCriteria.categoryId = criteria.categoryId;
   }
-  if (criteria.keywords) {
-    where.OR = [
-      { title: { contains: criteria.keywords as string, mode: 'insensitive' } },
-      {
-        description: {
-          contains: criteria.keywords as string,
-          mode: 'insensitive',
-        },
-      },
-    ];
+  if (locationId) searchCriteria.locationId = locationId;
+  if (
+    criteria.condition === 'NEW' ||
+    criteria.condition === 'USED' ||
+    criteria.condition === 'REFURBISHED'
+  ) {
+    searchCriteria.condition = criteria.condition;
+  }
+  if (
+    typeof criteria.minPrice === 'number' &&
+    Number.isFinite(criteria.minPrice) &&
+    criteria.minPrice >= 0
+  ) {
+    searchCriteria.minPrice = criteria.minPrice;
   }
 
-  // Find new matches
-  const listings = await db.listing.findMany({
-    where,
-    orderBy: { createdAt: 'desc' },
-    take: 20,
-  });
+  const { listings: searchResults } = await searchPublicListings(db, searchCriteria);
+  const listings = searchResults
+    .filter(
+      (listing) =>
+        !existingMatchIds.includes(listing.id) && Number(listing.price) <= agent.maxBudget,
+    )
+    .slice(0, 20);
 
   let newMatches = 0;
 
@@ -168,7 +168,7 @@ export async function monitorForMatches(buyingAgentId: string): Promise<number> 
       categoryId: listing.categoryId,
       targetPrice: agent.targetPrice ?? agent.maxBudget,
       maxBudget: agent.maxBudget,
-      locationId: criteria.locationId as string | undefined,
+      locationId,
     });
 
     // Only create matches above threshold
