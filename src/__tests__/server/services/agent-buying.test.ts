@@ -11,7 +11,7 @@ import { calculateDealScore, monitorForMatches } from '@/server/services/agent-b
 // ─── Reset mocks ────────────────────────────────────────────
 beforeEach(() => {
   vi.clearAllMocks();
-  mockSearchPublicListings.mockResolvedValue({ listings: [] });
+  mockSearchPublicListings.mockResolvedValue({ listings: [], totalPages: 0 });
 });
 
 // ──────────────────────────────────────────────
@@ -260,7 +260,7 @@ describe('monitorForMatches', () => {
       user: { _count: { reviewsReceived: 2 } },
     };
 
-    mockSearchPublicListings.mockResolvedValue({ listings: [fakeListing] });
+    mockSearchPublicListings.mockResolvedValue({ listings: [fakeListing], totalPages: 1 });
     // Mock the inner calculateDealScore calls
     mockDb.listing.findUnique.mockResolvedValue(fakeListing);
     mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 300 });
@@ -323,7 +323,7 @@ describe('monitorForMatches', () => {
       user: { _count: { reviewsReceived: 0 } },
     };
 
-    mockSearchPublicListings.mockResolvedValue({ listings: [poorListing] });
+    mockSearchPublicListings.mockResolvedValue({ listings: [poorListing], totalPages: 1 });
     mockDb.listing.findUnique.mockResolvedValue(poorListing);
     mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 100 });
 
@@ -333,32 +333,71 @@ describe('monitorForMatches', () => {
     expect(mockDb.agentMatch.create).not.toHaveBeenCalled();
   });
 
-  it('excludes already-matched listings', async () => {
+  it('continues past existing matches and ignores over-budget listings', async () => {
+    const matches = Array.from({ length: 100 }, (_, index) => ({
+      listingId: `listing-${index}`,
+    }));
     mockDb.buyingAgent.findUnique.mockResolvedValue({
       id: 'ba-3',
       status: 'ACTIVE',
       searchCriteria: {},
       maxBudget: 500,
       targetPrice: 300,
-      matches: [{ listingId: 'listing-already' }],
+      matches,
     });
 
-    mockSearchPublicListings.mockResolvedValue({
-      listings: [
-        { id: 'listing-already', price: 100 },
-        { id: 'listing-over-budget', price: 501 },
-      ],
-    });
+    const goodListing = {
+      id: 'listing-new',
+      title: 'Good Deal',
+      price: 100,
+      categoryId: 'cat-1',
+      condition: 'USED',
+      description:
+        'A very detailed description that is well over one hundred characters to ensure the listing quality score is fully calculated',
+      negotiable: true,
+      managedByAgent: true,
+      locationId: 'loc-1',
+      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+      images: [{ id: 'img-1' }],
+      user: { _count: { reviewsReceived: 5 } },
+    };
+    mockSearchPublicListings
+      .mockResolvedValueOnce({
+        listings: matches.map(({ listingId }) => ({ id: listingId, price: 100 })),
+        totalPages: 2,
+      })
+      .mockResolvedValueOnce({
+        listings: [{ id: 'listing-over-budget', price: 501 }, goodListing],
+        totalPages: 2,
+      });
+    mockDb.listing.findUnique.mockResolvedValue(goodListing);
+    mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 300 });
+    mockDb.agentMatch.create.mockResolvedValue({});
+    mockDb.agentAction.create.mockResolvedValue({});
+    mockDb.buyingAgent.update.mockResolvedValue({});
 
     const result = await monitorForMatches('ba-3');
 
-    expect(result).toBe(0);
-    expect(mockSearchPublicListings).toHaveBeenCalledWith(
+    expect(result).toBe(1);
+    expect(mockSearchPublicListings).toHaveBeenCalledTimes(2);
+    expect(mockSearchPublicListings).toHaveBeenNthCalledWith(
+      1,
       expect.anything(),
-      expect.objectContaining({ maxPrice: 500 }),
+      expect.objectContaining({ maxPrice: 500, page: 1 }),
     );
-    expect(mockDb.agentMatch.create).not.toHaveBeenCalled();
-    expect(mockDb.agentAction.create).not.toHaveBeenCalled();
+    expect(mockSearchPublicListings).toHaveBeenNthCalledWith(
+      2,
+      expect.anything(),
+      expect.objectContaining({ maxPrice: 500, page: 2 }),
+    );
+    expect(mockDb.agentMatch.create).toHaveBeenCalledTimes(1);
+    expect(mockDb.agentMatch.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ listingId: 'listing-new' }) }),
+    );
+    expect(mockDb.agentAction.create).toHaveBeenCalledTimes(1);
+    expect(mockDb.agentAction.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ actionType: 'MATCH_FOUND' }) }),
+    );
   });
 
   it('updates agent match count after finding matches', async () => {
@@ -387,7 +426,7 @@ describe('monitorForMatches', () => {
       user: { _count: { reviewsReceived: 5 } },
     };
 
-    mockSearchPublicListings.mockResolvedValue({ listings: [goodListing] });
+    mockSearchPublicListings.mockResolvedValue({ listings: [goodListing], totalPages: 1 });
     mockDb.listing.findUnique.mockResolvedValue(goodListing);
     mockDb.marketSnapshot.findFirst.mockResolvedValue({ medianPrice: 300 });
     mockDb.agentMatch.create.mockResolvedValue({});

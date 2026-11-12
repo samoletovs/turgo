@@ -152,13 +152,21 @@ export async function monitorForMatches(buyingAgentId: string): Promise<number> 
     searchCriteria.minPrice = criteria.minPrice;
   }
 
-  const { listings: searchResults } = await searchPublicListings(db, searchCriteria);
-  const listings = searchResults
-    .filter(
-      (listing) =>
-        !existingMatchIds.includes(listing.id) && Number(listing.price) <= agent.maxBudget,
-    )
-    .slice(0, 20);
+  const listings: Awaited<ReturnType<typeof searchPublicListings>>['listings'] = [];
+  const seenListingIds = new Set(existingMatchIds);
+  let page = 1;
+  let totalPages = 1;
+  while (listings.length < 20 && page <= totalPages) {
+    const result = await searchPublicListings(db, { ...searchCriteria, page });
+    totalPages = result.totalPages;
+    for (const listing of result.listings) {
+      if (seenListingIds.has(listing.id) || Number(listing.price) > agent.maxBudget) continue;
+      listings.push(listing);
+      seenListingIds.add(listing.id);
+      if (listings.length === 20) break;
+    }
+    page++;
+  }
 
   let newMatches = 0;
 
