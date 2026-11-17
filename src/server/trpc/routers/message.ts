@@ -1,7 +1,12 @@
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
-import { createTRPCRouter, protectedProcedure, createRateLimitedProcedure } from '@/server/trpc';
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  createRateLimitedProcedure,
+  type TRPCContext,
+} from '@/server/trpc';
 import { sendMessageSchema } from '@/lib/validators';
 import { RATE_LIMITS } from '@/lib/constants';
 import { sanitizeHtml } from '@/lib/sanitize';
@@ -21,6 +26,59 @@ import {
 import { notifyNewMessage, notifyNegotiationEvent } from '@/server/services/notification';
 import type { Locale } from '@/lib/constants';
 
+async function authorizeMessageSend(
+  ctx: TRPCContext,
+  input: { conversationId?: string; receiverId?: string; listingId: string },
+): Promise<string> {
+  const senderId = ctx.session?.user.id;
+  if (!senderId) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+  }
+
+  if (!input.conversationId) {
+    const listing = await ctx.db.listing.findUnique({
+      where: { id: input.listingId },
+      select: { userId: true },
+    });
+
+    if (!listing) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'Listing not found' });
+    }
+    if (listing.userId === senderId) {
+      throw new TRPCError({ code: 'FORBIDDEN', message: 'Unauthorized' });
+    }
+
+    return listing.userId;
+  }
+
+  const conversation = await ctx.db.conversation.findUnique({
+    where: { id: input.conversationId },
+    select: { buyerId: true, sellerId: true, listingId: true },
+  });
+
+  if (!conversation) {
+    throw new TRPCError({ code: 'NOT_FOUND', message: 'Conversation not found' });
+  }
+
+  const receiverId =
+    conversation.buyerId === senderId
+      ? conversation.sellerId
+      : conversation.sellerId === senderId
+        ? conversation.buyerId
+        : undefined;
+
+  if (
+    !receiverId ||
+    receiverId === senderId ||
+    receiverId !== input.receiverId ||
+    conversation.listingId !== input.listingId
+  ) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'Unauthorized' });
+  }
+
+  return receiverId;
+}
+
 export const messageRouter = createTRPCRouter({
   /** Send a message — with agent auto-respond/auto-negotiate integration */
   send: createRateLimitedProcedure(RATE_LIMITS.MESSAGE_SEND)
@@ -31,23 +89,19 @@ export const messageRouter = createTRPCRouter({
       const sanitizedInput = { ...input, content: sanitizedContent };
 
       let conversationId = sanitizedInput.conversationId;
-      let _sellerId: string | undefined;
+      const receiverId = await authorizeMessageSend(ctx, {
+        conversationId,
+        receiverId: input.receiverId,
+        listingId: input.listingId,
+      });
 
       // Create or get conversation
       if (!conversationId) {
-        const listing = await ctx.db.listing.findUnique({
-          where: { id: input.listingId },
-          select: { userId: true },
-        });
-
-        if (!listing) throw new Error('Listing not found');
-        _sellerId = listing.userId;
-
         const existing = await ctx.db.conversation.findFirst({
           where: {
             listingId: input.listingId,
             buyerId: ctx.session.user.id!,
-            sellerId: listing.userId,
+            sellerId: receiverId,
           },
         });
 
@@ -58,7 +112,7 @@ export const messageRouter = createTRPCRouter({
             data: {
               listingId: input.listingId,
               buyerId: ctx.session.user.id!,
-              sellerId: listing.userId,
+              sellerId: receiverId,
             },
           });
           conversationId = conv.id;
@@ -72,7 +126,7 @@ export const messageRouter = createTRPCRouter({
         data: {
           conversationId,
           senderId: ctx.session.user.id!,
-          receiverId: input.receiverId,
+          receiverId,
           listingId: input.listingId,
           content: sanitizedContent,
           messageType: 'TEXT',
@@ -111,7 +165,7 @@ export const messageRouter = createTRPCRouter({
 
       // Send notification to receiver
       const receiver = await ctx.db.user.findUnique({
-        where: { id: input.receiverId },
+        where: { id: receiverId },
         select: { id: true },
       });
       if (receiver) {
@@ -120,7 +174,7 @@ export const messageRouter = createTRPCRouter({
           select: { title: true },
         });
         notifyNewMessage({
-          receiverId: input.receiverId,
+          receiverId,
           senderId: ctx.session.user.id!,
           senderName: message.sender?.name ?? 'Someone',
           conversationId,
@@ -138,7 +192,7 @@ export const messageRouter = createTRPCRouter({
         conversationId,
         messageContent: sanitizedContent,
         senderId: ctx.session.user.id!,
-        receiverId: input.receiverId,
+        receiverId,
         listingId: input.listingId,
       }).catch(console.error);
 
@@ -147,7 +201,7 @@ export const messageRouter = createTRPCRouter({
         conversationId,
         messageContent: sanitizedContent,
         senderId: ctx.session.user.id!,
-        receiverId: input.receiverId,
+        receiverId,
         listingId: input.listingId,
       }).catch(console.error);
 
@@ -166,13 +220,14 @@ export const messageRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const receiverId = await authorizeMessageSend(ctx, input);
       const content = input.message || `I'd like to offer €${input.offerPrice} for this item.`;
 
       const message = await ctx.db.message.create({
         data: {
           conversationId: input.conversationId,
           senderId: ctx.session.user.id!,
-          receiverId: input.receiverId,
+          receiverId,
           listingId: input.listingId,
           content,
           messageType: 'OFFER',
@@ -214,7 +269,7 @@ export const messageRouter = createTRPCRouter({
         select: { title: true },
       });
       notifyNegotiationEvent({
-        userId: input.receiverId,
+        userId: receiverId,
         type: 'OFFER_RECEIVED',
         listingTitle: listing?.title ?? 'Listing',
         amount: input.offerPrice,
@@ -226,7 +281,7 @@ export const messageRouter = createTRPCRouter({
         conversationId: input.conversationId,
         messageContent: content,
         senderId: ctx.session.user.id!,
-        receiverId: input.receiverId,
+        receiverId,
         listingId: input.listingId,
       }).catch(console.error);
 

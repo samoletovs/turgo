@@ -35,6 +35,7 @@ vi.mock('@/server/services/notification', () => ({
 const createCaller = createCallerFactory(appRouter);
 const validCuid = 'clxxxxxxxxxxxxxxxxxxxxxxxxx';
 const validCuid2 = 'clyyyyyyyyyyyyyyyyyyyyyyyy';
+const validCuid3 = 'clzzzzzzzzzzzzzzzzzzzzzzz';
 
 function authedCtx(userId = 'user-1'): TRPCContext {
   return {
@@ -90,7 +91,7 @@ describe('message.send', () => {
     };
 
     mockDb.listing.findUnique
-      .mockResolvedValueOnce({ userId: 'seller-1' }) // For conversation lookup
+      .mockResolvedValueOnce({ userId: validCuid2 }) // For conversation lookup
       .mockResolvedValueOnce({ title: 'Cool Item' }); // For notification
     mockDb.conversation.findFirst.mockResolvedValue({ id: 'conv-1' });
     mockDb.message.create.mockResolvedValue(fakeMessage);
@@ -121,7 +122,7 @@ describe('message.send', () => {
     };
 
     mockDb.listing.findUnique
-      .mockResolvedValueOnce({ userId: 'seller-1' })
+      .mockResolvedValueOnce({ userId: validCuid2 })
       .mockResolvedValueOnce({ title: 'Cool Item' });
     mockDb.conversation.findFirst.mockResolvedValue(null);
     mockDb.conversation.create.mockResolvedValue(fakeConv);
@@ -151,6 +152,11 @@ describe('message.send', () => {
 
     mockDb.message.create.mockResolvedValue(fakeMessage);
     mockDb.conversation.update.mockResolvedValue({});
+    mockDb.conversation.findUnique.mockResolvedValue({
+      buyerId: 'user-1',
+      sellerId: validCuid2,
+      listingId: validCuid,
+    });
     mockDb.user.findUnique.mockResolvedValue({ id: validCuid2 });
     mockDb.listing.findUnique.mockResolvedValue({ title: 'Item' });
 
@@ -165,6 +171,125 @@ describe('message.send', () => {
     // Should NOT look up or create a conversation
     expect(mockDb.conversation.findFirst).not.toHaveBeenCalled();
     expect(mockDb.conversation.create).not.toHaveBeenCalled();
+  });
+
+  it('allows the seller to send to the buyer in the conversation', async () => {
+    mockDb.conversation.findUnique.mockResolvedValue({
+      buyerId: validCuid3,
+      sellerId: validCuid2,
+      listingId: validCuid,
+    });
+    mockDb.message.create.mockResolvedValue({
+      id: 'msg-seller-to-buyer',
+      conversationId: validCuid,
+      senderId: validCuid2,
+      receiverId: validCuid3,
+      content: validInput.content,
+      messageType: 'TEXT',
+      originalLanguage: 'en',
+      createdAt: new Date(),
+      sender: { id: validCuid2, name: 'Seller', avatar: null },
+    });
+    mockDb.conversation.update.mockResolvedValue({});
+    mockDb.user.findUnique.mockResolvedValue({ id: validCuid3 });
+    mockDb.listing.findUnique.mockResolvedValue({ title: 'Cool Item' });
+
+    const caller = createCaller(authedCtx(validCuid2));
+    const result = await caller.message.send({
+      ...validInput,
+      conversationId: validCuid,
+      receiverId: validCuid3,
+    });
+
+    expect(result.receiverId).toBe(validCuid3);
+    expect(mockDb.message.create).toHaveBeenCalledOnce();
+  });
+
+  it('rejects a nonparticipant before creating or emitting a message', async () => {
+    mockDb.conversation.findUnique.mockResolvedValue({
+      buyerId: 'user-1',
+      sellerId: validCuid2,
+      listingId: validCuid,
+    });
+
+    const caller = createCaller(authedCtx('outsider'));
+    await expect(
+      caller.message.send({ ...validInput, conversationId: validCuid3 }),
+    ).rejects.toThrow('Unauthorized');
+
+    const { emitMessage } = await import('@/server/socket');
+    expect(mockDb.message.create).not.toHaveBeenCalled();
+    expect(emitMessage).not.toHaveBeenCalled();
+  });
+
+  it('rejects a mismatched receiver before creating or emitting a message', async () => {
+    mockDb.conversation.findUnique.mockResolvedValue({
+      buyerId: 'user-1',
+      sellerId: validCuid2,
+      listingId: validCuid,
+    });
+
+    const caller = createCaller(authedCtx());
+    await expect(
+      caller.message.send({
+        ...validInput,
+        conversationId: validCuid3,
+        receiverId: validCuid3,
+      }),
+    ).rejects.toThrow('Unauthorized');
+
+    const { emitMessage } = await import('@/server/socket');
+    expect(mockDb.message.create).not.toHaveBeenCalled();
+    expect(emitMessage).not.toHaveBeenCalled();
+  });
+
+  it('rejects a mismatched listing before creating or emitting a message', async () => {
+    mockDb.conversation.findUnique.mockResolvedValue({
+      buyerId: 'user-1',
+      sellerId: validCuid2,
+      listingId: validCuid,
+    });
+
+    const caller = createCaller(authedCtx());
+    await expect(
+      caller.message.send({
+        ...validInput,
+        conversationId: validCuid3,
+        listingId: validCuid3,
+      }),
+    ).rejects.toThrow('Unauthorized');
+
+    const { emitMessage } = await import('@/server/socket');
+    expect(mockDb.message.create).not.toHaveBeenCalled();
+    expect(emitMessage).not.toHaveBeenCalled();
+  });
+
+  it('derives the recipient from the listing owner when starting a conversation', async () => {
+    mockDb.listing.findUnique
+      .mockResolvedValueOnce({ userId: validCuid2 })
+      .mockResolvedValueOnce({ title: 'Cool Item' });
+    mockDb.conversation.findFirst.mockResolvedValue(null);
+    mockDb.conversation.create.mockResolvedValue({ id: 'conv-new' });
+    mockDb.message.create.mockResolvedValue({
+      id: 'msg-derived-recipient',
+      conversationId: 'conv-new',
+      senderId: 'user-1',
+      receiverId: validCuid2,
+      content: validInput.content,
+      messageType: 'TEXT',
+      originalLanguage: 'en',
+      createdAt: new Date(),
+      sender: { id: 'user-1', name: 'Test', avatar: null },
+    });
+    mockDb.conversation.update.mockResolvedValue({});
+    mockDb.user.findUnique.mockResolvedValue({ id: validCuid2 });
+
+    const caller = createCaller(authedCtx());
+    await caller.message.send({ ...validInput, receiverId: validCuid3 });
+
+    expect(mockDb.message.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ receiverId: validCuid2 }) }),
+    );
   });
 
   it('throws when listing not found and no conversationId', async () => {
@@ -206,6 +331,11 @@ describe('message.send', () => {
 
     mockDb.message.create.mockResolvedValue(fakeMessage);
     mockDb.conversation.update.mockResolvedValue({});
+    mockDb.conversation.findUnique.mockResolvedValue({
+      buyerId: 'user-1',
+      sellerId: validCuid2,
+      listingId: validCuid,
+    });
     mockDb.user.findUnique.mockResolvedValue({ id: validCuid2 });
     mockDb.listing.findUnique.mockResolvedValue({ title: 'Item' });
 
@@ -246,6 +376,11 @@ describe('message.sendOffer', () => {
 
     mockDb.message.create.mockResolvedValue(fakeMessage);
     mockDb.conversation.update.mockResolvedValue({});
+    mockDb.conversation.findUnique.mockResolvedValue({
+      buyerId: 'user-1',
+      sellerId: validCuid2,
+      listingId: validCuid,
+    });
     mockDb.listing.findUnique.mockResolvedValue({ title: 'Widget' });
 
     const caller = createCaller(authedCtx());
@@ -273,6 +408,11 @@ describe('message.sendOffer', () => {
 
     mockDb.message.create.mockResolvedValue(fakeMessage);
     mockDb.conversation.update.mockResolvedValue({});
+    mockDb.conversation.findUnique.mockResolvedValue({
+      buyerId: 'user-1',
+      sellerId: validCuid2,
+      listingId: validCuid,
+    });
     mockDb.listing.findUnique.mockResolvedValue({ title: 'Widget' });
 
     const caller = createCaller(authedCtx());
@@ -282,6 +422,21 @@ describe('message.sendOffer', () => {
     });
 
     expect(result.content).toBe(customMsg);
+  });
+
+  it('rejects a nonparticipant before creating or emitting an offer', async () => {
+    mockDb.conversation.findUnique.mockResolvedValue({
+      buyerId: 'user-1',
+      sellerId: validCuid2,
+      listingId: validCuid,
+    });
+
+    const caller = createCaller(authedCtx('outsider'));
+    await expect(caller.message.sendOffer(validInput)).rejects.toThrow('Unauthorized');
+
+    const { emitMessage } = await import('@/server/socket');
+    expect(mockDb.message.create).not.toHaveBeenCalled();
+    expect(emitMessage).not.toHaveBeenCalled();
   });
 
   it('throws UNAUTHORIZED without session', async () => {
