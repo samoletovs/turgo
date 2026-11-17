@@ -233,8 +233,14 @@ the lockfile has changed. CI performs a clean `npm ci`.
 
 [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs lint,
 type-checking, and unit tests. Pull requests additionally build Next.js without
-deployment. Main pushes and manual dispatches deploy only when the repository
-variable `DEPLOY_ENABLED` is `true`.
+deployment. Merges to `main` and manual workflow dispatches from `main` deploy
+only when the repository variable `DEPLOY_ENABLED` is `true`. Do not deploy by
+pushing directly to `main`.
+
+To start a manual release, open **Actions → Build & Deploy to Azure Container
+Apps**, choose **Run workflow** on the `main` branch, and monitor the quality,
+build, and deployment jobs. Normal releases should be merged through the reviewed
+pull request workflow; CI deploys the resulting `main` commit.
 
 1. Authenticate to Azure with OIDC using repository secrets `AZURE_CLIENT_ID`,
    `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID`.

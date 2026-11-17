@@ -3,8 +3,18 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const workflow = readFileSync(resolve('.github/workflows/deploy.yml'), 'utf8');
+const packageJson = JSON.parse(readFileSync(resolve('package.json'), 'utf8'));
+const deploymentDocs = readFileSync(resolve('DEPLOYMENT.md'), 'utf8');
 
 describe('Container Apps image deployment', () => {
+  it('uses the reviewed workflow instead of a package script that pushes to main', () => {
+    expect(packageJson.scripts.deploy).toBeUndefined();
+    expect(packageJson.scripts['deploy:local']).toBeDefined();
+    expect(deploymentDocs).toContain('Actions → Build & Deploy to Azure Container');
+    expect(deploymentDocs).toContain('Run workflow');
+    expect(workflow).toContain('workflow_dispatch:');
+  });
+
   it('deploys the digest produced by this build rather than a mutable tag', () => {
     expect(workflow).toContain('image-digest: ${{ steps.build.outputs.digest }}');
     expect(workflow).toMatch(/name: Build & push\s+id: build/);

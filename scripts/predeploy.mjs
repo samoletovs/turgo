@@ -2,7 +2,7 @@
 /**
  * Pre-deployment validation script for Turgo.
  *
- * Run before pushing to main to catch the same errors that CI would catch:
+ * Run before submitting changes to catch the same errors that CI would catch:
  *   npm run predeploy
  *
  * Checks performed:
@@ -193,7 +193,7 @@ if (failures === 0) {
     `\n${BOLD}${PASS} All checks passed!${RESET} (${elapsed}s)` +
       (warnings > 0 ? ` — ${warnings} warning(s)` : "")
   );
-  console.log(`\n  You're safe to push to main. 🚀\n`);
+  console.log(`\n  Your changes are ready for review. 🚀\n`);
   process.exit(0);
 } else {
   console.log(
@@ -201,7 +201,7 @@ if (failures === 0) {
       (warnings > 0 ? ` — ${warnings} warning(s)` : "")
   );
   console.log(
-    `\n  Fix the errors above before pushing. These would fail CI.\n`
+    `\n  Fix the errors above before submitting changes. These would fail CI.\n`
   );
   process.exit(1);
 }
