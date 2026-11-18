@@ -18,14 +18,22 @@ export async function savePushSubscription(
 export async function enablePush(
   registration: ServiceWorkerRegistration,
   api: PushSubscriptionApi,
+  permission = Notification.requestPermission(),
+  isCurrent = () => true,
 ) {
-  if ((await Notification.requestPermission()) !== 'granted') {
+  const checkCurrent = () => {
+    if (!isCurrent()) throw new Error('Push operation cancelled');
+  };
+  if ((await permission) !== 'granted') {
     throw new Error('Notification permission not granted');
   }
+  checkCurrent();
   let subscription = await registration.pushManager.getSubscription();
+  checkCurrent();
   const existing = subscription;
   if (!subscription) {
     const key = await api.getKey();
+    checkCurrent();
     if (!key) throw new Error('Push notifications are not configured');
     const decoded = atob(key.replace(/-/g, '+').replace(/_/g, '/'));
     subscription = await registration.pushManager.subscribe({
@@ -34,6 +42,7 @@ export async function enablePush(
     });
   }
   try {
+    checkCurrent();
     await savePushSubscription(subscription, api);
   } catch (error) {
     if (!existing) await subscription.unsubscribe();

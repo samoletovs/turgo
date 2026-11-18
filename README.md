@@ -71,10 +71,17 @@ on subsequent notifications.
 
 For an existing database, apply
 `prisma/migrations/20261118170000_unique_push_endpoint/migration.sql` before
-deploying this version. It keeps the latest subscription for each endpoint and
+deploying this version:
+
+```powershell
+npx prisma db execute --file prisma/migrations/20261118170000_unique_push_endpoint/migration.sql
+```
+
+It keeps the latest subscription for each endpoint and
 adds the unique index required for account-safe registration. This is an
-incremental SQL migration, not a baseline for the rest of the schema. New local
-databases can use `npm run db:push`.
+incremental SQL migration, not a baseline for the rest of the schema; do not use
+`prisma migrate deploy` to adopt it on an unbaselined database. New local databases
+can use `npm run db:push`.
 
 Run `npx playwright test tests/pwa.spec.ts` with the dev server running to check
 asset responses, layout registration, and the worker's notification-click

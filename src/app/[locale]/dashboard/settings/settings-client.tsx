@@ -373,6 +373,11 @@ export function SettingsClient({ locale, user }: SettingsClientProps) {
                     className="h-4 w-4 rounded accent-primary"
                   />
                 </label>
+                {push.error && (
+                  <p role="alert" className="px-2 text-sm text-destructive">
+                    {t('notifications.pushError')}
+                  </p>
+                )}
                 <form onSubmit={handleSaveNotifications} className="space-y-1">
                   {(
                     ['email', 'agentUpdates', 'newMessages', 'priceAlerts', 'marketing'] as const

@@ -13,17 +13,21 @@ const pushEndpoint = z
   .max(2048)
   .url()
   .refine((value) => {
-    const url = new URL(value);
-    return (
-      url.protocol === 'https:' &&
-      !url.username &&
-      !url.password &&
-      (!url.port || url.port === '443') &&
-      (url.hostname === 'fcm.googleapis.com' ||
-        url.hostname === 'updates.push.services.mozilla.com' ||
-        url.hostname.endsWith('.notify.windows.com') ||
-        url.hostname === 'web.push.apple.com')
-    );
+    try {
+      const url = new URL(value);
+      return (
+        url.protocol === 'https:' &&
+        !url.username &&
+        !url.password &&
+        (!url.port || url.port === '443') &&
+        (url.hostname === 'fcm.googleapis.com' ||
+          url.hostname === 'updates.push.services.mozilla.com' ||
+          url.hostname.endsWith('.notify.windows.com') ||
+          url.hostname === 'web.push.apple.com')
+      );
+    } catch {
+      return false;
+    }
   }, 'Unsupported push endpoint');
 
 const pushKey = (length: number) =>

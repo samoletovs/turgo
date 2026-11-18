@@ -6,6 +6,7 @@ import { TRPCProvider } from '@/lib/trpc/client';
 import { SocketProvider } from '@/lib/socket-client';
 import { Toaster } from 'sonner';
 import { MessageNotificationToaster } from '@/components/messaging/message-notification-toaster';
+import { PushNotifications } from '@/components/push-notifications';
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -35,7 +36,9 @@ export function Providers({ children }: ProvidersProps) {
           enableSystem
           disableTransitionOnChange
         >
-          <ConditionalSocket>{children}</ConditionalSocket>
+          <PushNotifications>
+            <ConditionalSocket>{children}</ConditionalSocket>
+          </PushNotifications>
           <Toaster position="bottom-right" richColors closeButton duration={4000} />
         </ThemeProvider>
       </TRPCProvider>

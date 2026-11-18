@@ -59,10 +59,11 @@ describe('push subscription endpoints', () => {
   });
 
   it.each([
+    'not-a-url',
     'http://fcm.googleapis.com/send/token',
     'https://127.0.0.1/push',
     'https://fcm.googleapis.com.evil.example/push',
-    '******fcm.googleapis.com/push',
+    'https://user@fcm.googleapis.com/push',
     'https://fcm.googleapis.com:8443/push',
   ])('rejects unsafe push destination %s', async (endpoint) => {
     await expect(caller().registerPush({ ...subscription, endpoint })).rejects.toMatchObject({
