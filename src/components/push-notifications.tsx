@@ -25,7 +25,7 @@ export function PushNotifications({ children }: { children: React.ReactNode }) {
   const userId = session?.user?.id;
   const registration = useRef<ServiceWorkerRegistration | null>(null);
   const operations = useRef<Promise<void>>(Promise.resolve());
-  const generation = useRef(0);
+  const lifecycle = useRef({ active: true });
   const account = useRef<string | undefined>(undefined);
   const [enabled, setEnabled] = useState(false);
   const [available, setAvailable] = useState(false);
@@ -40,7 +40,8 @@ export function PushNotifications({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
     let cancelled = false;
-    generation.current++;
+    const token = { active: true };
+    lifecycle.current = token;
     const accountChanged = status !== 'loading' && !!account.current && account.current !== userId;
     if (status !== 'loading') account.current = userId;
     setAvailable(false);
@@ -78,15 +79,15 @@ export function PushNotifications({ children }: { children: React.ReactNode }) {
     });
     return () => {
       cancelled = true;
-      generation.current++;
+      token.active = false;
     };
   }, [status, userId, enqueue]);
 
   async function changeEnabled(value: boolean) {
     if (!registration.current || !available || busy) return;
     const worker = registration.current;
-    const version = generation.current;
-    const isCurrent = () => generation.current === version;
+    const token = lifecycle.current;
+    const isCurrent = () => token.active;
     // Request immediately during the click, not after waiting for queued network work.
     const permission = value ? Notification.requestPermission() : undefined;
     setBusy(true);
