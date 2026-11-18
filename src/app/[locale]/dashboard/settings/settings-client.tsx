@@ -41,6 +41,7 @@ import { ThemeSelect } from '@/components/theme-toggle';
 import { LOCALES, LOCALE_LABELS, LOCALE_FLAGS } from '@/lib/constants';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { toast } from 'sonner';
+import { usePushNotifications } from '@/components/push-notifications';
 
 // ── Zod Schemas ──
 
@@ -54,7 +55,6 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 const notificationsSchema = z.object({
   email: z.boolean(),
-  push: z.boolean(),
   agentUpdates: z.boolean(),
   newMessages: z.boolean(),
   priceAlerts: z.boolean(),
@@ -80,6 +80,7 @@ interface SettingsClientProps {
 
 export function SettingsClient({ locale, user }: SettingsClientProps) {
   const t = useTranslations('settings');
+  const push = usePushNotifications();
   const router = useRouter();
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState('profile');
@@ -102,7 +103,6 @@ export function SettingsClient({ locale, user }: SettingsClientProps) {
     resolver: zodResolver(notificationsSchema),
     defaultValues: {
       email: true,
-      push: true,
       agentUpdates: true,
       newMessages: true,
       priceAlerts: true,
@@ -356,16 +356,31 @@ export function SettingsClient({ locale, user }: SettingsClientProps) {
                 <CardDescription>{t('notifications.description')}</CardDescription>
               </CardHeader>
               <CardContent>
+                <label className="flex items-center justify-between gap-4 rounded-lg px-2 py-3">
+                  <div>
+                    <p className="text-sm font-medium">{t('notifications.push')}</p>
+                    <p className="text-xs text-muted-foreground">{t('notifications.pushDesc')}</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={push.enabled}
+                    disabled={!push.available || push.busy}
+                    onChange={(event) => {
+                      void push.setEnabled(event.target.checked).catch(() => {
+                        toast.error(t('notifications.pushError'));
+                      });
+                    }}
+                    className="h-4 w-4 rounded accent-primary"
+                  />
+                </label>
+                {push.error && (
+                  <p role="alert" className="px-2 text-sm text-destructive">
+                    {t('notifications.pushError')}
+                  </p>
+                )}
                 <form onSubmit={handleSaveNotifications} className="space-y-1">
                   {(
-                    [
-                      'email',
-                      'push',
-                      'agentUpdates',
-                      'newMessages',
-                      'priceAlerts',
-                      'marketing',
-                    ] as const
+                    ['email', 'agentUpdates', 'newMessages', 'priceAlerts', 'marketing'] as const
                   ).map((key) => (
                     <label
                       key={key}

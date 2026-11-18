@@ -1020,6 +1020,7 @@
       "emailDesc": "Receive email notifications for important updates",
       "push": "Push Notifications",
       "pushDesc": "Receive push notifications in your browser",
+      "pushError": "Could not update push notifications. Check browser permissions and try again.",
       "agentUpdates": "Agent Updates",
       "agentUpdatesDesc": "Get notified when your AI agents take action",
       "newMessages": "New Messages",

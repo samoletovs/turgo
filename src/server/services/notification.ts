@@ -35,10 +35,9 @@ export async function sendPushNotification(params: {
   if (subscriptions.length === 0) return;
 
   // Dynamic import for web-push (server-only)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let webpush: any = null;
+  let webpush: typeof import('web-push');
   try {
-    webpush = await import('web-push');
+    webpush = (await import('web-push')).default;
     webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
   } catch {
     console.warn('[Push] web-push not available, skipping push notifications');
@@ -61,7 +60,7 @@ export async function sendPushNotification(params: {
 
   for (const sub of subscriptions) {
     try {
-      await webpush!.sendNotification(
+      await webpush.sendNotification(
         {
           endpoint: sub.endpoint,
           keys: { p256dh: sub.p256dh, auth: sub.auth },
@@ -70,7 +69,14 @@ export async function sendPushNotification(params: {
       );
     } catch (error) {
       console.error(`[Push] Failed for subscription ${sub.id}:`, error);
-      failedSubscriptions.push(sub.id);
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'statusCode' in error &&
+        (error.statusCode === 404 || error.statusCode === 410)
+      ) {
+        failedSubscriptions.push(sub.id);
+      }
     }
   }
 
@@ -456,20 +462,11 @@ export async function registerPushSubscription(params: {
   p256dh: string;
   auth: string;
 }): Promise<void> {
-  // Upsert by endpoint to avoid duplicates
-  const existing = await db.pushSubscription.findFirst({
-    where: { userId: params.userId, endpoint: params.endpoint },
-  });
-
-  if (existing) return;
-
-  await db.pushSubscription.create({
-    data: {
-      userId: params.userId,
-      endpoint: params.endpoint,
-      p256dh: params.p256dh,
-      auth: params.auth,
-    },
+  // A browser endpoint belongs only to the currently signed-in account.
+  await db.pushSubscription.upsert({
+    where: { endpoint: params.endpoint },
+    create: params,
+    update: { userId: params.userId, p256dh: params.p256dh, auth: params.auth },
   });
 }
 

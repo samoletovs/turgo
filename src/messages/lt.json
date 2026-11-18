@@ -842,6 +842,7 @@
       "emailDesc": "Gaukite pranešimus el. paštu",
       "push": "Push pranešimai",
       "pushDesc": "Gaukite push pranešimus naršyklėje",
+      "pushError": "Nepavyko atnaujinti push pranešimų. Patikrinkite naršyklės leidimus ir bandykite dar kartą.",
       "agentUpdates": "Agentų atnaujinimai",
       "agentUpdatesDesc": "Pranešimai apie AI agentų veiksmus",
       "newMessages": "Nauji pranešimai",
