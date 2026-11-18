@@ -7,6 +7,35 @@ import {
 } from '@/server/services/notification';
 import { sendEmail } from '@/server/services/email';
 
+// Restrict destinations because the server sends HTTP requests to these URLs.
+const pushEndpoint = z
+  .string()
+  .max(2048)
+  .url()
+  .refine((value) => {
+    const url = new URL(value);
+    return (
+      url.protocol === 'https:' &&
+      !url.username &&
+      !url.password &&
+      (!url.port || url.port === '443') &&
+      (url.hostname === 'fcm.googleapis.com' ||
+        url.hostname === 'updates.push.services.mozilla.com' ||
+        url.hostname.endsWith('.notify.windows.com') ||
+        url.hostname === 'web.push.apple.com')
+    );
+  }, 'Unsupported push endpoint');
+
+const pushKey = (length: number) =>
+  z
+    .string()
+    .max(90)
+    .regex(/^[A-Za-z0-9_-]+={0,2}$/)
+    .refine(
+      (value) => Buffer.from(value, 'base64url').length === length,
+      'Invalid push key length',
+    );
+
 export const notificationRouter = createTRPCRouter({
   /** Get all notifications for current user */
   list: protectedProcedure
@@ -78,9 +107,9 @@ export const notificationRouter = createTRPCRouter({
   registerPush: protectedProcedure
     .input(
       z.object({
-        endpoint: z.string().url(),
-        p256dh: z.string(),
-        auth: z.string(),
+        endpoint: pushEndpoint,
+        p256dh: pushKey(65).refine((value) => Buffer.from(value, 'base64url')[0] === 4),
+        auth: pushKey(16),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -93,7 +122,7 @@ export const notificationRouter = createTRPCRouter({
 
   /** Remove push subscription */
   removePush: protectedProcedure
-    .input(z.object({ endpoint: z.string().url() }))
+    .input(z.object({ endpoint: z.string().max(2048).url() }))
     .mutation(async ({ ctx, input }) => {
       await removePushSubscription(ctx.session.user.id!, input.endpoint);
       return { success: true };

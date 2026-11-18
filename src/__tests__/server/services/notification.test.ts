@@ -157,6 +157,53 @@ describe('createNotification', () => {
     vi.clearAllMocks();
   });
 
+  describe('push delivery cleanup', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('sends VAPID-authenticated payloads and removes only expired endpoints', async () => {
+      const { default: webpush } = await import('web-push');
+      const { sendPushNotification } = await import('@/server/services/notification');
+      mockDb.pushSubscription.findMany.mockResolvedValue(
+        ['expired', 'transient', 'gone', 'healthy'].map((id) => ({
+          id,
+          endpoint: `https://fcm.googleapis.com/${id}`,
+          p256dh: 'public',
+          auth: 'auth',
+        })),
+      );
+      vi.mocked(webpush.sendNotification)
+        .mockRejectedValueOnce({ statusCode: 410 })
+        .mockRejectedValueOnce({ statusCode: 503 })
+        .mockRejectedValueOnce({ statusCode: 404 })
+        .mockResolvedValueOnce({ statusCode: 201, body: '', headers: {} });
+      const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+      try {
+        await sendPushNotification({
+          userId: 'user-1',
+          title: 'New message',
+          body: 'Hello',
+          url: '/messages',
+        });
+        expect(webpush.setVapidDetails).toHaveBeenCalledOnce();
+        expect(webpush.sendNotification).toHaveBeenCalledTimes(4);
+        const payload = vi.mocked(webpush.sendNotification).mock.calls[0][1];
+        expect(typeof payload).toBe('string');
+        if (typeof payload !== 'string') throw new Error('Expected a JSON push payload');
+        expect(JSON.parse(payload)).toMatchObject({
+          title: 'New message',
+          data: { url: '/messages' },
+        });
+        expect(mockDb.pushSubscription.deleteMany).toHaveBeenCalledWith({
+          where: { id: { in: ['expired', 'gone'] } },
+        });
+      } finally {
+        log.mockRestore();
+      }
+    });
+  });
+
   it('persists notification and emits real-time event', async () => {
     mockDb.notification.create.mockResolvedValue(fakeNotification);
 

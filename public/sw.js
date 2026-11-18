@@ -3,16 +3,18 @@
  * Handles incoming push events and notification clicks.
  */
 
-/// <reference lib="webworker" />
-
-declare const self: ServiceWorkerGlobalScope;
-
 self.addEventListener("push", (event) => {
   if (!event.data) return;
 
-  const data = event.data.json();
+  let data;
+  try {
+    data = event.data.json();
+  } catch {
+    return;
+  }
+  if (!data || typeof data.title !== "string") return;
 
-  const options: NotificationOptions = {
+  const options = {
     body: data.body,
     icon: data.icon || "/icon-192.png",
     badge: data.badge || "/badge-72.png",
@@ -33,7 +35,15 @@ self.addEventListener("notificationclick", (event) => {
 
   if (event.action === "dismiss") return;
 
-  const url = event.notification.data?.url || "/";
+  const url = new URL("/", self.location.origin);
+  try {
+    const target = new URL(event.notification.data?.url || "/", self.location.origin);
+    if (target.origin === self.location.origin && /^https?:$/.test(target.protocol)) {
+      url.href = target.href;
+    }
+  } catch {
+    // Invalid targets fall back to the marketplace.
+  }
 
   event.waitUntil(
     self.clients
@@ -41,12 +51,12 @@ self.addEventListener("notificationclick", (event) => {
       .then((clients) => {
         // Focus existing window if available
         for (const client of clients) {
-          if (client.url.includes(url) && "focus" in client) {
+          if (client.url === url.href && "focus" in client) {
             return client.focus();
           }
         }
         // Otherwise open new window
-        return self.clients.openWindow(url);
+        return self.clients.openWindow(url.href);
       })
   );
 });

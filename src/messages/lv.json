@@ -842,6 +842,7 @@
       "emailDesc": "Saņemiet e-pasta paziņojumus par svarīgiem atjauninājumiem",
       "push": "Push paziņojumi",
       "pushDesc": "Saņemiet push paziņojumus pārlūkprogrammā",
+      "pushError": "Neizdevās atjaunināt push paziņojumus. Pārbaudiet pārlūka atļaujas un mēģiniet vēlreiz.",
       "agentUpdates": "Aģentu atjauninājumi",
       "agentUpdatesDesc": "Saņemiet paziņojumu, kad jūsu AI aģenti veic darbības",
       "newMessages": "Jauni ziņojumi",

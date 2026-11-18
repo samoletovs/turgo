@@ -842,6 +842,7 @@
       "emailDesc": "Saate teavitusi e-postiga",
       "push": "Push-teavitused",
       "pushDesc": "Saate push-teavitusi brauseris",
+      "pushError": "Push-teavituste uuendamine ebaõnnestus. Kontrollige brauseri õigusi ja proovige uuesti.",
       "agentUpdates": "Agendi uuendused",
       "agentUpdatesDesc": "Teavitused AI agentide tegevustest",
       "newMessages": "Uued sõnumid",

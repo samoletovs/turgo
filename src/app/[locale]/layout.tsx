@@ -15,6 +15,7 @@ import { auth } from '@/lib/auth';
 import type { Metadata } from 'next';
 import { ConciergeChatLoader } from '@/components/concierge-chat-loader';
 import { FeedbackButton } from '@/components/feedback-button';
+import { PushNotifications } from '@/components/push-notifications';
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -63,33 +64,35 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       <Providers>
-        <SkipToContent label={skipLabel} />
+        <PushNotifications>
+          <SkipToContent label={skipLabel} />
 
-        {/* JSON-LD structured data */}
-        <JsonLd data={websiteJsonLd(locale)} />
-        <JsonLd data={organizationJsonLd()} />
+          {/* JSON-LD structured data */}
+          <JsonLd data={websiteJsonLd(locale)} />
+          <JsonLd data={organizationJsonLd()} />
 
-        <div className="flex min-h-screen flex-col">
-          <Navbar
-            locale={locale}
-            user={
-              session?.user
-                ? {
-                    name: session.user.name || '',
-                    avatar: session.user.image || undefined,
-                  }
-                : null
-            }
-          />
-          <main id="main-content" className="flex-1 pb-16 md:pb-0" role="main">
-            <ErrorBoundary>{children}</ErrorBoundary>
-          </main>
-          <Footer />
-        </div>
-        <BottomNav />
-        <FeedbackButton />
-        <ConciergeChatLoader locale={locale} />
-        <CookieConsentBanner />
+          <div className="flex min-h-screen flex-col">
+            <Navbar
+              locale={locale}
+              user={
+                session?.user
+                  ? {
+                      name: session.user.name || '',
+                      avatar: session.user.image || undefined,
+                    }
+                  : null
+              }
+            />
+            <main id="main-content" className="flex-1 pb-16 md:pb-0" role="main">
+              <ErrorBoundary>{children}</ErrorBoundary>
+            </main>
+            <Footer />
+          </div>
+          <BottomNav />
+          <FeedbackButton />
+          <ConciergeChatLoader locale={locale} />
+          <CookieConsentBanner />
+        </PushNotifications>
       </Providers>
     </NextIntlClientProvider>
   );
