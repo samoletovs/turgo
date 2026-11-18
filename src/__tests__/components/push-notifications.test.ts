@@ -80,6 +80,7 @@ const pushManager = {
   getSubscription: vi.fn(),
   subscribe: vi.fn(),
 };
+const registerWorker = vi.fn();
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -88,6 +89,7 @@ beforeEach(() => {
   mocks.register.mockResolvedValue(undefined);
   mocks.remove.mockResolvedValue(undefined);
   mocks.getKey.mockResolvedValue({ key: 'BAEC' });
+  registerWorker.mockResolvedValue(undefined);
   subscribed = true;
   subscription.unsubscribe.mockImplementation(async () => {
     subscribed = false;
@@ -100,7 +102,7 @@ beforeEach(() => {
   });
   vi.stubGlobal('navigator', {
     serviceWorker: {
-      register: vi.fn().mockResolvedValue(undefined),
+      register: registerWorker,
       ready: Promise.resolve({
         pushManager,
       }),
@@ -170,6 +172,7 @@ describe('push session reconciliation', () => {
     await act(async () => {
       operation = currentState().setEnabled(true);
     });
+
     expect(mocks.getKey).toHaveBeenCalledOnce();
     mocks.userId = null;
     await render();
@@ -180,6 +183,30 @@ describe('push session reconciliation', () => {
       await operation;
     });
     expect(pushManager.subscribe).not.toHaveBeenCalled();
+    expect(mocks.register).not.toHaveBeenCalled();
+    expect(subscribed).toBe(false);
+    expect(currentState()).toMatchObject({ enabled: false, available: true });
+  });
+
+  it('preserves account cleanup while initial worker registration is pending', async () => {
+    let finishRegistration: (() => void) | undefined;
+    registerWorker.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finishRegistration = resolve;
+        }),
+    );
+    await render();
+    expect(registerWorker).toHaveBeenCalledOnce();
+    mocks.userId = null;
+    await render();
+    mocks.userId = 'user-b';
+    await render();
+    await act(async () => {
+      finishRegistration?.();
+    });
+
+    expect(subscription.unsubscribe).toHaveBeenCalledOnce();
     expect(mocks.register).not.toHaveBeenCalled();
     expect(subscribed).toBe(false);
     expect(currentState()).toMatchObject({ enabled: false, available: true });
